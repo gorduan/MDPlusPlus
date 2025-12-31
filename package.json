@@ -1,7 +1,7 @@
 {
   "name": "@gorduan/mdplusplus",
-  "version": "0.1.0",
-  "description": "MD++ (Markdown Plus Plus) - Extended Markdown with Framework-Agnostic Component Directives",
+  "version": "0.2.0",
+  "description": "MD++ (Markdown Plus Plus) - Standalone Electron Editor & Embeddable React Components",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -11,6 +11,18 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./editor": {
+      "import": "./dist/components/MDPPEditor.js",
+      "types": "./dist/components/MDPPEditor.d.ts"
+    },
+    "./preview": {
+      "import": "./dist/components/MDPPPreview.js",
+      "types": "./dist/components/MDPPPreview.d.ts"
+    },
+    "./components": {
+      "import": "./dist/components/index.js",
+      "types": "./dist/components/index.d.ts"
+    },
     "./plugins/*": "./plugins/*"
   },
   "files": [
@@ -18,12 +30,17 @@
     "plugins"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts",
-    "dev": "tsup src/index.ts --format esm --dts --watch",
-    "clean": "rm -rf dist",
+    "build": "tsup",
+    "build:parser": "tsup src/index.ts --format esm --dts --outDir dist",
+    "build:components": "tsup components/index.ts --format esm --dts --outDir dist/components --external react --external react-dom",
+    "dev": "tsup --watch",
+    "clean": "rimraf dist out",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "electron:dev": "electron-vite dev",
+    "electron:build": "electron-vite build && electron-builder",
+    "electron:preview": "electron-vite preview"
   },
   "repository": {
     "type": "git",
@@ -34,29 +51,97 @@
   },
   "homepage": "https://github.com/gorduan/MDPlusPlus#readme",
   "dependencies": {
-    "unified": "^11.0.4",
-    "remark-parse": "^11.0.0",
-    "remark-directive": "^3.0.0",
-    "remark-rehype": "^11.1.0",
+    "gray-matter": "^4.0.3",
     "rehype-stringify": "^10.0.0",
-    "unist-util-visit": "^5.0.0",
-    "gray-matter": "^4.0.3"
+    "remark-directive": "^3.0.0",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.0",
+    "unified": "^11.0.4",
+    "unist-util-visit": "^5.0.0"
   },
   "devDependencies": {
+    "@monaco-editor/react": "^4.6.0",
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "@vitejs/plugin-react": "^4.2.1",
+    "buffer": "^6.0.3",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "electron-vite": "^2.0.0",
+    "monaco-editor": "^0.45.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "rimraf": "^5.0.5",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3",
+    "vite": "^5.0.10",
     "vitest": "^1.2.0"
+  },
+  "peerDependencies": {
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "build": {
+    "appId": "com.gorduan.mdplusplus",
+    "productName": "MD++",
+    "directories": {
+      "output": "out"
+    },
+    "files": [
+      "out/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "resources/icon.ico"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "resources/icon.icns"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "resources/icon.png"
+    }
   },
   "keywords": [
     "markdown",
     "md++",
     "mdplusplus",
     "parser",
+    "editor",
+    "electron",
+    "react",
+    "components",
+    "embeddable",
+    "monaco",
     "plugins",
     "directives",
-    "components",
     "ai-context"
   ],
   "author": "gorduan",
-  "license": "MIT"
+  "license": "MIT",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron",
+      "esbuild"
+    ]
+  }
 }

@@ -1,0 +1,611 @@
+/**
+ * MD++ Electron Main Process
+ * Handles file operations, window management, and system integration
+ */
+
+import { app, BrowserWindow, ipcMain, dialog, Menu, shell } from 'electron';
+import { join } from 'path';
+import { readFile, writeFile, stat } from 'fs/promises';
+import { existsSync, mkdirSync } from 'fs';
+
+// Application state
+let mainWindow: BrowserWindow | null = null;
+let currentFilePath: string | null = null;
+let isModified = false;
+
+// Recent files storage
+const recentFiles: string[] = [];
+const MAX_RECENT_FILES = 10;
+
+/**
+ * Create the main application window
+ */
+function createWindow(): void {
+  mainWindow = new BrowserWindow({
+    width: 1400,
+    height: 900,
+    minWidth: 800,
+    minHeight: 600,
+    title: 'MD++ Editor',
+    icon: join(__dirname, '../../resources/icon.png'),
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.mjs'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: false,
+    },
+    show: true,
+    backgroundColor: '#1e1e1e',
+  });
+
+  // DevTools are now toggled via button/menu, not opened automatically
+
+  // Notify renderer when DevTools state changes
+  mainWindow.webContents.on('devtools-opened', () => {
+    mainWindow?.webContents.send('devtools-state', true);
+  });
+  mainWindow.webContents.on('devtools-closed', () => {
+    mainWindow?.webContents.send('devtools-state', false);
+  });
+
+  // Handle close with unsaved changes
+  mainWindow.on('close', async (e) => {
+    if (isModified) {
+      e.preventDefault();
+      const result = await dialog.showMessageBox(mainWindow!, {
+        type: 'warning',
+        buttons: ['Save', "Don't Save", 'Cancel'],
+        defaultId: 0,
+        cancelId: 2,
+        title: 'Unsaved Changes',
+        message: 'Do you want to save the changes before closing?',
+      });
+
+      if (result.response === 0) {
+        // Save
+        const saved = await saveFile();
+        if (saved) {
+          mainWindow?.destroy();
+        }
+      } else if (result.response === 1) {
+        // Don't save
+        mainWindow?.destroy();
+      }
+      // Cancel - do nothing
+    }
+  });
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+
+  // Load the renderer
+  if (process.env.ELECTRON_RENDERER_URL) {
+    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
+  } else {
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
+  }
+
+  // Create application menu
+  createMenu();
+}
+
+/**
+ * Update window title based on current file
+ */
+function updateWindowTitle(): void {
+  if (!mainWindow) return;
+
+  let title = 'MD++ Editor';
+  if (currentFilePath) {
+    const fileName = currentFilePath.split(/[\\/]/).pop() || 'Untitled';
+    title = `${isModified ? '*' : ''}${fileName} - MD++ Editor`;
+  } else if (isModified) {
+    title = '*Untitled - MD++ Editor';
+  }
+  mainWindow.setTitle(title);
+}
+
+/**
+ * Create application menu
+ */
+function createMenu(): void {
+  const template: Electron.MenuItemConstructorOptions[] = [
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'New',
+          accelerator: 'CmdOrCtrl+N',
+          click: () => newFile(),
+        },
+        {
+          label: 'Open...',
+          accelerator: 'CmdOrCtrl+O',
+          click: () => openFile(),
+        },
+        {
+          label: 'Open Recent',
+          submenu: recentFiles.map((file) => ({
+            label: file,
+            click: () => openFilePath(file),
+          })),
+        },
+        { type: 'separator' },
+        {
+          label: 'Save',
+          accelerator: 'CmdOrCtrl+S',
+          click: () => saveFile(),
+        },
+        {
+          label: 'Save As...',
+          accelerator: 'CmdOrCtrl+Shift+S',
+          click: () => saveFileAs(),
+        },
+        { type: 'separator' },
+        {
+          label: 'Export as HTML...',
+          accelerator: 'CmdOrCtrl+E',
+          click: () => exportAsHTML(),
+        },
+        {
+          label: 'Export as PDF...',
+          accelerator: 'CmdOrCtrl+Shift+E',
+          click: () => exportAsPDF(),
+        },
+        { type: 'separator' },
+        {
+          label: 'Exit',
+          accelerator: 'Alt+F4',
+          click: () => app.quit(),
+        },
+      ],
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'selectAll' },
+        { type: 'separator' },
+        {
+          label: 'Find',
+          accelerator: 'CmdOrCtrl+F',
+          click: () => mainWindow?.webContents.send('menu-action', 'find'),
+        },
+        {
+          label: 'Replace',
+          accelerator: 'CmdOrCtrl+H',
+          click: () => mainWindow?.webContents.send('menu-action', 'replace'),
+        },
+      ],
+    },
+    {
+      label: 'View',
+      submenu: [
+        {
+          label: 'Editor Only',
+          accelerator: 'CmdOrCtrl+1',
+          click: () => mainWindow?.webContents.send('view-mode', 'editor'),
+        },
+        {
+          label: 'Preview Only',
+          accelerator: 'CmdOrCtrl+2',
+          click: () => mainWindow?.webContents.send('view-mode', 'preview'),
+        },
+        {
+          label: 'Split View',
+          accelerator: 'CmdOrCtrl+3',
+          click: () => mainWindow?.webContents.send('view-mode', 'split'),
+        },
+        { type: 'separator' },
+        {
+          label: 'Toggle AI Context',
+          accelerator: 'CmdOrCtrl+Shift+A',
+          click: () => mainWindow?.webContents.send('menu-action', 'toggle-ai-context'),
+        },
+        { type: 'separator' },
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' },
+      ],
+    },
+    {
+      label: 'Insert',
+      submenu: [
+        {
+          label: 'Heading 1',
+          accelerator: 'CmdOrCtrl+Alt+1',
+          click: () => mainWindow?.webContents.send('insert', '# '),
+        },
+        {
+          label: 'Heading 2',
+          accelerator: 'CmdOrCtrl+Alt+2',
+          click: () => mainWindow?.webContents.send('insert', '## '),
+        },
+        {
+          label: 'Heading 3',
+          accelerator: 'CmdOrCtrl+Alt+3',
+          click: () => mainWindow?.webContents.send('insert', '### '),
+        },
+        { type: 'separator' },
+        {
+          label: 'Bold',
+          accelerator: 'CmdOrCtrl+B',
+          click: () => mainWindow?.webContents.send('insert-wrap', '**'),
+        },
+        {
+          label: 'Italic',
+          accelerator: 'CmdOrCtrl+I',
+          click: () => mainWindow?.webContents.send('insert-wrap', '*'),
+        },
+        {
+          label: 'Code',
+          accelerator: 'CmdOrCtrl+`',
+          click: () => mainWindow?.webContents.send('insert-wrap', '`'),
+        },
+        { type: 'separator' },
+        {
+          label: 'Link',
+          accelerator: 'CmdOrCtrl+K',
+          click: () => mainWindow?.webContents.send('insert', '[](url)'),
+        },
+        {
+          label: 'Image',
+          accelerator: 'CmdOrCtrl+Shift+I',
+          click: () => mainWindow?.webContents.send('insert', '![alt](url)'),
+        },
+        { type: 'separator' },
+        {
+          label: 'Code Block',
+          click: () => mainWindow?.webContents.send('insert', '```\n\n```'),
+        },
+        {
+          label: 'AI Context Block',
+          click: () => mainWindow?.webContents.send('insert', ':::ai-context\n\n:::'),
+        },
+        {
+          label: 'Component Directive',
+          click: () => mainWindow?.webContents.send('insert', '::component{}\n\n::'),
+        },
+      ],
+    },
+    {
+      label: 'Help',
+      submenu: [
+        {
+          label: 'MD++ Documentation',
+          click: () => shell.openExternal('https://github.com/gorduan/MDPlusPlus'),
+        },
+        {
+          label: 'Markdown Syntax',
+          click: () => shell.openExternal('https://www.markdownguide.org/basic-syntax/'),
+        },
+        { type: 'separator' },
+        {
+          label: 'About MD++',
+          click: () => showAboutDialog(),
+        },
+      ],
+    },
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
+
+/**
+ * Show about dialog
+ */
+function showAboutDialog(): void {
+  dialog.showMessageBox(mainWindow!, {
+    type: 'info',
+    title: 'About MD++',
+    message: 'MD++ (Markdown Plus Plus)',
+    detail: `Version 0.2.0\n\nExtended Markdown with Framework-Agnostic Component Directives\n\nStandalone Editor & Embeddable React Components\n\n© 2024 gorduan`,
+  });
+}
+
+/**
+ * Create new file
+ */
+async function newFile(): Promise<void> {
+  if (isModified) {
+    const result = await dialog.showMessageBox(mainWindow!, {
+      type: 'warning',
+      buttons: ['Save', "Don't Save", 'Cancel'],
+      defaultId: 0,
+      cancelId: 2,
+      title: 'Unsaved Changes',
+      message: 'Do you want to save the changes?',
+    });
+
+    if (result.response === 0) {
+      const saved = await saveFile();
+      if (!saved) return;
+    } else if (result.response === 2) {
+      return;
+    }
+  }
+
+  currentFilePath = null;
+  isModified = false;
+  updateWindowTitle();
+  mainWindow?.webContents.send('file-new');
+}
+
+/**
+ * Open file dialog
+ */
+async function openFile(): Promise<void> {
+  const result = await dialog.showOpenDialog(mainWindow!, {
+    properties: ['openFile'],
+    filters: [
+      { name: 'Markdown Files', extensions: ['md', 'mdpp', 'markdown'] },
+      { name: 'All Files', extensions: ['*'] },
+    ],
+  });
+
+  if (!result.canceled && result.filePaths.length > 0) {
+    await openFilePath(result.filePaths[0]);
+  }
+}
+
+/**
+ * Open specific file path
+ */
+async function openFilePath(filePath: string): Promise<void> {
+  try {
+    const content = await readFile(filePath, 'utf-8');
+    currentFilePath = filePath;
+    isModified = false;
+    updateWindowTitle();
+    addToRecentFiles(filePath);
+    mainWindow?.webContents.send('file-opened', { path: filePath, content });
+  } catch (error) {
+    dialog.showErrorBox('Error', `Failed to open file: ${error}`);
+  }
+}
+
+/**
+ * Save current file
+ */
+async function saveFile(): Promise<boolean> {
+  if (!currentFilePath) {
+    return await saveFileAs();
+  }
+
+  return new Promise((resolve) => {
+    ipcMain.once('get-content-response', async (_, content: string) => {
+      try {
+        await writeFile(currentFilePath!, content, 'utf-8');
+        isModified = false;
+        updateWindowTitle();
+        mainWindow?.webContents.send('file-saved', currentFilePath);
+        resolve(true);
+      } catch (error) {
+        dialog.showErrorBox('Error', `Failed to save file: ${error}`);
+        resolve(false);
+      }
+    });
+    mainWindow?.webContents.send('get-content');
+  });
+}
+
+/**
+ * Check if content uses MD++ specific features
+ */
+function usesMDPlusPlusFeatures(content: string): boolean {
+  // Check for MD++ specific syntax:
+  // - AI context blocks: :::ai-context
+  // - Component directives: ::component{} or ::component[]
+  // - Leaf directives: :directive{} or :directive[]
+  const mdppPatterns = [
+    /:::[\w-]+/,           // Container directives (:::ai-context, etc.)
+    /::[\w-]+[{\[]/,       // Leaf directives with attributes (::card{}, etc.)
+    /:[\w-]+[{\[]/,        // Inline directives with attributes
+  ];
+
+  return mdppPatterns.some(pattern => pattern.test(content));
+}
+
+/**
+ * Save file as dialog
+ */
+async function saveFileAs(): Promise<boolean> {
+  // Get content first to determine format
+  const content = await new Promise<string>((resolve) => {
+    ipcMain.once('get-content-response', (_, c: string) => resolve(c));
+    mainWindow?.webContents.send('get-content');
+  });
+
+  const usesMDPP = usesMDPlusPlusFeatures(content);
+
+  // Determine default extension:
+  // 1. If file was opened, keep original extension (unless MD++ features added to .md file)
+  // 2. For new files, use .md unless MD++ features are used
+  let defaultExt = 'md'; // Default for new files
+
+  if (currentFilePath) {
+    // File was opened - preserve original extension
+    const originalExt = currentFilePath.split('.').pop()?.toLowerCase();
+    if (originalExt === 'mdpp' || originalExt === 'md' || originalExt === 'markdown') {
+      defaultExt = originalExt;
+      // Only suggest .mdpp if .md file now has MD++ features
+      if (originalExt === 'md' && usesMDPP) {
+        defaultExt = 'mdpp';
+      }
+    }
+  } else if (usesMDPP) {
+    // New file with MD++ features
+    defaultExt = 'mdpp';
+  }
+
+  const defaultName = currentFilePath
+    ? currentFilePath.split(/[\\/]/).pop()?.replace(/\.(md|mdpp|markdown)$/, `.${defaultExt}`)
+    : `untitled.${defaultExt}`;
+
+  // Order filters based on detected format
+  const filters = usesMDPP
+    ? [
+        { name: 'MD++ Files', extensions: ['mdpp'] },
+        { name: 'Markdown Files', extensions: ['md'] },
+        { name: 'All Files', extensions: ['*'] },
+      ]
+    : [
+        { name: 'Markdown Files', extensions: ['md'] },
+        { name: 'MD++ Files', extensions: ['mdpp'] },
+        { name: 'All Files', extensions: ['*'] },
+      ];
+
+  const result = await dialog.showSaveDialog(mainWindow!, {
+    filters,
+    defaultPath: defaultName,
+  });
+
+  if (!result.canceled && result.filePath) {
+    currentFilePath = result.filePath;
+    // Save with already fetched content
+    try {
+      await writeFile(currentFilePath, content, 'utf-8');
+      isModified = false;
+      updateWindowTitle();
+      mainWindow?.webContents.send('file-saved', currentFilePath);
+      return true;
+    } catch (error) {
+      dialog.showErrorBox('Error', `Failed to save file: ${error}`);
+      return false;
+    }
+  }
+  return false;
+}
+
+/**
+ * Export as HTML
+ */
+async function exportAsHTML(): Promise<void> {
+  const result = await dialog.showSaveDialog(mainWindow!, {
+    filters: [{ name: 'HTML Files', extensions: ['html'] }],
+    defaultPath: currentFilePath?.replace(/\.(md|mdpp|markdown)$/, '.html') || 'export.html',
+  });
+
+  if (!result.canceled && result.filePath) {
+    mainWindow?.webContents.send('export-html', result.filePath);
+  }
+}
+
+/**
+ * Export as PDF
+ */
+async function exportAsPDF(): Promise<void> {
+  const result = await dialog.showSaveDialog(mainWindow!, {
+    filters: [{ name: 'PDF Files', extensions: ['pdf'] }],
+    defaultPath: currentFilePath?.replace(/\.(md|mdpp|markdown)$/, '.pdf') || 'export.pdf',
+  });
+
+  if (!result.canceled && result.filePath) {
+    mainWindow?.webContents.send('export-pdf', result.filePath);
+  }
+}
+
+/**
+ * Add file to recent files list
+ */
+function addToRecentFiles(filePath: string): void {
+  const index = recentFiles.indexOf(filePath);
+  if (index > -1) {
+    recentFiles.splice(index, 1);
+  }
+  recentFiles.unshift(filePath);
+  if (recentFiles.length > MAX_RECENT_FILES) {
+    recentFiles.pop();
+  }
+  createMenu(); // Rebuild menu with updated recent files
+}
+
+// IPC Handlers
+
+// Track content modifications from renderer
+ipcMain.on('content-modified', (_, modified: boolean) => {
+  isModified = modified;
+  updateWindowTitle();
+});
+
+ipcMain.handle('read-file', async (_, filePath: string) => {
+  try {
+    const content = await readFile(filePath, 'utf-8');
+    return { success: true, content };
+  } catch (error) {
+    return { success: false, error: String(error) };
+  }
+});
+
+ipcMain.handle('write-file', async (_, filePath: string, content: string) => {
+  try {
+    const dir = filePath.substring(0, filePath.lastIndexOf('/'));
+    if (dir && !existsSync(dir)) {
+      mkdirSync(dir, { recursive: true });
+    }
+    await writeFile(filePath, content, 'utf-8');
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: String(error) };
+  }
+});
+
+ipcMain.handle('file-exists', async (_, filePath: string) => {
+  try {
+    await stat(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+});
+
+ipcMain.handle('get-current-file', () => currentFilePath);
+
+ipcMain.handle('toggle-devtools', () => {
+  if (mainWindow) {
+    if (mainWindow.webContents.isDevToolsOpened()) {
+      mainWindow.webContents.closeDevTools();
+      return false;
+    } else {
+      mainWindow.webContents.openDevTools();
+      return true;
+    }
+  }
+  return false;
+});
+
+// App lifecycle
+app.whenReady().then(() => {
+  createWindow();
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+// Handle file drop
+app.on('open-file', async (event, path) => {
+  event.preventDefault();
+  if (mainWindow) {
+    await openFilePath(path);
+  }
+});

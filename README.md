@@ -2,11 +2,16 @@
 
 Extended Markdown with Framework-Agnostic Component Directives and AI Context Blocks.
 
+**Now available as a standalone Electron desktop app and embeddable React components!**
+
 ## Features
 
+- **Standalone Electron App**: Full-featured desktop editor with Monaco Editor
+- **Embeddable React Components**: Use `<MDPPEditor>`, `<MDPPPreview>`, `<MDPPSplitView>` in any React app
 - **Component Directives**: Use `:::framework:component[Title]{attributes}` syntax
 - **Plugin System**: JSON-based plugin definitions for any CSS framework
 - **AI Context Blocks**: Hidden context for AI assistants with `:::ai-context[hidden]`
+- **Live Preview**: Real-time rendering with syntax highlighting
 - **Framework Agnostic**: Works with Bootstrap, Tailwind, or custom frameworks
 - **TypeScript**: Full type definitions included
 
@@ -18,7 +23,96 @@ npm install @gorduan/mdplusplus
 pnpm add @gorduan/mdplusplus
 ```
 
-## Quick Start
+## Standalone Desktop App
+
+### Running the Desktop App
+
+```bash
+# Development mode
+pnpm run electron:dev
+
+# Build for production
+pnpm run electron:build
+```
+
+### Features
+
+- Monaco Editor with MD++ syntax highlighting
+- Live preview pane
+- File operations (New, Open, Save, Save As)
+- Export to HTML
+- Split view, Editor only, Preview only modes
+- AI Context visibility toggle
+- Keyboard shortcuts
+
+## Embeddable React Components
+
+### MDPPEditor
+
+A Monaco-based editor with MD++ syntax highlighting:
+
+```tsx
+import { MDPPEditor } from '@gorduan/mdplusplus/components';
+
+function MyApp() {
+  const [content, setContent] = useState('# Hello MD++');
+
+  return (
+    <MDPPEditor
+      value={content}
+      onChange={setContent}
+      height="400px"
+      darkMode={true}
+      fontSize={14}
+    />
+  );
+}
+```
+
+### MDPPPreview
+
+Renders MD++ content as HTML:
+
+```tsx
+import { MDPPPreview } from '@gorduan/mdplusplus/components';
+
+function MyApp() {
+  return (
+    <MDPPPreview
+      value="# Hello MD++"
+      showAIContext={false}
+      darkMode={true}
+      height="400px"
+    />
+  );
+}
+```
+
+### MDPPSplitView
+
+Combined editor and preview with toolbar:
+
+```tsx
+import { MDPPSplitView } from '@gorduan/mdplusplus/components';
+
+function MyApp() {
+  const [content, setContent] = useState('# Hello MD++');
+
+  return (
+    <MDPPSplitView
+      value={content}
+      onChange={setContent}
+      height="600px"
+      defaultViewMode="split"
+      showToolbar={true}
+    />
+  );
+}
+```
+
+## Parser API
+
+### Quick Start
 
 ```typescript
 import { MDPlusPlus, PluginLoader } from '@gorduan/mdplusplus';
@@ -153,10 +247,77 @@ if (hasAIContext(markdown)) {
 }
 ```
 
+## Component Props
+
+### MDPPEditor Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| value | string | required | Markdown content |
+| onChange | (value: string) => void | - | Change callback |
+| height | string \| number | '400px' | Editor height |
+| darkMode | boolean | true | Dark theme |
+| lineNumbers | boolean | true | Show line numbers |
+| wordWrap | boolean | true | Enable word wrap |
+| fontSize | number | 14 | Font size |
+| readOnly | boolean | false | Read-only mode |
+| onCursorChange | (pos) => void | - | Cursor position callback |
+
+### MDPPPreview Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| value | string | required | Markdown content |
+| showAIContext | boolean | false | Show AI context blocks |
+| plugins | PluginDefinition[] | [] | Custom plugins |
+| height | string \| number | 'auto' | Preview height |
+| darkMode | boolean | true | Dark theme |
+| sanitize | boolean | true | Sanitize HTML output |
+| onRender | (result) => void | - | Render complete callback |
+| debounceMs | number | 150 | Debounce delay |
+
+### MDPPSplitView Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| value | string | required | Markdown content |
+| onChange | (value: string) => void | - | Change callback |
+| defaultViewMode | 'split' \| 'editor' \| 'preview' | 'split' | Initial view mode |
+| height | string \| number | '500px' | Component height |
+| darkMode | boolean | true | Dark theme |
+| showAIContext | boolean | false | Show AI context blocks |
+| showToolbar | boolean | true | Show toolbar |
+| readOnly | boolean | false | Read-only mode |
+
 ## Included Plugins
 
 - `plugins/vcm3.json` - VCM3 native components
 - `plugins/bootstrap.json` - Bootstrap 5 components
+
+## Scripts
+
+```bash
+# Build parser library
+pnpm run build:parser
+
+# Build embeddable components
+pnpm run build:components
+
+# Build everything
+pnpm run build
+
+# Run Electron app in dev mode
+pnpm run electron:dev
+
+# Build Electron app for distribution
+pnpm run electron:build
+
+# Type check
+pnpm run typecheck
+
+# Run tests
+pnpm run test
+```
 
 ## License
 
