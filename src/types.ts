@@ -14,6 +14,10 @@ export interface PluginDefinition {
   css?: string[];
   /** JS files to load (CDN URLs) */
   js?: string[];
+  /** Initialization script (e.g., mermaid.initialize()) */
+  init?: string;
+  /** Code block languages this plugin handles (e.g., ['mermaid']) */
+  codeBlockLanguages?: string[];
   components: Record<string, ComponentDefinition>;
 }
 

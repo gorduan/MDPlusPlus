@@ -350,6 +350,17 @@ This AI context block is visible to both humans and AI tools.
 This AI context is hidden from humans but visible to AI.
 :::
 
+## Mermaid Diagrams
+
+```mermaid
+graph TD
+    A[Markdown Input] --> B{MD++ Parser}
+    B --> C[HTML Output]
+    B --> D[AI Contexts]
+    B --> E[Errors]
+    C --> F[Preview]
+```
+
 ## Error Handling
 
 Try an unknown component to see the error display:
@@ -371,7 +382,17 @@ This will show an error!
   <!-- MD++ Browser Bundle - include this single file to use MD++ anywhere -->
   <script src="../dist/mdplusplus.browser.global.js"></script>
 
+  <!-- Mermaid.js for diagram rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
   <script>
+    // Initialize Mermaid with dark theme
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'dark',
+      securityLevel: 'loose'
+    });
+
     // Wait for DOM to be ready
     document.addEventListener('DOMContentLoaded', async () => {
       const input = document.getElementById('markdown-input');
@@ -414,6 +435,17 @@ This will show an error!
         try {
           const result = await parser.convert(markdown);
           output.innerHTML = result.html;
+
+          // Re-render Mermaid diagrams
+          const mermaidElements = output.querySelectorAll('.mermaid');
+          if (mermaidElements.length > 0) {
+            // Clear any previous rendered content and re-process
+            mermaidElements.forEach((el, index) => {
+              el.removeAttribute('data-processed');
+              el.id = `mermaid-${Date.now()}-${index}`;
+            });
+            await mermaid.run({ nodes: mermaidElements });
+          }
 
           // Log AI contexts to console
           if (result.aiContexts && result.aiContexts.length > 0) {

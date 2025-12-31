@@ -95,6 +95,7 @@ export class MDPlusPlus {
       .use(remarkParse)
       .use(remarkDirective)
       .use(this.createDirectivePlugin())
+      .use(this.createCodeBlockPlugin())
       .use(remarkRehype, { allowDangerousHtml: true })
       .use(rehypeStringify, { allowDangerousHtml: true });
 
@@ -229,6 +230,64 @@ export class MDPlusPlus {
         });
       };
     };
+  }
+
+  /**
+   * Create the remark plugin for handling special code blocks (mermaid, etc.)
+   */
+  private createCodeBlockPlugin() {
+    const self = this;
+
+    // Get languages that need special handling from plugins
+    const specialLanguages = new Set<string>();
+    for (const plugin of this.plugins.values()) {
+      if ((plugin as any).codeBlockLanguages) {
+        for (const lang of (plugin as any).codeBlockLanguages) {
+          specialLanguages.add(lang);
+        }
+      }
+    }
+    // Always support mermaid
+    specialLanguages.add('mermaid');
+
+    return function codeBlockPlugin() {
+      return (tree: any) => {
+        visit(tree, 'code', (node: any) => {
+          const lang = node.lang?.toLowerCase();
+
+          if (lang && specialLanguages.has(lang)) {
+            // Convert to HTML node for special rendering
+            node.type = 'html';
+            node.value = self.renderSpecialCodeBlock(lang, node.value);
+          }
+        });
+      };
+    };
+  }
+
+  /**
+   * Render a special code block (mermaid, etc.)
+   */
+  private renderSpecialCodeBlock(language: string, code: string): string {
+    switch (language) {
+      case 'mermaid':
+        // Mermaid.js expects content in a <pre class="mermaid"> tag
+        return `<pre class="mermaid">${this.escapeHtml(code)}</pre>`;
+      default:
+        return `<pre class="${language}"><code>${this.escapeHtml(code)}</code></pre>`;
+    }
+  }
+
+  /**
+   * Escape HTML special characters
+   */
+  private escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
   /**

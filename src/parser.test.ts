@@ -214,6 +214,33 @@ Success message
   });
 });
 
+describe('Mermaid support', () => {
+  it('converts mermaid code blocks to pre.mermaid', async () => {
+    const parser = new MDPlusPlus();
+    const result = await parser.convert(`
+\`\`\`mermaid
+graph TD
+    A --> B
+\`\`\`
+`);
+    expect(result.html).toContain('<pre class="mermaid">');
+    expect(result.html).toContain('graph TD');
+    expect(result.html).toContain('A --&gt; B');
+  });
+
+  it('escapes HTML in mermaid code', async () => {
+    const parser = new MDPlusPlus();
+    const result = await parser.convert(`
+\`\`\`mermaid
+graph TD
+    A[<script>alert('xss')</script>] --> B
+\`\`\`
+`);
+    expect(result.html).toContain('&lt;script&gt;');
+    expect(result.html).not.toContain('<script>');
+  });
+});
+
 describe('PluginLoader', () => {
   it('loads plugins from JSON', () => {
     const loader = new PluginLoader();

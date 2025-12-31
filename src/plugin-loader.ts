@@ -89,6 +89,11 @@ export class PluginLoader {
       ? obj.js.filter((j): j is string => typeof j === 'string')
       : undefined;
 
+    // Parse code block languages
+    const codeBlockLanguages = Array.isArray(obj.codeBlockLanguages)
+      ? obj.codeBlockLanguages.filter((l): l is string => typeof l === 'string')
+      : undefined;
+
     return {
       framework: obj.framework,
       version: typeof obj.version === 'string' ? obj.version : '1.0.0',
@@ -96,6 +101,8 @@ export class PluginLoader {
       description: typeof obj.description === 'string' ? obj.description : undefined,
       css,
       js,
+      init: typeof obj.init === 'string' ? obj.init : undefined,
+      codeBlockLanguages,
       components,
     };
   }
