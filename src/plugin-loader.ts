@@ -80,11 +80,22 @@ export class PluginLoader {
       components[name] = this.validateComponent(name, def);
     }
 
+    // Parse CSS/JS arrays
+    const css = Array.isArray(obj.css)
+      ? obj.css.filter((c): c is string => typeof c === 'string')
+      : undefined;
+
+    const js = Array.isArray(obj.js)
+      ? obj.js.filter((j): j is string => typeof j === 'string')
+      : undefined;
+
     return {
       framework: obj.framework,
       version: typeof obj.version === 'string' ? obj.version : '1.0.0',
       author: typeof obj.author === 'string' ? obj.author : undefined,
       description: typeof obj.description === 'string' ? obj.description : undefined,
+      css,
+      js,
       components,
     };
   }

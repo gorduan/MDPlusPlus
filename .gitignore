@@ -1,6 +1,8 @@
 node_modules/
 dist/
+out/
 *.log
 .DS_Store
 .env
 .env.local
+test-electron.*

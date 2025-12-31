@@ -1,6 +1,6 @@
 {
   "name": "@gorduan/mdplusplus",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "MD++ (Markdown Plus Plus) - Pure JavaScript Markdown Parser with AI Context Blocks, React Components & Desktop App",
   "type": "module",
   "main": "./dist/index.js",

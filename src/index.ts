@@ -19,5 +19,7 @@ export type {
   AIContext,
   RenderResult,
   RenderError,
-  ParserOptions
+  ParserOptions,
+  SecurityProfile,
+  SecurityConfig
 } from './types';

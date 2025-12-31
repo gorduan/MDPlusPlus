@@ -1,6 +1,12 @@
 /**
  * MD++ Parser - Markdown Plus Plus
  * Converts MD++ syntax to HTML with plugin support
+ *
+ * Works in ANY JavaScript environment:
+ * - Browser (with script tag)
+ * - Node.js
+ * - Electron
+ * - Any bundler
  */
 
 import { unified } from 'unified';
@@ -15,8 +21,21 @@ import type {
   RenderResult,
   RenderError,
   AIContext,
-  ParserOptions
+  ParserOptions,
+  SecurityConfig
 } from './types';
+
+/**
+ * Default security configuration
+ */
+const DEFAULT_SECURITY: SecurityConfig = {
+  profile: 'warn',
+  allowParserCode: false,
+  allowHTMLCode: false,
+  warnOnCode: true,
+  trustedSources: [],
+  blockedSources: [],
+};
 
 /**
  * MD++ Parser class
@@ -26,9 +45,11 @@ export class MDPlusPlus {
   private errors: RenderError[] = [];
   private aiContexts: AIContext[] = [];
   private options: ParserOptions;
+  private security: SecurityConfig;
 
   constructor(options: ParserOptions = {}) {
     this.options = options;
+    this.security = { ...DEFAULT_SECURITY, ...options.security };
 
     // Register any plugins passed in options
     if (options.plugins) {
@@ -66,6 +87,9 @@ export class MDPlusPlus {
     // Parse frontmatter
     const { content, data: frontmatter } = matter(markdown);
 
+    // Preprocess directives: :::framework:component → :::framework_component
+    const processedContent = this.preprocessDirectives(content);
+
     // Create processor
     const processor = unified()
       .use(remarkParse)
@@ -75,14 +99,115 @@ export class MDPlusPlus {
       .use(rehypeStringify, { allowDangerousHtml: true });
 
     // Process markdown
-    const result = await processor.process(content);
+    const result = await processor.process(processedContent);
+    let html = String(result);
+
+    // Prepend error alerts if any (unless suppressed)
+    if (this.errors.length > 0 && !this.options.suppressErrors) {
+      html = this.generateErrorAlerts() + html;
+    }
+
+    // Prepend plugin assets if requested
+    if (this.options.includeAssets) {
+      html = this.generateAssetTags() + html;
+    }
 
     return {
-      html: String(result),
+      html,
       aiContexts: this.aiContexts,
       frontmatter: Object.keys(frontmatter).length > 0 ? frontmatter : undefined,
       errors: this.errors,
     };
+  }
+
+  /**
+   * Preprocess directives to convert :::framework:component to :::framework_component
+   * This is needed because remark-directive doesn't support colons in names
+   */
+  private preprocessDirectives(content: string): string {
+    // Replace :::framework:component[...] with :::framework_component[...]
+    return content.replace(/:::([\w-]+):([\w-]+)(\[|{|\s|$)/g, ':::$1_$2$3');
+  }
+
+  /**
+   * Generate HTML error alerts for parsing errors
+   */
+  private generateErrorAlerts(): string {
+    let alerts = '';
+
+    for (const error of this.errors) {
+      const alertClass = error.type === 'invalid-syntax' || error.type === 'security-blocked'
+        ? 'mdpp-error-danger'
+        : 'mdpp-error-warning';
+      const icon = error.type === 'invalid-syntax' || error.type === 'security-blocked'
+        ? '❌'
+        : '⚠️';
+
+      const title = error.title || this.getErrorTitle(error.type);
+
+      alerts += `
+<div class="mdpp-error ${alertClass}" role="alert">
+  <strong>${icon} ${title}</strong>
+  <p>${error.message}</p>
+  ${error.details ? `<details><summary>Details</summary><pre>${error.details}</pre></details>` : ''}
+</div>
+`;
+    }
+
+    return alerts;
+  }
+
+  /**
+   * Get default error title based on type
+   */
+  private getErrorTitle(type: string): string {
+    const titles: Record<string, string> = {
+      'missing-plugin': 'Plugin Not Found',
+      'unknown-component': 'Unknown Component',
+      'invalid-syntax': 'Invalid Syntax',
+      'nesting-error': 'Nesting Error',
+      'security-blocked': 'Security Blocked',
+    };
+    return titles[type] || 'Error';
+  }
+
+  /**
+   * Generate CSS/JS asset tags for loaded plugins
+   */
+  private generateAssetTags(): string {
+    let tags = '';
+
+    for (const plugin of this.plugins.values()) {
+      // Add CSS links
+      if (plugin.css) {
+        for (const cssUrl of plugin.css) {
+          tags += `<link rel="stylesheet" href="${cssUrl}">\n`;
+        }
+      }
+      // Add JS scripts
+      if (plugin.js) {
+        for (const jsUrl of plugin.js) {
+          tags += `<script src="${jsUrl}"></script>\n`;
+        }
+      }
+    }
+
+    return tags;
+  }
+
+  /**
+   * Get required assets for loaded plugins (for manual inclusion)
+   */
+  getRequiredAssets(): { css: string[]; js: string[] } {
+    const css: string[] = [];
+    const js: string[] = [];
+
+    for (const plugin of this.plugins.values()) {
+      if (plugin.css) css.push(...plugin.css);
+      if (plugin.js) js.push(...plugin.js);
+    }
+
+    return { css, js };
   }
 
   /**
@@ -112,11 +237,16 @@ export class MDPlusPlus {
   private processDirective(node: any): void {
     const { name, attributes = {}, children = [] } = node;
 
-    // Parse framework:component from name
+    // Parse framework_component or framework:component from name
     let framework: string | undefined;
     let component: string;
 
-    if (name.includes(':')) {
+    // After preprocessing, :::bootstrap:card becomes :::bootstrap_card
+    if (name.includes('_')) {
+      const parts = name.split('_');
+      framework = parts[0];
+      component = parts.slice(1).join('_'); // Handle components with underscores
+    } else if (name.includes(':')) {
       [framework, component] = name.split(':');
     } else {
       component = name;
@@ -135,7 +265,9 @@ export class MDPlusPlus {
       if (!plugin) {
         this.errors.push({
           type: 'missing-plugin',
-          message: `Plugin "${framework}" is not registered`,
+          title: 'Plugin Not Found',
+          message: `Plugin "${framework}" is not registered.`,
+          details: `Syntax: :::${framework}:${component}\nLoaded plugins: ${this.getPluginNames().join(', ') || 'none'}`,
         });
       }
     } else {
@@ -152,9 +284,12 @@ export class MDPlusPlus {
     // Find component definition
     const componentDef = plugin?.components[component];
     if (!componentDef && plugin) {
+      const availableComponents = Object.keys(plugin.components).slice(0, 10).join(', ');
       this.errors.push({
         type: 'unknown-component',
-        message: `Component "${component}" not found in plugin "${framework}"`,
+        title: 'Unknown Component',
+        message: `Component "${component}" not found in plugin "${framework}".`,
+        details: `Available components: ${availableComponents}${Object.keys(plugin.components).length > 10 ? '...' : ''}`,
       });
     }
 
@@ -165,6 +300,13 @@ export class MDPlusPlus {
     node.data = node.data || {};
     node.data.hName = hast.tagName;
     node.data.hProperties = hast.properties;
+  }
+
+  /**
+   * Get list of loaded plugin names
+   */
+  private getPluginNames(): string[] {
+    return Array.from(this.plugins.keys());
   }
 
   /**

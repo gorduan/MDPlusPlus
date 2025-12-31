@@ -26,7 +26,9 @@ export default function Toolbar({
     const unsubscribe = window.electronAPI.onDevToolsState((isOpen) => {
       setDevToolsOpen(isOpen);
     });
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const handleToggleDevTools = async () => {

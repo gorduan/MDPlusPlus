@@ -3,6 +3,12 @@
   "version": "5.3.0",
   "author": "Bootstrap Team",
   "description": "Bootstrap 5 components for MD++",
+  "css": [
+    "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+  ],
+  "js": [
+    "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+  ],
   "components": {
     "card": {
       "tag": "div",
@@ -144,6 +150,198 @@
         "striped": ["progress-bar-striped"],
         "animated": ["progress-bar-striped", "progress-bar-animated"]
       }
+    },
+    "navbar": {
+      "tag": "nav",
+      "classes": ["navbar"],
+      "allowNesting": true,
+      "variants": {
+        "light": ["navbar-light", "bg-light"],
+        "dark": ["navbar-dark", "bg-dark"],
+        "expand-lg": ["navbar-expand-lg"],
+        "expand-md": ["navbar-expand-md"],
+        "fixed-top": ["fixed-top"],
+        "fixed-bottom": ["fixed-bottom"]
+      }
+    },
+    "navbar-brand": {
+      "tag": "a",
+      "classes": ["navbar-brand"]
+    },
+    "nav": {
+      "tag": "ul",
+      "classes": ["navbar-nav"],
+      "allowNesting": true
+    },
+    "nav-item": {
+      "tag": "li",
+      "classes": ["nav-item"]
+    },
+    "nav-link": {
+      "tag": "a",
+      "classes": ["nav-link"]
+    },
+    "tabs": {
+      "tag": "ul",
+      "classes": ["nav", "nav-tabs"],
+      "allowNesting": true,
+      "specialParser": "tabs"
+    },
+    "tab-content": {
+      "tag": "div",
+      "classes": ["tab-content"],
+      "allowNesting": true
+    },
+    "tab-pane": {
+      "tag": "div",
+      "classes": ["tab-pane", "fade"],
+      "variants": {
+        "active": ["show", "active"]
+      }
+    },
+    "carousel": {
+      "tag": "div",
+      "classes": ["carousel", "slide"],
+      "allowNesting": true,
+      "variants": {
+        "fade": ["carousel-fade"]
+      }
+    },
+    "carousel-inner": {
+      "tag": "div",
+      "classes": ["carousel-inner"],
+      "allowNesting": true
+    },
+    "carousel-item": {
+      "tag": "div",
+      "classes": ["carousel-item"],
+      "variants": {
+        "active": ["active"]
+      }
+    },
+    "modal": {
+      "tag": "div",
+      "classes": ["modal", "fade"],
+      "allowNesting": true,
+      "variants": {
+        "lg": ["modal-lg"],
+        "sm": ["modal-sm"],
+        "xl": ["modal-xl"],
+        "centered": ["modal-dialog-centered"],
+        "scrollable": ["modal-dialog-scrollable"]
+      }
+    },
+    "modal-dialog": {
+      "tag": "div",
+      "classes": ["modal-dialog"]
+    },
+    "modal-content": {
+      "tag": "div",
+      "classes": ["modal-content"]
+    },
+    "modal-header": {
+      "tag": "div",
+      "classes": ["modal-header"]
+    },
+    "modal-body": {
+      "tag": "div",
+      "classes": ["modal-body"]
+    },
+    "modal-footer": {
+      "tag": "div",
+      "classes": ["modal-footer"]
+    },
+    "breadcrumb": {
+      "tag": "nav",
+      "classes": [],
+      "allowNesting": true
+    },
+    "breadcrumb-list": {
+      "tag": "ol",
+      "classes": ["breadcrumb"]
+    },
+    "breadcrumb-item": {
+      "tag": "li",
+      "classes": ["breadcrumb-item"],
+      "variants": {
+        "active": ["active"]
+      }
+    },
+    "dropdown": {
+      "tag": "div",
+      "classes": ["dropdown"],
+      "allowNesting": true
+    },
+    "dropdown-toggle": {
+      "tag": "button",
+      "classes": ["btn", "dropdown-toggle"]
+    },
+    "dropdown-menu": {
+      "tag": "ul",
+      "classes": ["dropdown-menu"],
+      "allowNesting": true
+    },
+    "dropdown-item": {
+      "tag": "li",
+      "classes": []
+    },
+    "table": {
+      "tag": "table",
+      "classes": ["table"],
+      "variants": {
+        "striped": ["table-striped"],
+        "bordered": ["table-bordered"],
+        "hover": ["table-hover"],
+        "dark": ["table-dark"],
+        "sm": ["table-sm"]
+      }
+    },
+    "form-group": {
+      "tag": "div",
+      "classes": ["mb-3"]
+    },
+    "form-control": {
+      "tag": "input",
+      "classes": ["form-control"],
+      "variants": {
+        "lg": ["form-control-lg"],
+        "sm": ["form-control-sm"]
+      }
+    },
+    "form-label": {
+      "tag": "label",
+      "classes": ["form-label"]
+    },
+    "toast": {
+      "tag": "div",
+      "classes": ["toast"],
+      "allowNesting": true
+    },
+    "toast-header": {
+      "tag": "div",
+      "classes": ["toast-header"]
+    },
+    "toast-body": {
+      "tag": "div",
+      "classes": ["toast-body"]
+    },
+    "offcanvas": {
+      "tag": "div",
+      "classes": ["offcanvas"],
+      "variants": {
+        "start": ["offcanvas-start"],
+        "end": ["offcanvas-end"],
+        "top": ["offcanvas-top"],
+        "bottom": ["offcanvas-bottom"]
+      }
+    },
+    "offcanvas-header": {
+      "tag": "div",
+      "classes": ["offcanvas-header"]
+    },
+    "offcanvas-body": {
+      "tag": "div",
+      "classes": ["offcanvas-body"]
     }
   }
 }

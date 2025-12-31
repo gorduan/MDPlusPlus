@@ -180,6 +180,89 @@
       display: none;
     }
 
+    /* Error display styles */
+    .mdpp-error {
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 0.5rem;
+      border-left: 4px solid;
+    }
+
+    .mdpp-error-warning {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: #F59E0B;
+      color: #F59E0B;
+    }
+
+    .mdpp-error-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: #EF4444;
+      color: #EF4444;
+    }
+
+    .mdpp-error strong {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .mdpp-error p {
+      margin: 0.5rem 0;
+      color: #CBD5E1;
+    }
+
+    .mdpp-error details {
+      margin-top: 0.75rem;
+    }
+
+    .mdpp-error summary {
+      cursor: pointer;
+      color: #94A3B8;
+    }
+
+    .mdpp-error pre {
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: #94A3B8;
+    }
+
+    /* Bootstrap-like component styles */
+    .alert {
+      padding: 1rem;
+      margin: 1rem 0;
+      border: 1px solid transparent;
+      border-radius: 0.375rem;
+    }
+
+    .alert-primary {
+      color: #084298;
+      background-color: #cfe2ff;
+      border-color: #b6d4fe;
+    }
+
+    .alert-info {
+      color: #055160;
+      background-color: #cff4fc;
+      border-color: #b6effb;
+    }
+
+    .alert-success {
+      color: #0f5132;
+      background-color: #d1e7dd;
+      border-color: #badbcc;
+    }
+
+    .alert-warning {
+      color: #664d03;
+      background-color: #fff3cd;
+      border-color: #ffecb5;
+    }
+
+    .alert-danger {
+      color: #842029;
+      background-color: #f8d7da;
+      border-color: #f5c2c7;
+    }
+
     /* Component styles */
     .card {
       background: #334155;
@@ -233,6 +316,7 @@ This is a **live preview** example using vanilla JavaScript.
 - Real-time parsing
 - No React required
 - Works in any browser
+- Framework-agnostic plugin system
 
 ### Code Example
 
@@ -243,6 +327,19 @@ const result = await parser.convert(markdown);
 
 > MD++ is pure JavaScript - use it anywhere!
 
+## Component Directives
+
+You can use components from plugins with the :::framework:component syntax:
+
+:::bootstrap:alert{variant="info"}
+This is a Bootstrap alert component!
+:::
+
+:::bootstrap:card
+### Card Title
+This is card content using the Bootstrap plugin.
+:::
+
 ## AI Context
 
 :::ai-context{visibility=visible}
@@ -251,6 +348,13 @@ This AI context block is visible to both humans and AI tools.
 
 :::ai-context{visibility=hidden}
 This AI context is hidden from humans but visible to AI.
+:::
+
+## Error Handling
+
+Try an unknown component to see the error display:
+:::unknown:widget
+This will show an error!
 :::</textarea>
     </div>
 
@@ -281,13 +385,27 @@ This AI context is hidden from humans but visible to AI.
         return;
       }
 
+      // Load Bootstrap plugin
+      let bootstrapPlugin = null;
+      try {
+        const response = await fetch('../plugins/bootstrap.json');
+        bootstrapPlugin = await response.json();
+        console.log('Bootstrap plugin loaded:', bootstrapPlugin.framework, 'v' + bootstrapPlugin.version);
+      } catch (err) {
+        console.warn('Could not load bootstrap plugin:', err.message);
+      }
+
       status.textContent = 'MD++ loaded successfully!';
       status.className = 'status ready';
 
-      // Create parser instance
+      // Create parser instance with Bootstrap plugin
       const parser = new MDPlusPlus.MDPlusPlus({
-        showAIContext: true // Show AI context blocks
+        showAIContext: true, // Show AI context blocks
+        plugins: bootstrapPlugin ? [bootstrapPlugin] : []
       });
+
+      // Log available plugins
+      console.log('Loaded plugins:', parser.getPlugins().map(p => p.framework));
 
       // Function to render markdown
       async function renderMarkdown() {
