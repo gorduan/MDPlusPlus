@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig([
-  // Core parser library
+  // Core parser library (ESM with external deps - for npm/bundlers)
   {
     entry: ['src/index.ts'],
     format: ['esm'],
@@ -20,6 +20,23 @@ export default defineConfig([
       'unist-util-visit',
       'gray-matter',
     ],
+  },
+  // Browser bundle (IIFE with all deps bundled - for script tag)
+  {
+    entry: { 'mdplusplus.browser': 'src/index.ts' },
+    format: ['iife'],
+    globalName: 'MDPlusPlus',
+    outDir: 'dist',
+    splitting: false,
+    sourcemap: true,
+    target: 'es2020',
+    minify: true,
+    // Bundle all dependencies for browser use
+    noExternal: [/.*/],
+    platform: 'browser',
+    define: {
+      'process.env.NODE_ENV': '"production"',
+    },
   },
   // Embeddable React components
   {

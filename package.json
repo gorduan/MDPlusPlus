@@ -1,16 +1,19 @@
 {
   "name": "@gorduan/mdplusplus",
-  "version": "0.2.0",
-  "description": "MD++ (Markdown Plus Plus) - Standalone Electron Editor & Embeddable React Components",
+  "version": "0.3.0",
+  "description": "MD++ (Markdown Plus Plus) - Pure JavaScript Markdown Parser with AI Context Blocks, React Components & Desktop App",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "browser": "./dist/mdplusplus.browser.global.js",
+  "unpkg": "./dist/mdplusplus.browser.global.js",
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./browser": "./dist/mdplusplus.browser.global.js",
     "./editor": {
       "import": "./dist/components/MDPPEditor.js",
       "types": "./dist/components/MDPPEditor.d.ts"
@@ -27,7 +30,8 @@
   },
   "files": [
     "dist",
-    "plugins"
+    "plugins",
+    "examples"
   ],
   "scripts": {
     "build": "tsup",
@@ -126,15 +130,18 @@
     "md++",
     "mdplusplus",
     "parser",
+    "javascript",
+    "browser",
+    "vanilla-js",
+    "ai-context",
+    "directives",
+    "plugins",
     "editor",
-    "electron",
     "react",
     "components",
     "embeddable",
-    "monaco",
-    "plugins",
-    "directives",
-    "ai-context"
+    "electron",
+    "monaco"
   ],
   "author": "gorduan",
   "license": "MIT",

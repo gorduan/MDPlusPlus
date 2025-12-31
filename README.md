@@ -2,20 +2,60 @@
 
 Extended Markdown with Framework-Agnostic Component Directives and AI Context Blocks.
 
-**Now available as a standalone Electron desktop app and embeddable React components!**
+## Architecture
 
-## Features
+MD++ is designed as a **3-tier system** where each layer can be used independently:
 
-- **Standalone Electron App**: Full-featured desktop editor with Monaco Editor
-- **Embeddable React Components**: Use `<MDPPEditor>`, `<MDPPPreview>`, `<MDPPSplitView>` in any React app
-- **Component Directives**: Use `:::framework:component[Title]{attributes}` syntax
-- **Plugin System**: JSON-based plugin definitions for any CSS framework
-- **AI Context Blocks**: Hidden context for AI assistants with `:::ai-context[hidden]`
-- **Live Preview**: Real-time rendering with syntax highlighting
-- **Framework Agnostic**: Works with Bootstrap, Tailwind, or custom frameworks
-- **TypeScript**: Full type definitions included
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Tier 3: Electron Desktop App (optional)                    │
+│  - Full-featured desktop editor                             │
+│  - File management, menus, export                           │
+│  - Uses Tier 2 components                                   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────┐
+│  Tier 2: React Components (optional)                        │
+│  - <MDPPEditor> - Monaco-based editor                       │
+│  - <MDPPPreview> - Live preview component                   │
+│  - <MDPPSplitView> - Combined editor/preview                │
+│  - Uses Tier 1 parser                                       │
+└─────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────┐
+│  Tier 1: Pure JavaScript Parser (core)                      │
+│  - Works in ANY JavaScript environment                      │
+│  - No React, no Electron, no build tools required           │
+│  - Single script tag for browser usage                      │
+│  - Full MD++ parsing and HTML rendering                     │
+└─────────────────────────────────────────────────────────────┘
+```
 
-## Installation
+## Quick Start
+
+### Option 1: Browser (No Build Tools Required)
+
+Include a single script tag and start using MD++ immediately:
+
+```html
+<!-- Include the browser bundle -->
+<script src="https://unpkg.com/@gorduan/mdplusplus/dist/mdplusplus.browser.global.js"></script>
+
+<script>
+  // Create parser instance
+  const parser = new MDPlusPlus.MDPlusPlus();
+
+  // Parse markdown
+  const result = await parser.convert('# Hello **MD++**!');
+
+  // Use the HTML
+  document.getElementById('preview').innerHTML = result.html;
+</script>
+```
+
+See `examples/vanilla-browser.html` for a complete working example.
+
+### Option 2: npm/pnpm (With Build Tools)
 
 ```bash
 npm install @gorduan/mdplusplus
@@ -23,13 +63,198 @@ npm install @gorduan/mdplusplus
 pnpm add @gorduan/mdplusplus
 ```
 
-## Standalone Desktop App
+```javascript
+import { MDPlusPlus } from '@gorduan/mdplusplus';
 
-### Running the Desktop App
+const parser = new MDPlusPlus();
+const result = await parser.convert('# Hello **MD++**!');
+console.log(result.html);
+```
+
+### Option 3: React Components
+
+```tsx
+import { MDPPPreview } from '@gorduan/mdplusplus/components';
+
+function App() {
+  return <MDPPPreview value="# Hello **MD++**!" />;
+}
+```
+
+### Option 4: Desktop App
+
+```bash
+cd MDPlusPlus
+pnpm install
+node start-dev.cjs
+```
+
+## Features
+
+- **Pure JavaScript Parser**: Works in any browser, Node.js, or JavaScript runtime
+- **Zero Dependencies for Browser**: Single file bundle (~190KB) with everything included
+- **Component Directives**: Use `:::component{attributes}` syntax for styled elements
+- **AI Context Blocks**: Hidden context for AI assistants with `:::ai-context`
+- **Plugin System**: JSON-based plugins for any CSS framework
+- **React Components**: Optional embeddable editor and preview components
+- **Electron Desktop App**: Optional full-featured desktop editor
+
+## Tier 1: Pure JavaScript Parser
+
+The core parser has **zero framework dependencies** and works everywhere JavaScript runs.
+
+### Browser Usage (Vanilla JS)
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MD++ Example</title>
+</head>
+<body>
+  <textarea id="input"># Hello MD++</textarea>
+  <div id="output"></div>
+
+  <script src="dist/mdplusplus.browser.global.js"></script>
+  <script>
+    const parser = new MDPlusPlus.MDPlusPlus();
+    const input = document.getElementById('input');
+    const output = document.getElementById('output');
+
+    async function render() {
+      const result = await parser.convert(input.value);
+      output.innerHTML = result.html;
+    }
+
+    input.addEventListener('input', render);
+    render();
+  </script>
+</body>
+</html>
+```
+
+### Node.js Usage
+
+```javascript
+import { MDPlusPlus } from '@gorduan/mdplusplus';
+
+const parser = new MDPlusPlus();
+
+const markdown = `
+# Welcome to MD++
+
+This is **bold** and *italic* text.
+
+:::ai-context{visibility=hidden}
+This context is only visible to AI tools.
+:::
+`;
+
+const result = await parser.convert(markdown);
+console.log(result.html);
+console.log(result.aiContexts); // AI context blocks
+```
+
+### With Plugins
+
+```javascript
+import { MDPlusPlus, PluginLoader } from '@gorduan/mdplusplus';
+import vcm3Plugin from '@gorduan/mdplusplus/plugins/vcm3.json';
+
+const loader = new PluginLoader();
+const plugin = loader.loadFromJSON(vcm3Plugin);
+
+const parser = new MDPlusPlus({ plugins: [plugin] });
+
+const result = await parser.convert(`
+:::card{.shadow}
+This is a styled card component.
+:::
+`);
+```
+
+### Parser API
+
+```typescript
+// Create parser
+const parser = new MDPlusPlus(options?: ParserOptions);
+
+// Options
+interface ParserOptions {
+  plugins?: PluginDefinition[];  // CSS framework plugins
+  showAIContext?: boolean;       // Render hidden AI context (default: false)
+}
+
+// Convert markdown to HTML
+const result = await parser.convert(markdown: string);
+
+// Result object
+interface RenderResult {
+  html: string;                   // Rendered HTML
+  aiContexts: AIContext[];        // Extracted AI context blocks
+  frontmatter?: Record<string, any>;  // YAML frontmatter
+  errors: RenderError[];          // Parse warnings/errors
+}
+```
+
+## Tier 2: React Components
+
+Optional React components for building editors and previews.
+
+### MDPPPreview
+
+Renders MD++ content:
+
+```tsx
+import { MDPPPreview } from '@gorduan/mdplusplus/components';
+
+<MDPPPreview
+  value="# Hello MD++"
+  showAIContext={false}
+  darkMode={true}
+  height="400px"
+/>
+```
+
+### MDPPEditor
+
+Monaco-based editor with MD++ syntax highlighting:
+
+```tsx
+import { MDPPEditor } from '@gorduan/mdplusplus/components';
+
+<MDPPEditor
+  value={content}
+  onChange={setContent}
+  darkMode={true}
+  height="400px"
+/>
+```
+
+### MDPPSplitView
+
+Combined editor and preview:
+
+```tsx
+import { MDPPSplitView } from '@gorduan/mdplusplus/components';
+
+<MDPPSplitView
+  value={content}
+  onChange={setContent}
+  defaultViewMode="split"
+  height="600px"
+/>
+```
+
+## Tier 3: Electron Desktop App
+
+Full-featured desktop application built on Tiers 1 and 2.
+
+### Running
 
 ```bash
 # Development mode
-pnpm run electron:dev
+node start-dev.cjs
 
 # Build for production
 pnpm run electron:build
@@ -38,153 +263,53 @@ pnpm run electron:build
 ### Features
 
 - Monaco Editor with MD++ syntax highlighting
-- Live preview pane
+- Live preview with VCM3 dark theme
 - File operations (New, Open, Save, Save As)
+- Smart format detection (*.md vs *.mdpp)
 - Export to HTML
-- Split view, Editor only, Preview only modes
-- AI Context visibility toggle
-- Keyboard shortcuts
+- View modes: Editor, Split, Preview
+- DevTools toggle
 
-## Embeddable React Components
+## MD++ Syntax
 
-### MDPPEditor
+### Standard Markdown
 
-A Monaco-based editor with MD++ syntax highlighting:
+All standard Markdown syntax is supported: headings, bold, italic, links, images, code blocks, lists, tables, etc.
 
-```tsx
-import { MDPPEditor } from '@gorduan/mdplusplus/components';
-
-function MyApp() {
-  const [content, setContent] = useState('# Hello MD++');
-
-  return (
-    <MDPPEditor
-      value={content}
-      onChange={setContent}
-      height="400px"
-      darkMode={true}
-      fontSize={14}
-    />
-  );
-}
-```
-
-### MDPPPreview
-
-Renders MD++ content as HTML:
-
-```tsx
-import { MDPPPreview } from '@gorduan/mdplusplus/components';
-
-function MyApp() {
-  return (
-    <MDPPPreview
-      value="# Hello MD++"
-      showAIContext={false}
-      darkMode={true}
-      height="400px"
-    />
-  );
-}
-```
-
-### MDPPSplitView
-
-Combined editor and preview with toolbar:
-
-```tsx
-import { MDPPSplitView } from '@gorduan/mdplusplus/components';
-
-function MyApp() {
-  const [content, setContent] = useState('# Hello MD++');
-
-  return (
-    <MDPPSplitView
-      value={content}
-      onChange={setContent}
-      height="600px"
-      defaultViewMode="split"
-      showToolbar={true}
-    />
-  );
-}
-```
-
-## Parser API
-
-### Quick Start
-
-```typescript
-import { MDPlusPlus, PluginLoader } from '@gorduan/mdplusplus';
-
-// Load a plugin
-const loader = new PluginLoader();
-const vcm3Plugin = loader.loadFromJSON(require('./plugins/vcm3.json'));
-
-// Create parser with plugin
-const mdpp = new MDPlusPlus({
-  plugins: [vcm3Plugin]
-});
-
-// Convert markdown
-const result = await mdpp.convert(`
-# Hello World
-
-:::vcm3:card[My Card]
-This is card content with **markdown** support.
-:::
-
-:::ai-context[hidden]
-This context is only visible to AI assistants.
-:::
-`);
-
-console.log(result.html);
-console.log(result.aiContexts); // AI context blocks
-```
-
-## Directive Syntax
-
-### Basic Directive
-```markdown
-:::component[Title]
-Content here
-:::
-```
-
-### With Framework Namespace
-```markdown
-:::bootstrap:card[Card Title]
-Card content
-:::
-```
-
-### With Attributes
-```markdown
-:::vcm3:alert[Warning]{variant="warning"}
-Alert message
-:::
-```
-
-## AI Context Blocks
-
-AI context blocks provide hidden information for AI assistants:
+### Component Directives
 
 ```markdown
-:::ai-context[hidden]
-Project: E-commerce Platform
-Stack: React, Node.js, PostgreSQL
-Current Sprint: User Authentication
+<!-- Block directive -->
+:::card{.shadow}
+Card content with **markdown**.
+:::
+
+<!-- Leaf directive (no content) -->
+::divider{.my-4}
+
+<!-- With framework namespace -->
+:::bootstrap:alert{variant="warning"}
+Warning message!
 :::
 ```
 
-These blocks can be:
-- `[hidden]` - Not rendered in output (default)
-- `[visible]` - Rendered with special styling
+### AI Context Blocks
+
+```markdown
+<!-- Hidden from output (for AI tools only) -->
+:::ai-context{visibility=hidden}
+Project context for AI assistants.
+:::
+
+<!-- Visible in output -->
+:::ai-context{visibility=visible}
+Visible context block.
+:::
+```
 
 ## Creating Plugins
 
-Plugins are JSON files that define components:
+Plugins define how component directives are rendered:
 
 ```json
 {
@@ -193,131 +318,62 @@ Plugins are JSON files that define components:
   "components": {
     "card": {
       "tag": "div",
-      "classes": ["card", "shadow-md"],
+      "classes": ["card", "shadow"],
       "variants": {
         "primary": ["bg-blue-500"],
         "secondary": ["bg-gray-500"]
+      }
+    },
+    "alert": {
+      "tag": "div",
+      "classes": ["alert"],
+      "variants": {
+        "warning": ["alert-warning"],
+        "error": ["alert-error"]
       }
     }
   }
 }
 ```
 
-## API Reference
-
-### MDPlusPlus
-
-```typescript
-const mdpp = new MDPlusPlus(options?: ParserOptions);
-
-// Register a plugin
-mdpp.registerPlugin(plugin: PluginDefinition);
-
-// Convert markdown to HTML
-const result = await mdpp.convert(markdown: string);
-// Returns: { html, aiContexts, frontmatter, errors }
+Usage:
+```markdown
+:::myframework:card{variant="primary"}
+Content
+:::
 ```
 
-### PluginLoader
+## Build Outputs
 
-```typescript
-const loader = new PluginLoader();
-
-// Load from JSON
-const plugin = loader.loadFromJSON(json);
-
-// Load multiple plugins
-const plugins = loader.loadPlugins([json1, json2]);
-
-// Get loaded plugin
-const plugin = loader.getPlugin('framework-name');
-```
-
-### AI Context Utilities
-
-```typescript
-import { extractAIContext, hasAIContext } from '@gorduan/mdplusplus';
-
-// Quick extraction without full parsing
-const contexts = extractAIContext(markdown);
-
-// Check if content has AI context
-if (hasAIContext(markdown)) {
-  // Handle AI context
-}
-```
-
-## Component Props
-
-### MDPPEditor Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| value | string | required | Markdown content |
-| onChange | (value: string) => void | - | Change callback |
-| height | string \| number | '400px' | Editor height |
-| darkMode | boolean | true | Dark theme |
-| lineNumbers | boolean | true | Show line numbers |
-| wordWrap | boolean | true | Enable word wrap |
-| fontSize | number | 14 | Font size |
-| readOnly | boolean | false | Read-only mode |
-| onCursorChange | (pos) => void | - | Cursor position callback |
-
-### MDPPPreview Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| value | string | required | Markdown content |
-| showAIContext | boolean | false | Show AI context blocks |
-| plugins | PluginDefinition[] | [] | Custom plugins |
-| height | string \| number | 'auto' | Preview height |
-| darkMode | boolean | true | Dark theme |
-| sanitize | boolean | true | Sanitize HTML output |
-| onRender | (result) => void | - | Render complete callback |
-| debounceMs | number | 150 | Debounce delay |
-
-### MDPPSplitView Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| value | string | required | Markdown content |
-| onChange | (value: string) => void | - | Change callback |
-| defaultViewMode | 'split' \| 'editor' \| 'preview' | 'split' | Initial view mode |
-| height | string \| number | '500px' | Component height |
-| darkMode | boolean | true | Dark theme |
-| showAIContext | boolean | false | Show AI context blocks |
-| showToolbar | boolean | true | Show toolbar |
-| readOnly | boolean | false | Read-only mode |
-
-## Included Plugins
-
-- `plugins/vcm3.json` - VCM3 native components
-- `plugins/bootstrap.json` - Bootstrap 5 components
+| File | Size | Description |
+|------|------|-------------|
+| `dist/index.js` | ~10KB | ESM module (requires bundler) |
+| `dist/mdplusplus.browser.global.js` | ~190KB | Browser bundle (all deps included) |
+| `dist/components/index.js` | ~25KB | React components |
 
 ## Scripts
 
 ```bash
-# Build parser library
-pnpm run build:parser
+# Build all (parser + browser bundle + components)
+pnpm build
 
-# Build embeddable components
-pnpm run build:components
-
-# Build everything
-pnpm run build
-
-# Run Electron app in dev mode
-pnpm run electron:dev
-
-# Build Electron app for distribution
-pnpm run electron:build
+# Development (Electron app)
+node start-dev.cjs
 
 # Type check
-pnpm run typecheck
+pnpm typecheck
 
 # Run tests
-pnpm run test
+pnpm test
 ```
+
+## Browser Compatibility
+
+The browser bundle works in all modern browsers:
+- Chrome 80+
+- Firefox 75+
+- Safari 13+
+- Edge 80+
 
 ## License
 
