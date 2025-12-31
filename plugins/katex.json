@@ -1,0 +1,16 @@
+{
+  "framework": "katex",
+  "version": "0.16.9",
+  "author": "KaTeX Team",
+  "description": "KaTeX - Fast math typesetting for LaTeX. Supports $inline$ and $$display$$ math.",
+  "css": [
+    "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+  ],
+  "js": [
+    "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js",
+    "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  ],
+  "init": "renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }] });",
+  "codeBlockLanguages": ["math", "latex", "katex"],
+  "components": {}
+}

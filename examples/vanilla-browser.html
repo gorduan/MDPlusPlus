@@ -296,6 +296,94 @@
     .status.error {
       color: #EF4444;
     }
+
+    /* GFM Tables */
+    .preview table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+    }
+
+    .preview th, .preview td {
+      border: 1px solid #475569;
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+    }
+
+    .preview th {
+      background: #334155;
+      font-weight: 600;
+    }
+
+    .preview tr:nth-child(even) {
+      background: rgba(51, 65, 85, 0.5);
+    }
+
+    /* Task Lists */
+    .preview input[type="checkbox"] {
+      margin-right: 0.5rem;
+      accent-color: #7C3AED;
+    }
+
+    /* Strikethrough */
+    .preview del {
+      color: #94A3B8;
+    }
+
+    /* Admonitions */
+    .admonition {
+      padding: 1rem;
+      margin: 1rem 0;
+      border-left: 4px solid;
+      border-radius: 0 0.5rem 0.5rem 0;
+    }
+
+    .admonition-note {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: #3B82F6;
+    }
+
+    .admonition-tip, .admonition-hint {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: #10B981;
+    }
+
+    .admonition-warning, .admonition-caution {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: #F59E0B;
+    }
+
+    .admonition-danger, .admonition-error {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: #EF4444;
+    }
+
+    .admonition-important {
+      background: rgba(139, 92, 246, 0.1);
+      border-color: #8B5CF6;
+    }
+
+    /* Math display */
+    .math-display {
+      display: block;
+      text-align: center;
+      margin: 1rem 0;
+      overflow-x: auto;
+    }
+
+    .math-inline {
+      display: inline;
+    }
+
+    /* Heading anchors */
+    .preview h1 a, .preview h2 a, .preview h3 a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .preview h1 a:hover, .preview h2 a:hover, .preview h3 a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -309,64 +397,73 @@
       <label for="markdown-input">Markdown Input</label>
       <textarea id="markdown-input"># Hello MD++
 
-This is a **live preview** example using vanilla JavaScript.
+Full **GitHub Flavored Markdown** support plus extensions.
 
-## Features
+## GFM Features
 
-- Real-time parsing
-- No React required
-- Works in any browser
-- Framework-agnostic plugin system
+### Task Lists
+- [x] Completed task
+- [ ] Incomplete task
+- [x] ~~Strikethrough~~ supported
 
-### Code Example
+### Tables
+| Feature | Status |
+|---------|--------|
+| Tables | ✅ |
+| Task lists | ✅ |
+| Strikethrough | ✅ |
+| Autolinks | ✅ |
 
-```javascript
-const parser = new MDPlusPlus.MDPlusPlus();
-const result = await parser.convert(markdown);
-```
+### Footnotes
+Here is a footnote[^1].
 
-> MD++ is pure JavaScript - use it anywhere!
+[^1]: Footnote content.
 
-## Component Directives
+## Math (KaTeX)
 
-You can use components from plugins with the :::framework:component syntax:
+Inline: $E = mc^2$
 
-:::bootstrap:alert{variant="info"}
-This is a Bootstrap alert component!
-:::
+Display:
+$$\int_{0}^{\infty} e^{-x^2} dx = \frac{\sqrt{\pi}}{2}$$
 
-:::bootstrap:card
-### Card Title
-This is card content using the Bootstrap plugin.
-:::
+## Callouts (GitHub/Obsidian)
 
-## AI Context
+> [!NOTE]
+> This is a note callout.
 
-:::ai-context{visibility=visible}
-This AI context block is visible to both humans and AI tools.
-:::
+> [!WARNING]
+> This is a warning!
 
-:::ai-context{visibility=hidden}
-This AI context is hidden from humans but visible to AI.
-:::
+> [!TIP] Pro Tip
+> Custom title supported.
 
 ## Mermaid Diagrams
 
 ```mermaid
 graph TD
-    A[Markdown Input] --> B{MD++ Parser}
-    B --> C[HTML Output]
-    B --> D[AI Contexts]
-    B --> E[Errors]
-    C --> F[Preview]
+    A[Input] --> B{Parser}
+    B --> C[HTML]
+    B --> D[AI Context]
 ```
 
-## Error Handling
+## Components
 
-Try an unknown component to see the error display:
-:::unknown:widget
-This will show an error!
-:::</textarea>
+:::bootstrap:alert{variant="info"}
+Bootstrap alert component
+:::
+
+## AI Context
+
+:::ai-context{visibility=visible}
+Visible to humans and AI.
+:::
+
+## Code
+
+```javascript
+const parser = new MDPlusPlus.MDPlusPlus();
+const result = await parser.convert(markdown);
+```</textarea>
     </div>
 
     <div class="preview-panel">
@@ -384,6 +481,11 @@ This will show an error!
 
   <!-- Mermaid.js for diagram rendering -->
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <!-- KaTeX for math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
   <script>
     // Initialize Mermaid with dark theme
@@ -406,23 +508,36 @@ This will show an error!
         return;
       }
 
+      // Load plugins
+      const plugins = [];
+
       // Load Bootstrap plugin
-      let bootstrapPlugin = null;
       try {
         const response = await fetch('../plugins/bootstrap.json');
-        bootstrapPlugin = await response.json();
-        console.log('Bootstrap plugin loaded:', bootstrapPlugin.framework, 'v' + bootstrapPlugin.version);
+        const plugin = await response.json();
+        plugins.push(plugin);
+        console.log('Loaded:', plugin.framework, 'v' + plugin.version);
       } catch (err) {
         console.warn('Could not load bootstrap plugin:', err.message);
+      }
+
+      // Load Admonitions plugin
+      try {
+        const response = await fetch('../plugins/admonitions.json');
+        const plugin = await response.json();
+        plugins.push(plugin);
+        console.log('Loaded:', plugin.framework, 'v' + plugin.version);
+      } catch (err) {
+        console.warn('Could not load admonitions plugin:', err.message);
       }
 
       status.textContent = 'MD++ loaded successfully!';
       status.className = 'status ready';
 
-      // Create parser instance with Bootstrap plugin
+      // Create parser instance with plugins
       const parser = new MDPlusPlus.MDPlusPlus({
-        showAIContext: true, // Show AI context blocks
-        plugins: bootstrapPlugin ? [bootstrapPlugin] : []
+        showAIContext: true,
+        plugins: plugins
       });
 
       // Log available plugins
@@ -439,13 +554,26 @@ This will show an error!
           // Re-render Mermaid diagrams
           const mermaidElements = output.querySelectorAll('.mermaid');
           if (mermaidElements.length > 0) {
-            // Clear any previous rendered content and re-process
             mermaidElements.forEach((el, index) => {
               el.removeAttribute('data-processed');
               el.id = `mermaid-${Date.now()}-${index}`;
             });
             await mermaid.run({ nodes: mermaidElements });
           }
+
+          // Render KaTeX math
+          const mathElements = output.querySelectorAll('.math');
+          mathElements.forEach(el => {
+            const isDisplay = el.classList.contains('math-display');
+            try {
+              katex.render(el.textContent, el, {
+                displayMode: isDisplay,
+                throwOnError: false
+              });
+            } catch (e) {
+              console.warn('KaTeX error:', e);
+            }
+          });
 
           // Log AI contexts to console
           if (result.aiContexts && result.aiContexts.length > 0) {

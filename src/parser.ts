@@ -11,8 +11,12 @@
 
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
+import remarkGfm from 'remark-gfm';
 import remarkDirective from 'remark-directive';
+import remarkMath from 'remark-math';
 import remarkRehype from 'remark-rehype';
+import rehypeSlug from 'rehype-slug';
+import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeStringify from 'rehype-stringify';
 import { visit } from 'unist-util-visit';
 import matter from 'gray-matter';
@@ -90,13 +94,17 @@ export class MDPlusPlus {
     // Preprocess directives: :::framework:component → :::framework_component
     const processedContent = this.preprocessDirectives(content);
 
-    // Create processor
+    // Create processor with full GFM support
     const processor = unified()
       .use(remarkParse)
+      .use(remarkGfm) // GitHub Flavored Markdown: tables, strikethrough, task lists, autolinks
       .use(remarkDirective)
+      .use(remarkMath) // LaTeX math: $inline$ and $$block$$
       .use(this.createDirectivePlugin())
       .use(this.createCodeBlockPlugin())
       .use(remarkRehype, { allowDangerousHtml: true })
+      .use(rehypeSlug) // Add IDs to headings
+      .use(rehypeAutolinkHeadings, { behavior: 'wrap' }) // Make headings clickable
       .use(rehypeStringify, { allowDangerousHtml: true });
 
     // Process markdown
@@ -122,12 +130,83 @@ export class MDPlusPlus {
   }
 
   /**
-   * Preprocess directives to convert :::framework:component to :::framework_component
-   * This is needed because remark-directive doesn't support colons in names
+   * Preprocess directives and callouts
    */
   private preprocessDirectives(content: string): string {
     // Replace :::framework:component[...] with :::framework_component[...]
-    return content.replace(/:::([\w-]+):([\w-]+)(\[|{|\s|$)/g, ':::$1_$2$3');
+    let processed = content.replace(/:::([\w-]+):([\w-]+)(\[|{|\s|$)/g, ':::$1_$2$3');
+
+    // Convert GitHub/Obsidian-style callouts to directives
+    // > [!NOTE]        -> :::admonitions_note
+    // > [!WARNING]     -> :::admonitions_warning
+    // > [!TIP] Title   -> :::admonitions_tip[Title]
+    processed = processed.replace(
+      /^(>[ ]?)\[!(\w+)\][ ]?(.*)$/gm,
+      (match, prefix, type, title) => {
+        const typeLower = type.toLowerCase();
+        const titleAttr = title.trim() ? `[${title.trim()}]` : '';
+        return `:::admonitions_${typeLower}${titleAttr}`;
+      }
+    );
+
+    // Close callout blocks (when we see a line that's not a blockquote after a callout)
+    // This is a simplified approach - full implementation would need proper AST handling
+    processed = this.closeCalloutBlocks(processed);
+
+    return processed;
+  }
+
+  /**
+   * Close callout blocks that were opened
+   */
+  private closeCalloutBlocks(content: string): string {
+    const lines = content.split('\n');
+    const result: string[] = [];
+    let inCallout = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      // Check if this line starts a callout
+      if (line.startsWith(':::admonitions_')) {
+        inCallout = true;
+        result.push(line);
+        continue;
+      }
+
+      // If we're in a callout and hit a non-blockquote line
+      if (inCallout) {
+        if (line.startsWith('> ') || line.startsWith('>')) {
+          // Continue the callout, remove the > prefix
+          result.push(line.replace(/^>[ ]?/, ''));
+        } else if (line.trim() === '') {
+          // Empty line might continue the callout, check next line
+          const nextLine = lines[i + 1];
+          if (nextLine && (nextLine.startsWith('> ') || nextLine.startsWith('>'))) {
+            result.push(line);
+          } else {
+            // End the callout
+            result.push(':::');
+            result.push(line);
+            inCallout = false;
+          }
+        } else {
+          // Non-blockquote content, end the callout
+          result.push(':::');
+          result.push(line);
+          inCallout = false;
+        }
+      } else {
+        result.push(line);
+      }
+    }
+
+    // Close any remaining open callout
+    if (inCallout) {
+      result.push(':::');
+    }
+
+    return result.join('\n');
   }
 
   /**
@@ -233,7 +312,7 @@ export class MDPlusPlus {
   }
 
   /**
-   * Create the remark plugin for handling special code blocks (mermaid, etc.)
+   * Create the remark plugin for handling special code blocks (mermaid, math, etc.)
    */
   private createCodeBlockPlugin() {
     const self = this;
@@ -247,11 +326,15 @@ export class MDPlusPlus {
         }
       }
     }
-    // Always support mermaid
+    // Always support these
     specialLanguages.add('mermaid');
+    specialLanguages.add('math');
+    specialLanguages.add('latex');
+    specialLanguages.add('katex');
 
     return function codeBlockPlugin() {
       return (tree: any) => {
+        // Handle code blocks
         visit(tree, 'code', (node: any) => {
           const lang = node.lang?.toLowerCase();
 
@@ -261,18 +344,34 @@ export class MDPlusPlus {
             node.value = self.renderSpecialCodeBlock(lang, node.value);
           }
         });
+
+        // Handle math nodes from remark-math
+        visit(tree, 'math', (node: any) => {
+          node.type = 'html';
+          node.value = `<div class="math math-display" data-math-style="display">${self.escapeHtml(node.value)}</div>`;
+        });
+
+        visit(tree, 'inlineMath', (node: any) => {
+          node.type = 'html';
+          node.value = `<span class="math math-inline" data-math-style="inline">${self.escapeHtml(node.value)}</span>`;
+        });
       };
     };
   }
 
   /**
-   * Render a special code block (mermaid, etc.)
+   * Render a special code block (mermaid, math, etc.)
    */
   private renderSpecialCodeBlock(language: string, code: string): string {
     switch (language) {
       case 'mermaid':
         // Mermaid.js expects content in a <pre class="mermaid"> tag
         return `<pre class="mermaid">${this.escapeHtml(code)}</pre>`;
+      case 'math':
+      case 'latex':
+      case 'katex':
+        // KaTeX display math
+        return `<div class="math math-display" data-math-style="display">${this.escapeHtml(code)}</div>`;
       default:
         return `<pre class="${language}"><code>${this.escapeHtml(code)}</code></pre>`;
     }

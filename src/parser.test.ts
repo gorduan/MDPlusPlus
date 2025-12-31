@@ -7,10 +7,12 @@ import { MDPlusPlus, PluginLoader } from './index';
 
 describe('MDPlusPlus Parser', () => {
   describe('basic markdown', () => {
-    it('converts heading to HTML', async () => {
+    it('converts heading to HTML with anchor', async () => {
       const parser = new MDPlusPlus();
       const result = await parser.convert('# Hello World');
-      expect(result.html).toContain('<h1>Hello World</h1>');
+      expect(result.html).toContain('id="hello-world"');
+      expect(result.html).toContain('Hello World');
+      expect(result.html).toContain('<h1');
     });
 
     it('converts bold text', async () => {
@@ -211,6 +213,68 @@ Success message
       expect(result.html).toContain('<script src=');
       expect(result.html).toContain('https://cdn.example.com/test.js');
     });
+  });
+});
+
+describe('GFM features', () => {
+  it('renders tables', async () => {
+    const parser = new MDPlusPlus();
+    const result = await parser.convert(`
+| A | B |
+|---|---|
+| 1 | 2 |
+`);
+    expect(result.html).toContain('<table>');
+    expect(result.html).toContain('<th>');
+    expect(result.html).toContain('<td>');
+  });
+
+  it('renders task lists', async () => {
+    const parser = new MDPlusPlus();
+    const result = await parser.convert(`
+- [x] Done
+- [ ] Todo
+`);
+    expect(result.html).toContain('type="checkbox"');
+    expect(result.html).toContain('checked');
+  });
+
+  it('renders strikethrough', async () => {
+    const parser = new MDPlusPlus();
+    const result = await parser.convert('~~deleted~~');
+    expect(result.html).toContain('<del>deleted</del>');
+  });
+
+  it('renders autolinks', async () => {
+    const parser = new MDPlusPlus();
+    const result = await parser.convert('Visit https://github.com');
+    expect(result.html).toContain('<a href="https://github.com"');
+  });
+});
+
+describe('Math support', () => {
+  it('renders inline math', async () => {
+    const parser = new MDPlusPlus();
+    const result = await parser.convert('Inline $E=mc^2$ math');
+    expect(result.html).toContain('math-inline');
+    expect(result.html).toContain('E=mc^2');
+  });
+
+  it('renders display math', async () => {
+    const parser = new MDPlusPlus();
+    const result = await parser.convert('$$\\sum_{i=1}^n x_i$$');
+    // Display math should have language-math class
+    expect(result.html).toContain('language-math');
+  });
+
+  it('renders math code block', async () => {
+    const parser = new MDPlusPlus();
+    const result = await parser.convert(`
+\`\`\`math
+\\frac{a}{b}
+\`\`\`
+`);
+    expect(result.html).toContain('class="math math-display"');
   });
 });
 
