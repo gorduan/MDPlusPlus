@@ -127,4 +127,18 @@ export interface ParserOptions {
   suppressErrors?: boolean;
   /** Generate CSS/JS link tags for plugins */
   includeAssets?: boolean;
+
+  // Feature toggles
+  /** Enable GitHub Flavored Markdown (tables, task lists, strikethrough, autolinks) */
+  enableGfm?: boolean;
+  /** Enable Math/LaTeX support */
+  enableMath?: boolean;
+  /** Enable callouts/admonitions (> [!NOTE]) */
+  enableCallouts?: boolean;
+  /** Enable heading anchors and slugs */
+  enableHeadingAnchors?: boolean;
+  /** Enable component directives (:::plugin:component) */
+  enableDirectives?: boolean;
+  /** Enable AI context blocks */
+  enableAIContext?: boolean;
 }

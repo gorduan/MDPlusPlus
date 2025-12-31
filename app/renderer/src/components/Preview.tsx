@@ -6,23 +6,38 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { MDPlusPlus } from '../../../../src/parser';
 import type { RenderResult, RenderError } from '../../../../src/types';
+import type { ParserSettings } from './SettingsDialog';
 
 interface PreviewProps {
   content: string;
   showAIContext?: boolean;
+  settings?: ParserSettings;
 }
 
-export default function Preview({ content, showAIContext = false }: PreviewProps) {
+export default function Preview({ content, showAIContext = false, settings }: PreviewProps) {
   const [html, setHtml] = useState('');
   const [errors, setErrors] = useState<RenderError[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Create parser instance
+  // Create parser instance with settings
   const parser = useMemo(() => {
-    return new MDPlusPlus({
+    // Build parser options from settings
+    const options: Record<string, unknown> = {
       showAIContext,
-    });
-  }, [showAIContext]);
+    };
+
+    // Settings are optional - use defaults if not provided
+    if (settings) {
+      options.enableGfm = settings.enableGfm;
+      options.enableMath = settings.enableMath;
+      options.enableCallouts = settings.enableCallouts;
+      options.enableHeadingAnchors = settings.enableHeadingAnchors;
+      options.enableDirectives = settings.enableDirectives;
+      options.enableAIContext = settings.enableAIContext;
+    }
+
+    return new MDPlusPlus(options);
+  }, [showAIContext, settings]);
 
   // Convert markdown to HTML
   useEffect(() => {

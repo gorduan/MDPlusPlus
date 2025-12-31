@@ -81,6 +81,14 @@ export class MDPlusPlus {
   }
 
   /**
+   * Check if a feature is enabled (defaults to true)
+   */
+  private isEnabled(feature: keyof ParserOptions): boolean {
+    const value = this.options[feature];
+    return value === undefined ? true : Boolean(value);
+  }
+
+  /**
    * Convert MD++ markdown to HTML
    */
   async convert(markdown: string): Promise<RenderResult> {
@@ -91,21 +99,47 @@ export class MDPlusPlus {
     // Parse frontmatter
     const { content, data: frontmatter } = matter(markdown);
 
-    // Preprocess directives: :::framework:component → :::framework_component
-    const processedContent = this.preprocessDirectives(content);
+    // Preprocess directives and callouts (only if enabled)
+    let processedContent = content;
+    if (this.isEnabled('enableDirectives') || this.isEnabled('enableCallouts')) {
+      processedContent = this.preprocessDirectives(content);
+    }
 
-    // Create processor with full GFM support
-    const processor = unified()
-      .use(remarkParse)
-      .use(remarkGfm) // GitHub Flavored Markdown: tables, strikethrough, task lists, autolinks
-      .use(remarkDirective)
-      .use(remarkMath) // LaTeX math: $inline$ and $$block$$
-      .use(this.createDirectivePlugin())
-      .use(this.createCodeBlockPlugin())
-      .use(remarkRehype, { allowDangerousHtml: true })
-      .use(rehypeSlug) // Add IDs to headings
-      .use(rehypeAutolinkHeadings, { behavior: 'wrap' }) // Make headings clickable
-      .use(rehypeStringify, { allowDangerousHtml: true });
+    // Build processor pipeline based on enabled features
+    // Using any type to avoid complex unified processor generic types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let processor: any = unified().use(remarkParse);
+
+    // GFM: tables, strikethrough, task lists, autolinks
+    if (this.isEnabled('enableGfm')) {
+      processor = processor.use(remarkGfm);
+    }
+
+    // Directives (:::plugin:component)
+    if (this.isEnabled('enableDirectives')) {
+      processor = processor.use(remarkDirective);
+      processor = processor.use(this.createDirectivePlugin());
+    }
+
+    // Math/LaTeX
+    if (this.isEnabled('enableMath')) {
+      processor = processor.use(remarkMath);
+    }
+
+    // Code block handling (mermaid, math blocks)
+    processor = processor.use(this.createCodeBlockPlugin());
+
+    // Convert to HTML
+    processor = processor.use(remarkRehype, { allowDangerousHtml: true });
+
+    // Heading anchors
+    if (this.isEnabled('enableHeadingAnchors')) {
+      processor = processor.use(rehypeSlug);
+      processor = processor.use(rehypeAutolinkHeadings, { behavior: 'wrap' });
+    }
+
+    // Stringify
+    processor = processor.use(rehypeStringify, { allowDangerousHtml: true });
 
     // Process markdown
     const result = await processor.process(processedContent);
