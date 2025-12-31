@@ -1,0 +1,62 @@
+{
+  "name": "@gorduan/mdplusplus",
+  "version": "0.1.0",
+  "description": "MD++ (Markdown Plus Plus) - Extended Markdown with Framework-Agnostic Component Directives",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./plugins/*": "./plugins/*"
+  },
+  "files": [
+    "dist",
+    "plugins"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts",
+    "dev": "tsup src/index.ts --format esm --dts --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gorduan/MDPlusPlus.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gorduan/MDPlusPlus/issues"
+  },
+  "homepage": "https://github.com/gorduan/MDPlusPlus#readme",
+  "dependencies": {
+    "unified": "^11.0.4",
+    "remark-parse": "^11.0.0",
+    "remark-directive": "^3.0.0",
+    "remark-rehype": "^11.1.0",
+    "rehype-stringify": "^10.0.0",
+    "unist-util-visit": "^5.0.0",
+    "gray-matter": "^4.0.3"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  },
+  "keywords": [
+    "markdown",
+    "md++",
+    "mdplusplus",
+    "parser",
+    "plugins",
+    "directives",
+    "components",
+    "ai-context"
+  ],
+  "author": "gorduan",
+  "license": "MIT"
+}
