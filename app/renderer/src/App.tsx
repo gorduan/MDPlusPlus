@@ -5,187 +5,516 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Editor from './components/Editor';
 import Preview from './components/Preview';
-import Toolbar from './components/Toolbar';
+import Toolbar, { Theme } from './components/Toolbar';
 import StatusBar from './components/StatusBar';
 import SettingsDialog, { ParserSettings, DEFAULT_SETTINGS } from './components/SettingsDialog';
 import type { ViewMode } from '../../electron/preload';
 
 // Welcome content shown when app starts
-const WELCOME_CONTENT = `# MD++ Syntax Reference
+const WELCOME_CONTENT = `# Willkommen bei MD++
 
-MD++ supports **GitHub Flavored Markdown** plus powerful extensions.
+**MD++ (Markdown Plus Plus)** ist ein erweiterter Markdown-Editor mit Live-Vorschau.
 
----
+| Feature | Beschreibung |
+|---------|--------------|
+| **AI Context Blocks** | Kontextinformationen für KI-Assistenten einbetten |
+| **Component Directives** | Framework-unabhängige UI-Komponenten |
+| **Plugin-System** | Erweiterbar durch Bootstrap, Admonitions, etc. |
+| **Live-Vorschau** | Änderungen sofort sehen |
 
-## Basic Formatting
-
-| Syntax | Result |
-|--------|--------|
-| \`**bold**\` | **bold** |
-| \`*italic*\` | *italic* |
-| \`~~strikethrough~~\` | ~~strikethrough~~ |
-| \`\\\`code\\\`\` | \`code\` |
+> **Tipp:** Einstellungen öffnen mit \`Ctrl+,\` · Neue Datei mit \`Ctrl+N\`
 
 ---
 
-## Headings
+# Kern-Markdown
+*Immer verfügbar*
 
+---
+
+## Fett & Kursiv
+
+**Syntax:**
 \`\`\`markdown
-# Heading 1
-## Heading 2
-### Heading 3
+**fetter Text**
+*kursiver Text*
+***fett und kursiv***
 \`\`\`
 
-All headings get automatic anchor links for navigation.
+**Ausgabe:**
+
+**fetter Text**
+
+*kursiver Text*
+
+***fett und kursiv***
 
 ---
 
-## Lists
+## Inline-Code
 
-### Unordered
-- Item 1
-- Item 2
-  - Nested item
-
-### Ordered
-1. First
-2. Second
-3. Third
-
-### Task Lists
-- [x] Completed task
-- [ ] Incomplete task
-
----
-
-## Links & Images
-
+**Syntax:**
 \`\`\`markdown
-[Link Text](https://example.com)
-![Alt Text](image.png)
+Nutze \\\`console.log()\\\` zum Debuggen.
 \`\`\`
 
-**Autolinks:** URLs are automatically linked: https://github.com
+**Ausgabe:**
+
+Nutze \`console.log()\` zum Debuggen.
 
 ---
 
-## Tables
+## Überschriften
 
-| Column A | Column B | Column C |
-|----------|:--------:|---------:|
-| Left     | Center   | Right    |
-| Data     | Data     | Data     |
+**Syntax:**
+\`\`\`markdown
+# Überschrift 1
+## Überschrift 2
+### Überschrift 3
+\`\`\`
+
+**Ausgabe:**
+
+### Überschrift 3 (Beispiel)
 
 ---
 
-## Code Blocks
+## Listen
 
-\`\`\`javascript
-function hello() {
-  console.log("Hello, MD++!");
-}
+**Syntax:**
+\`\`\`markdown
+- Punkt A
+- Punkt B
+  - Verschachtelt
+
+1. Erster
+2. Zweiter
 \`\`\`
 
-Supports syntax highlighting for all major languages.
+**Ausgabe:**
+
+- Punkt A
+- Punkt B
+  - Verschachtelt
+
+1. Erster
+2. Zweiter
+
+---
+
+## Links
+
+**Syntax:**
+\`\`\`markdown
+[GitHub](https://github.com)
+\`\`\`
+
+**Ausgabe:**
+
+[GitHub](https://github.com)
 
 ---
 
 ## Blockquotes
 
-> This is a blockquote.
-> It can span multiple lines.
+**Syntax:**
+\`\`\`markdown
+> Dies ist ein Zitat.
+> Über mehrere Zeilen.
+\`\`\`
+
+**Ausgabe:**
+
+> Dies ist ein Zitat.
+> Über mehrere Zeilen.
 
 ---
 
-## Callouts (GitHub/Obsidian Style)
+## Code-Blöcke
 
+**Syntax:**
+\`\`\`\`markdown
+\`\`\`javascript
+function greet(name) {
+  return \`Hello, \${name}!\`;
+}
+\`\`\`
+\`\`\`\`
+
+**Ausgabe:**
+
+\`\`\`javascript
+function greet(name) {
+  return \`Hello, \${name}!\`;
+}
+\`\`\`
+
+---
+
+# GitHub Flavored Markdown
+*Feature: \`enableGfm\` · Standard: Aktiv*
+
+---
+
+## Tabellen
+*Feature: \`enableTables\`*
+
+**Syntax:**
+\`\`\`markdown
+| Links | Zentriert | Rechts |
+|:------|:---------:|-------:|
+| A     | B         | C      |
+\`\`\`
+
+**Ausgabe:**
+
+| Links | Zentriert | Rechts |
+|:------|:---------:|-------:|
+| A     | B         | C      |
+
+---
+
+## Task-Listen
+*Feature: \`enableTaskLists\`*
+
+**Syntax:**
+\`\`\`markdown
+- [x] Erledigt
+- [ ] Offen
+\`\`\`
+
+**Ausgabe:**
+
+- [x] Erledigt
+- [ ] Offen
+
+---
+
+## Durchstreichen
+*Feature: \`enableStrikethrough\`*
+
+**Syntax:**
+\`\`\`markdown
+~~durchgestrichen~~
+\`\`\`
+
+**Ausgabe:**
+
+~~durchgestrichen~~
+
+---
+
+## Fußnoten
+*Feature: \`enableFootnotes\`*
+
+**Syntax:**
+\`\`\`markdown
+Text mit Fußnote[^1].
+
+[^1]: Fußnoteninhalt hier.
+\`\`\`
+
+**Ausgabe:**
+
+Text mit Fußnote[^1].
+
+[^1]: Fußnoteninhalt hier.
+
+---
+
+# Erweiterungen
+*Standard: Aktiv*
+
+---
+
+## Mathematische Formeln
+*Feature: \`enableMath\`*
+
+**Syntax (Inline):**
+\`\`\`markdown
+Die Formel $E = mc^2$ ist berühmt.
+\`\`\`
+
+**Ausgabe:**
+
+Die Formel $E = mc^2$ ist berühmt.
+
+**Syntax (Block):**
+\`\`\`markdown
+$$
+\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}
+$$
+\`\`\`
+
+**Ausgabe:**
+
+$$
+\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}
+$$
+
+---
+
+## Callouts / Hinweisboxen
+*Feature: \`enableCallouts\`*
+
+**Syntax:**
+\`\`\`markdown
 > [!NOTE]
-> This is a note callout.
+> Eine Notiz.
 
 > [!TIP]
-> Helpful tips go here.
+> Ein Tipp.
 
 > [!WARNING]
-> Important warnings.
+> Eine Warnung.
 
 > [!DANGER]
-> Critical information!
+> Gefahr!
+\`\`\`
+
+**Ausgabe:**
+
+> [!NOTE]
+> Eine Notiz.
+
+> [!TIP]
+> Ein Tipp.
+
+> [!WARNING]
+> Eine Warnung.
+
+> [!DANGER]
+> Gefahr!
 
 ---
 
-## Math (LaTeX/KaTeX)
+## Mermaid-Diagramme
+*Feature: \`enableMermaid\`*
 
-**Inline:** The formula $E = mc^2$ is famous.
+**Syntax:**
+\`\`\`\`markdown
+\`\`\`mermaid
+graph LR
+    A[Start] --> B{Frage}
+    B -->|Ja| C[Aktion]
+    B -->|Nein| D[Ende]
+\`\`\`
+\`\`\`\`
 
-**Display:**
-$$
-\\int_{0}^{\\infty} e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}
-$$
-
----
-
-## Mermaid Diagrams
+**Ausgabe:**
 
 \`\`\`mermaid
 graph LR
-    A[Start] --> B{Decision}
-    B -->|Yes| C[OK]
-    B -->|No| D[End]
+    A[Start] --> B{Frage}
+    B -->|Ja| C[Aktion]
+    B -->|Nein| D[Ende]
 \`\`\`
 
 ---
 
-## Footnotes
-
-Here is a footnote reference[^1].
-
-[^1]: This is the footnote content.
+# MD++ Exklusiv
 
 ---
 
-## Component Directives (MD++ Extension)
+## AI Context Blocks
+*Feature: \`enableAIContext\` · Standard: Aktiv*
 
-\`\`\`markdown
-:::bootstrap:alert{variant="info"}
-Bootstrap alert component
-:::
+Kontext für KI-Assistenten, optional versteckbar.
 
-:::bootstrap:card
-### Card Title
-Card content here
-:::
-\`\`\`
-
----
-
-## AI Context Blocks (MD++ Extension)
-
+**Syntax (sichtbar):**
 \`\`\`markdown
 :::ai-context{visibility=visible}
-Context visible to humans and AI.
+Dieser Kontext ist für Menschen und KI sichtbar.
+:::
+\`\`\`
+
+**Ausgabe:**
+
+:::ai-context{visibility=visible}
+Dieser Kontext ist für Menschen und KI sichtbar.
 :::
 
+**Syntax (versteckt):**
+\`\`\`markdown
 :::ai-context{visibility=hidden}
-Context only visible to AI tools.
+Nur für KI sichtbar. Toggle mit Ctrl+Shift+A.
+:::
+\`\`\`
+
+**Ausgabe:** *(Versteckt - aktiviere mit Ctrl+Shift+A)*
+
+:::ai-context{visibility=hidden}
+Nur für KI sichtbar. Du siehst dies, weil AI-Context aktiv ist.
+:::
+
+---
+
+## Component Directives
+*Feature: \`enableDirectives\` · Standard: Aktiv*
+
+UI-Komponenten aus Plugins verwenden.
+
+**Syntax:**
+\`\`\`markdown
+:::plugin:component{attribut="wert"}
+Inhalt hier
 :::
 \`\`\`
 
 ---
 
-## Keyboard Shortcuts
-
-| Action | Shortcut |
-|--------|----------|
-| New File | Ctrl+N |
-| Open File | Ctrl+O |
-| Save | Ctrl+S |
-| Save As | Ctrl+Shift+S |
-| Toggle Preview | Ctrl+Shift+P |
-| Toggle AI Context | Ctrl+Shift+A |
+# Plugin: Bootstrap
+*Plugin: \`bootstrap\` · Standard: Aktiv*
 
 ---
 
-*Open Settings (Ctrl+,) to configure plugins and features.*
+## Alert
+
+**Syntax:**
+\`\`\`markdown
+:::bootstrap:alert{variant="info"}
+Info-Nachricht
+:::
+\`\`\`
+
+**Ausgabe:**
+
+:::bootstrap:alert{variant="info"}
+Info-Nachricht
+:::
+
+**Varianten:** \`primary\`, \`secondary\`, \`success\`, \`danger\`, \`warning\`, \`info\`
+
+:::bootstrap:alert{variant="success"}
+Erfolg!
+:::
+
+:::bootstrap:alert{variant="warning"}
+Warnung!
+:::
+
+:::bootstrap:alert{variant="danger"}
+Fehler!
+:::
+
+---
+
+## Card
+
+**Syntax:**
+\`\`\`markdown
+:::bootstrap:card
+### Titel
+Inhalt mit **Markdown**.
+:::
+\`\`\`
+
+**Ausgabe:**
+
+:::bootstrap:card
+### Karten-Titel
+Inhalt mit **Markdown** und Listen:
+- Punkt 1
+- Punkt 2
+:::
+
+---
+
+# Plugin: Admonitions
+*Plugin: \`admonitions\` · Standard: Aktiv*
+
+---
+
+## Note
+
+**Syntax:**
+\`\`\`markdown
+:::admonition{type="note" title="Hinweis"}
+Inhalt der Notiz.
+:::
+\`\`\`
+
+**Ausgabe:**
+
+:::admonition{type="note" title="Hinweis"}
+Inhalt der Notiz.
+:::
+
+---
+
+## Tip
+
+**Syntax:**
+\`\`\`markdown
+:::admonition{type="tip" title="Tipp"}
+Best Practice hier.
+:::
+\`\`\`
+
+**Ausgabe:**
+
+:::admonition{type="tip" title="Tipp"}
+Best Practice hier.
+:::
+
+---
+
+## Warning
+
+**Syntax:**
+\`\`\`markdown
+:::admonition{type="warning" title="Achtung"}
+Wichtige Warnung.
+:::
+\`\`\`
+
+**Ausgabe:**
+
+:::admonition{type="warning" title="Achtung"}
+Wichtige Warnung.
+:::
+
+---
+
+## Danger
+
+**Syntax:**
+\`\`\`markdown
+:::admonition{type="danger" title="Gefahr"}
+Kritischer Hinweis!
+:::
+\`\`\`
+
+**Ausgabe:**
+
+:::admonition{type="danger" title="Gefahr"}
+Kritischer Hinweis!
+:::
+
+---
+
+# Optionale Plugins
+*In Einstellungen (Ctrl+,) aktivieren*
+
+| Plugin | Beschreibung |
+|--------|--------------|
+| \`katex\` | Erweitertes LaTeX-Rendering |
+| \`mermaid\` | Zusätzliche Diagramm-Typen |
+
+---
+
+# Tastenkürzel
+
+| Aktion | Kürzel |
+|--------|--------|
+| Neue Datei | Ctrl+N |
+| Öffnen | Ctrl+O |
+| Speichern | Ctrl+S |
+| Speichern unter | Ctrl+Shift+S |
+| Einstellungen | Ctrl+, |
+| AI-Kontext Toggle | Ctrl+Shift+A |
+| Nur Editor | Ctrl+1 |
+| Nur Vorschau | Ctrl+2 |
+| Split-Ansicht | Ctrl+3 |
 `;
 
 // Empty content for new files
@@ -203,7 +532,18 @@ export default function App() {
   const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<ParserSettings>(DEFAULT_SETTINGS);
+  const [theme, setTheme] = useState<Theme>('dark');
   const editorRef = useRef<{ insert: (text: string) => void; insertWrap: (wrapper: string) => void } | null>(null);
+
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  // Toggle theme
+  const toggleTheme = useCallback(() => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  }, []);
 
   // Handle content changes
   const handleContentChange = useCallback((newContent: string) => {
@@ -268,52 +608,900 @@ export default function App() {
     });
 
     // Handle exports
-    const unsubExportHTML = window.electronAPI.onExportHTML(async (exportPath) => {
-      // Create full HTML document
+    const unsubExportHTML = window.electronAPI.onExportHTML(async ({ filePath: exportPath, theme: exportTheme }) => {
+      // Use the theme selected by user in the dialog
+      const isDark = exportTheme === 'dark';
+
+      // MD++ Export CSS - Theme-aware
+      const exportCSS = `
+/* MD++ Export Styles - ${isDark ? 'Dark' : 'Light'} Theme */
+:root {
+  ${isDark ? `
+  --bg-primary: #0F172A;
+  --bg-secondary: #1E293B;
+  --bg-card: #334155;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --accent: #7C3AED;
+  --accent-hover: #6D28D9;
+  --accent-light: #A78BFA;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --border: #475569;
+  --code-bg: #1E293B;
+  --code-text: #E2E8F0;
+  --inline-code-bg: #334155;
+  --inline-code-text: #A78BFA;
+  ` : `
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F8FAFC;
+  --bg-card: #F1F5F9;
+  --text-primary: #1E293B;
+  --text-secondary: #64748B;
+  --accent: #7C3AED;
+  --accent-hover: #6D28D9;
+  --accent-light: #6D28D9;
+  --success: #059669;
+  --warning: #D97706;
+  --error: #DC2626;
+  --border: #E2E8F0;
+  --code-bg: #F8FAFC;
+  --code-text: #1E293B;
+  --inline-code-bg: #F1F5F9;
+  --inline-code-text: #6D28D9;
+  `}
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  line-height: 1.7;
+}
+
+/* Headings */
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--accent);
+  color: var(--text-primary);
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--accent-light);
+}
+
+h4, h5, h6 {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+p {
+  margin: 0.75rem 0;
+}
+
+/* Links */
+a {
+  color: var(--accent-light);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+
+a:hover {
+  border-bottom-color: var(--accent-light);
+}
+
+strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+em {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+/* Lists */
+ul, ol {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+}
+
+li {
+  margin-bottom: 0.375rem;
+}
+
+li::marker {
+  color: var(--accent);
+}
+
+/* Code */
+code {
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  background-color: var(--inline-code-bg);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  color: var(--inline-code-text);
+}
+
+pre {
+  background-color: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.875rem;
+  color: var(--code-text);
+}
+
+/* Blockquotes */
+blockquote {
+  border-left: 4px solid var(--accent);
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  background-color: rgba(124, 58, 237, 0.1);
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: var(--text-secondary);
+}
+
+blockquote p {
+  margin: 0;
+}
+
+/* Horizontal Rule */
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+th, td {
+  border: 1px solid var(--border);
+  padding: 0.75rem;
+  text-align: left;
+}
+
+th {
+  background-color: var(--bg-secondary);
+  font-weight: 600;
+}
+
+tr:nth-child(even) {
+  background-color: rgba(51, 65, 85, 0.3);
+}
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+/* AI Context Blocks */
+.mdpp-ai-context {
+  background-color: rgba(124, 58, 237, 0.15);
+  border: 2px dashed var(--accent);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  position: relative;
+}
+
+.mdpp-ai-context::before {
+  content: 'AI Context';
+  position: absolute;
+  top: -0.75rem;
+  left: 1rem;
+  background-color: var(--bg-primary);
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Card & Alert Components */
+[class*="card"] {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+[class*="alert"] {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-left: 4px solid #3B82F6;
+  border-radius: 0 0.5rem 0.5rem 0;
+  padding: 1rem;
+  margin: 1rem 0;
+  color: #93C5FD;
+}
+
+[class*="alert-success"], .alert-success {
+  border-left-color: var(--success);
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #6EE7B7;
+}
+
+[class*="alert-warning"], .alert-warning {
+  border-left-color: var(--warning);
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #FCD34D;
+}
+
+[class*="alert-danger"], .alert-danger, [class*="alert-error"], .alert-error {
+  border-left-color: var(--error);
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #FCA5A5;
+}
+
+/* Callout Styles (GitHub/Obsidian) */
+.callout, .admonition {
+  padding: 1rem;
+  margin: 1rem 0;
+  border-left: 4px solid;
+  border-radius: 0 0.5rem 0.5rem 0;
+  background-color: rgba(51, 65, 85, 0.5);
+}
+
+.callout-note, .admonition-note {
+  border-color: #3B82F6;
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.callout-tip, .admonition-tip, .callout-hint, .admonition-hint {
+  border-color: #10B981;
+  background-color: rgba(16, 185, 129, 0.1);
+}
+
+.callout-warning, .admonition-warning, .callout-caution, .admonition-caution {
+  border-color: #F59E0B;
+  background-color: rgba(245, 158, 11, 0.1);
+}
+
+.callout-danger, .admonition-danger, .callout-error, .admonition-error {
+  border-color: #EF4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.callout-important, .admonition-important {
+  border-color: #8B5CF6;
+  background-color: rgba(139, 92, 246, 0.1);
+}
+
+.callout-title, .admonition-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Math Styles */
+.math {
+  font-family: 'KaTeX_Math', 'Times New Roman', serif;
+}
+
+.math-display {
+  display: block;
+  text-align: center;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.math-inline {
+  display: inline;
+}
+
+/* Mermaid Diagrams */
+.mermaid {
+  background-color: var(--bg-secondary);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  text-align: center;
+}
+
+/* Task List Checkboxes */
+input[type="checkbox"] {
+  margin-right: 0.5rem;
+  accent-color: var(--accent);
+}
+
+/* Strikethrough */
+del {
+  color: var(--text-secondary);
+  text-decoration: line-through;
+}
+
+/* Footnotes */
+.footnotes {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.footnote-ref {
+  color: var(--accent);
+  text-decoration: none;
+  vertical-align: super;
+  font-size: 0.75em;
+}
+
+.footnote-backref {
+  color: var(--accent-light);
+  text-decoration: none;
+  margin-left: 0.25rem;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--accent);
+  color: white;
+}
+`;
+
+      // Create full HTML document with Mermaid support
       const htmlContent = `<!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${filePath?.split(/[\\/]/).pop() || 'MD++ Export'}</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 2rem;
-      line-height: 1.6;
-    }
-    pre {
-      background: #f4f4f4;
-      padding: 1rem;
-      border-radius: 4px;
-      overflow-x: auto;
-    }
-    code {
-      background: #f4f4f4;
-      padding: 0.2rem 0.4rem;
-      border-radius: 2px;
-    }
-    blockquote {
-      border-left: 4px solid #ddd;
-      margin: 0;
-      padding-left: 1rem;
-      color: #666;
-    }
-  </style>
+  <style>${exportCSS}</style>
+  <!-- Mermaid for diagrams -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <!-- KaTeX for math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <!-- Highlight.js for syntax highlighting -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/${isDark ? 'atom-one-dark' : 'atom-one-light'}.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/common.min.js"></script>
 </head>
 <body>
-  ${document.querySelector('.preview-content')?.innerHTML || ''}
+${document.querySelector('.preview-content')?.innerHTML || ''}
+<script>
+  // Initialize Mermaid with ${isDark ? 'dark' : 'default'} theme
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: '${isDark ? 'dark' : 'default'}',
+    securityLevel: 'loose'
+  });
+
+  // Re-render Mermaid diagrams and KaTeX math
+  document.addEventListener('DOMContentLoaded', async () => {
+    // Mermaid diagrams
+    const mermaidElements = document.querySelectorAll('.mermaid');
+    if (mermaidElements.length > 0) {
+      mermaidElements.forEach((el, index) => {
+        el.removeAttribute('data-processed');
+        el.id = 'mermaid-export-' + index;
+      });
+      await mermaid.run({ nodes: mermaidElements });
+    }
+
+    // KaTeX math
+    const mathElements = document.querySelectorAll('.math');
+    mathElements.forEach((el) => {
+      const isDisplay = el.classList.contains('math-display');
+      const mathContent = el.textContent || '';
+      if (!el.querySelector('.katex')) {
+        try {
+          katex.render(mathContent, el, {
+            displayMode: isDisplay,
+            throwOnError: false
+          });
+        } catch (e) {
+          console.warn('KaTeX error:', e);
+        }
+      }
+    });
+
+    // Syntax highlighting
+    document.querySelectorAll('pre code').forEach((block) => {
+      if (!block.classList.contains('hljs') && !block.closest('.mermaid')) {
+        hljs.highlightElement(block);
+      }
+    });
+  });
+</script>
 </body>
 </html>`;
       await window.electronAPI.writeFile(exportPath, htmlContent);
     });
 
-    const unsubExportPDF = window.electronAPI.onExportPDF(async (_exportPath) => {
-      // PDF export would require additional libraries
-      // For now, show a message
-      console.log('PDF export not yet implemented');
+    const unsubExportPDF = window.electronAPI.onExportPDF(async ({ filePath: exportPath, theme: exportTheme }) => {
+      // Use the theme selected by user in the dialog
+      const isDark = exportTheme === 'dark';
+
+      // PDF Export CSS - Theme-aware (similar to HTML but optimized for print)
+      const exportCSS = `
+/* MD++ PDF Export Styles - ${isDark ? 'Dark' : 'Light'} Theme */
+:root {
+  ${isDark ? `
+  --bg-primary: #0F172A;
+  --bg-secondary: #1E293B;
+  --bg-card: #334155;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --accent: #7C3AED;
+  --accent-hover: #6D28D9;
+  --accent-light: #A78BFA;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --border: #475569;
+  --code-bg: #1E293B;
+  --code-text: #E2E8F0;
+  --inline-code-bg: #334155;
+  --inline-code-text: #A78BFA;
+  ` : `
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F8FAFC;
+  --bg-card: #F1F5F9;
+  --text-primary: #1E293B;
+  --text-secondary: #64748B;
+  --accent: #7C3AED;
+  --accent-hover: #6D28D9;
+  --accent-light: #6D28D9;
+  --success: #059669;
+  --warning: #D97706;
+  --error: #DC2626;
+  --border: #E2E8F0;
+  --code-bg: #F8FAFC;
+  --code-text: #1E293B;
+  --inline-code-bg: #F1F5F9;
+  --inline-code-text: #6D28D9;
+  `}
+}
+
+@media print {
+  @page {
+    margin: 1.5cm;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  max-width: 100%;
+  padding: 0;
+  line-height: 1.7;
+  font-size: 11pt;
+}
+
+/* Headings */
+h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.375rem;
+  border-bottom: 2px solid var(--accent);
+  color: var(--text-primary);
+  page-break-after: avoid;
+}
+
+h2 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+  page-break-after: avoid;
+}
+
+h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.375rem;
+  color: var(--accent-light);
+  page-break-after: avoid;
+}
+
+h4, h5, h6 {
+  margin-top: 0.75rem;
+  margin-bottom: 0.375rem;
+  color: var(--text-primary);
+  page-break-after: avoid;
+}
+
+p {
+  margin: 0.5rem 0;
+}
+
+/* Links */
+a {
+  color: var(--accent-light);
+  text-decoration: none;
+}
+
+strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+em {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+/* Lists */
+ul, ol {
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+}
+
+li {
+  margin-bottom: 0.25rem;
+}
+
+li::marker {
+  color: var(--accent);
+}
+
+/* Code */
+code {
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  background-color: var(--inline-code-bg);
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.2rem;
+  font-size: 0.85em;
+  color: var(--inline-code-text);
+}
+
+pre {
+  background-color: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  overflow-x: auto;
+  margin: 0.75rem 0;
+  page-break-inside: avoid;
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.8rem;
+  color: var(--code-text);
+}
+
+/* Blockquotes */
+blockquote {
+  border-left: 3px solid var(--accent);
+  margin: 0.75rem 0;
+  padding: 0.5rem 0.75rem;
+  background-color: rgba(124, 58, 237, 0.1);
+  border-radius: 0 0.375rem 0.375rem 0;
+  color: var(--text-secondary);
+  page-break-inside: avoid;
+}
+
+blockquote p {
+  margin: 0;
+}
+
+/* Horizontal Rule */
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.5rem 0;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  font-size: 0.9em;
+  page-break-inside: avoid;
+}
+
+th, td {
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+  text-align: left;
+}
+
+th {
+  background-color: var(--bg-secondary);
+  font-weight: 600;
+}
+
+tr:nth-child(even) {
+  background-color: rgba(51, 65, 85, 0.2);
+}
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.375rem;
+  margin: 0.75rem 0;
+}
+
+/* AI Context Blocks */
+.mdpp-ai-context {
+  background-color: rgba(124, 58, 237, 0.15);
+  border: 2px dashed var(--accent);
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  margin: 0.75rem 0;
+  position: relative;
+  page-break-inside: avoid;
+}
+
+.mdpp-ai-context::before {
+  content: 'AI Context';
+  position: absolute;
+  top: -0.625rem;
+  left: 0.75rem;
+  background-color: var(--bg-primary);
+  padding: 0 0.375rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Card & Alert Components */
+[class*="card"] {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  margin: 0.75rem 0;
+  page-break-inside: avoid;
+}
+
+[class*="alert"] {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-left: 3px solid #3B82F6;
+  border-radius: 0 0.375rem 0.375rem 0;
+  padding: 0.75rem;
+  margin: 0.75rem 0;
+  color: #93C5FD;
+  page-break-inside: avoid;
+}
+
+[class*="alert-success"], .alert-success {
+  border-left-color: var(--success);
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #6EE7B7;
+}
+
+[class*="alert-warning"], .alert-warning {
+  border-left-color: var(--warning);
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #FCD34D;
+}
+
+[class*="alert-danger"], .alert-danger, [class*="alert-error"], .alert-error {
+  border-left-color: var(--error);
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #FCA5A5;
+}
+
+/* Callout Styles */
+.callout, .admonition {
+  padding: 0.75rem;
+  margin: 0.75rem 0;
+  border-left: 3px solid;
+  border-radius: 0 0.375rem 0.375rem 0;
+  background-color: rgba(51, 65, 85, 0.3);
+  page-break-inside: avoid;
+}
+
+.callout-note, .admonition-note {
+  border-color: #3B82F6;
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.callout-tip, .admonition-tip {
+  border-color: #10B981;
+  background-color: rgba(16, 185, 129, 0.1);
+}
+
+.callout-warning, .admonition-warning {
+  border-color: #F59E0B;
+  background-color: rgba(245, 158, 11, 0.1);
+}
+
+.callout-danger, .admonition-danger {
+  border-color: #EF4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.callout-title, .admonition-title {
+  font-weight: 600;
+  margin-bottom: 0.375rem;
+}
+
+/* Math Styles */
+.math {
+  font-family: 'KaTeX_Math', 'Times New Roman', serif;
+}
+
+.math-display {
+  display: block;
+  text-align: center;
+  margin: 0.75rem 0;
+  overflow-x: auto;
+}
+
+/* Mermaid Diagrams - hide in PDF, show placeholder */
+.mermaid {
+  background-color: var(--bg-secondary);
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  margin: 0.75rem 0;
+  text-align: center;
+  page-break-inside: avoid;
+}
+
+/* Task List Checkboxes */
+input[type="checkbox"] {
+  margin-right: 0.375rem;
+  accent-color: var(--accent);
+}
+
+/* Strikethrough */
+del {
+  color: var(--text-secondary);
+  text-decoration: line-through;
+}
+
+/* Footnotes */
+.footnotes {
+  margin-top: 1.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+`;
+
+      // Create full HTML document for PDF
+      const htmlContent = `<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>${filePath?.split(/[\\/]/).pop() || 'MD++ Export'}</title>
+  <style>${exportCSS}</style>
+  <!-- Mermaid for diagrams -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <!-- KaTeX for math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <!-- Highlight.js for syntax highlighting -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/${isDark ? 'atom-one-dark' : 'atom-one-light'}.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/common.min.js"></script>
+</head>
+<body>
+${document.querySelector('.preview-content')?.innerHTML || ''}
+<script>
+  // Signal when all rendering is complete
+  window.renderingComplete = false;
+
+  async function renderAll() {
+    // Initialize Mermaid with correct theme
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: '${isDark ? 'dark' : 'default'}',
+      securityLevel: 'loose'
+    });
+
+    // Render Mermaid diagrams
+    const mermaidElements = document.querySelectorAll('.mermaid');
+    if (mermaidElements.length > 0) {
+      // Restore original code from data-original attribute if present
+      mermaidElements.forEach((el, index) => {
+        const originalCode = el.getAttribute('data-original');
+        if (originalCode) {
+          el.textContent = originalCode;
+        }
+        el.removeAttribute('data-processed');
+        el.id = 'mermaid-pdf-' + index;
+      });
+
+      try {
+        await mermaid.run({ nodes: mermaidElements });
+      } catch (e) {
+        console.warn('Mermaid error:', e);
+      }
+    }
+
+    // KaTeX math
+    document.querySelectorAll('.math').forEach((el) => {
+      const isDisplay = el.classList.contains('math-display');
+      const mathContent = el.textContent || '';
+      if (!el.querySelector('.katex')) {
+        try {
+          katex.render(mathContent, el, {
+            displayMode: isDisplay,
+            throwOnError: false
+          });
+        } catch (e) {
+          console.warn('KaTeX error:', e);
+        }
+      }
+    });
+
+    // Syntax highlighting
+    document.querySelectorAll('pre code').forEach((block) => {
+      if (!block.classList.contains('hljs') && !block.closest('.mermaid')) {
+        hljs.highlightElement(block);
+      }
+    });
+
+    // Mark rendering as complete
+    window.renderingComplete = true;
+  }
+
+  document.addEventListener('DOMContentLoaded', renderAll);
+</script>
+</body>
+</html>`;
+
+      // Send to main process for PDF generation
+      const result = await window.electronAPI.printToPDF(htmlContent, exportPath);
+      if (!result.success) {
+        console.error('PDF export failed:', result.error);
+      }
     });
 
     return () => {
@@ -328,7 +1516,7 @@ export default function App() {
       unsubExportHTML();
       unsubExportPDF();
     };
-  }, [content, filePath]);
+  }, [content, filePath, theme]);
 
   // Update modified state reference
   useEffect(() => {
@@ -355,6 +1543,8 @@ export default function App() {
         showAIContext={showAIContext}
         onToggleAIContext={() => setShowAIContext(!showAIContext)}
         onOpenSettings={() => setSettingsOpen(true)}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
       <div className={`main-content view-${viewMode}`}>
         {(viewMode === 'editor' || viewMode === 'split') && (
@@ -369,7 +1559,7 @@ export default function App() {
         )}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className="preview-pane">
-            <Preview content={content} showAIContext={showAIContext} settings={settings} />
+            <Preview content={content} showAIContext={showAIContext} settings={settings} theme={theme} />
           </div>
         )}
       </div>

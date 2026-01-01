@@ -8,6 +8,9 @@ import { join } from 'path';
 import { readFile, writeFile, stat } from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
 
+// Force software rendering to fix GPU crashes on Windows
+app.disableHardwareAcceleration();
+
 // Application state
 let mainWindow: BrowserWindow | null = null;
 let currentFilePath: string | null = null;
@@ -22,12 +25,9 @@ const MAX_RECENT_FILES = 10;
  */
 function createWindow(): void {
   mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 900,
-    minWidth: 800,
-    minHeight: 600,
+    width: 1200,
+    height: 800,
     title: 'MD++ Editor',
-    icon: join(__dirname, '../../resources/icon.png'),
     webPreferences: {
       preload: join(__dirname, '../preload/index.mjs'),
       nodeIntegration: false,
@@ -35,10 +35,9 @@ function createWindow(): void {
       sandbox: false,
     },
     show: true,
+    center: true,
     backgroundColor: '#1e1e1e',
   });
-
-  // DevTools are now toggled via button/menu, not opened automatically
 
   // Notify renderer when DevTools state changes
   mainWindow.webContents.on('devtools-opened', () => {
@@ -80,11 +79,19 @@ function createWindow(): void {
   });
 
   // Load the renderer
-  if (process.env.ELECTRON_RENDERER_URL) {
-    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
-  } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
-  }
+  const rendererPath = join(__dirname, '../renderer/index.html');
+  console.log('Loading renderer from:', rendererPath);
+
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+    console.error('Failed to load:', errorCode, errorDescription);
+    dialog.showErrorBox('Load Error', `Failed to load: ${errorDescription}`);
+  });
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log('Renderer loaded successfully');
+  });
+
+  mainWindow.loadFile(rendererPath);
 
   // Create application menu
   createMenu();
@@ -492,13 +499,17 @@ async function saveFileAs(): Promise<boolean> {
  * Export as HTML
  */
 async function exportAsHTML(): Promise<void> {
+  // Ask for theme first
+  const theme = await showExportThemeDialog();
+  if (!theme) return; // User cancelled
+
   const result = await dialog.showSaveDialog(mainWindow!, {
     filters: [{ name: 'HTML Files', extensions: ['html'] }],
     defaultPath: currentFilePath?.replace(/\.(md|mdpp|markdown)$/, '.html') || 'export.html',
   });
 
   if (!result.canceled && result.filePath) {
-    mainWindow?.webContents.send('export-html', result.filePath);
+    mainWindow?.webContents.send('export-html', { filePath: result.filePath, theme });
   }
 }
 
@@ -506,14 +517,37 @@ async function exportAsHTML(): Promise<void> {
  * Export as PDF
  */
 async function exportAsPDF(): Promise<void> {
+  // Ask for theme (default to light for PDF/printing)
+  const theme = await showExportThemeDialog();
+  if (!theme) return; // User cancelled
+
   const result = await dialog.showSaveDialog(mainWindow!, {
     filters: [{ name: 'PDF Files', extensions: ['pdf'] }],
     defaultPath: currentFilePath?.replace(/\.(md|mdpp|markdown)$/, '.pdf') || 'export.pdf',
   });
 
   if (!result.canceled && result.filePath) {
-    mainWindow?.webContents.send('export-pdf', result.filePath);
+    mainWindow?.webContents.send('export-pdf', { filePath: result.filePath, theme });
   }
+}
+
+/**
+ * Show export theme selection dialog
+ */
+async function showExportThemeDialog(): Promise<'dark' | 'light' | null> {
+  const result = await dialog.showMessageBox(mainWindow!, {
+    type: 'question',
+    buttons: ['Light Theme', 'Dark Theme', 'Cancel'],
+    defaultId: 0,
+    cancelId: 2,
+    title: 'Export Theme',
+    message: 'Which theme should be used for the export?',
+    detail: 'Light theme is recommended for printing and PDF export.',
+  });
+
+  if (result.response === 0) return 'light';
+  if (result.response === 1) return 'dark';
+  return null;
 }
 
 /**
@@ -571,6 +605,64 @@ ipcMain.handle('file-exists', async (_, filePath: string) => {
 });
 
 ipcMain.handle('get-current-file', () => currentFilePath);
+
+ipcMain.handle('print-to-pdf', async (_, htmlContent: string, pdfPath: string) => {
+  try {
+    // Create a hidden window for PDF generation
+    const pdfWindow = new BrowserWindow({
+      width: 800,
+      height: 1200,
+      show: false,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        webSecurity: true,
+      },
+    });
+
+    // Load the HTML content
+    await pdfWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
+
+    // Wait for all rendering to complete (Mermaid, KaTeX, etc.)
+    // Poll for the renderingComplete flag with timeout
+    const maxWaitTime = 30000; // 30 seconds max
+    const pollInterval = 200; // Check every 200ms
+    let waited = 0;
+
+    while (waited < maxWaitTime) {
+      const isComplete = await pdfWindow.webContents.executeJavaScript('window.renderingComplete === true');
+      if (isComplete) {
+        // Give a little extra time for SVGs to finalize
+        await new Promise(resolve => setTimeout(resolve, 500));
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+      waited += pollInterval;
+    }
+
+    // Generate PDF
+    const pdfData = await pdfWindow.webContents.printToPDF({
+      printBackground: true,
+      pageSize: 'A4',
+      margins: {
+        top: 0.5,
+        bottom: 0.5,
+        left: 0.5,
+        right: 0.5,
+      },
+    });
+
+    // Write PDF to file
+    await writeFile(pdfPath, pdfData);
+
+    // Close the hidden window
+    pdfWindow.destroy();
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: String(error) };
+  }
+});
 
 ipcMain.handle('toggle-devtools', () => {
   if (mainWindow) {

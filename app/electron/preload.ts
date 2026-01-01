@@ -19,6 +19,12 @@ export interface FileOpenedEvent {
 
 export type ViewMode = 'editor' | 'preview' | 'split';
 export type MenuAction = 'find' | 'replace' | 'toggle-ai-context';
+export type ExportTheme = 'dark' | 'light';
+
+export interface ExportOptions {
+  filePath: string;
+  theme: ExportTheme;
+}
 
 // Exposed API
 const electronAPI = {
@@ -96,17 +102,21 @@ const electronAPI = {
   },
 
   // Export actions
-  onExportHTML: (callback: (filePath: string) => void) => {
-    const handler = (_: Electron.IpcRendererEvent, filePath: string) => callback(filePath);
+  onExportHTML: (callback: (options: ExportOptions) => void) => {
+    const handler = (_: Electron.IpcRendererEvent, options: ExportOptions) => callback(options);
     ipcRenderer.on('export-html', handler);
     return () => ipcRenderer.removeListener('export-html', handler);
   },
 
-  onExportPDF: (callback: (filePath: string) => void) => {
-    const handler = (_: Electron.IpcRendererEvent, filePath: string) => callback(filePath);
+  onExportPDF: (callback: (options: ExportOptions) => void) => {
+    const handler = (_: Electron.IpcRendererEvent, options: ExportOptions) => callback(options);
     ipcRenderer.on('export-pdf', handler);
     return () => ipcRenderer.removeListener('export-pdf', handler);
   },
+
+  // Print to PDF
+  printToPDF: (htmlContent: string, pdfPath: string): Promise<FileResult> =>
+    ipcRenderer.invoke('print-to-pdf', htmlContent, pdfPath),
 
   // Platform info
   platform: process.platform,
