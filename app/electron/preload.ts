@@ -18,7 +18,7 @@ export interface FileOpenedEvent {
 }
 
 export type ViewMode = 'editor' | 'preview' | 'split';
-export type MenuAction = 'find' | 'replace' | 'toggle-ai-context';
+export type MenuAction = 'find' | 'replace' | 'toggle-ai-context' | 'insert-table' | 'show-help';
 export type ExportTheme = 'dark' | 'light';
 
 export interface ExportOptions {
@@ -40,6 +40,12 @@ const electronAPI = {
 
   getCurrentFile: (): Promise<string | null> =>
     ipcRenderer.invoke('get-current-file'),
+
+  getCurrentDirectory: (): Promise<string | null> =>
+    ipcRenderer.invoke('get-current-directory'),
+
+  readFileBase64: (filePath: string, basePath?: string): Promise<FileResult & { data?: string }> =>
+    ipcRenderer.invoke('read-file-base64', filePath, basePath),
 
   // Content management
   onGetContent: (callback: () => void) => {

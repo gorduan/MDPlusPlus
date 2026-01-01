@@ -4,7 +4,7 @@
  */
 
 import { app, BrowserWindow, ipcMain, dialog, Menu, shell } from 'electron';
-import { join } from 'path';
+import { join, dirname, resolve } from 'path';
 import { readFile, writeFile, stat } from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
 
@@ -33,10 +33,26 @@ function createWindow(): void {
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: false,
+      spellcheck: true,
     },
     show: true,
     center: true,
     backgroundColor: '#1e1e1e',
+  });
+
+  // Enable spellcheck for German and English
+  mainWindow.webContents.session.setSpellCheckerLanguages(['de', 'en-US']);
+
+  // Handle file drop
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    // Prevent navigation from dropped files - handle them instead
+    if (url.startsWith('file://')) {
+      event.preventDefault();
+      const filePath = decodeURIComponent(url.replace('file:///', '').replace('file://', ''));
+      if (filePath.match(/\.(md|mdpp|markdown|txt)$/i)) {
+        openFilePath(filePath);
+      }
+    }
   });
 
   // Notify renderer when DevTools state changes
@@ -283,11 +299,22 @@ function createMenu(): void {
           label: 'Component Directive',
           click: () => mainWindow?.webContents.send('insert', '::component{}\n\n::'),
         },
+        { type: 'separator' },
+        {
+          label: 'Table...',
+          click: () => mainWindow?.webContents.send('menu-action', 'insert-table'),
+        },
       ],
     },
     {
       label: 'Help',
       submenu: [
+        {
+          label: 'Keyboard Shortcuts',
+          accelerator: 'F1',
+          click: () => mainWindow?.webContents.send('menu-action', 'show-help'),
+        },
+        { type: 'separator' },
         {
           label: 'MD++ Documentation',
           click: () => shell.openExternal('https://github.com/gorduan/MDPlusPlus'),
@@ -605,6 +632,43 @@ ipcMain.handle('file-exists', async (_, filePath: string) => {
 });
 
 ipcMain.handle('get-current-file', () => currentFilePath);
+
+// Read file as base64 for image embedding
+ipcMain.handle('read-file-base64', async (_, filePath: string, basePath?: string) => {
+  try {
+    // Resolve relative paths based on the current file's directory
+    let fullPath = filePath;
+    if (!filePath.match(/^[a-zA-Z]:/) && !filePath.startsWith('/') && basePath) {
+      fullPath = resolve(dirname(basePath), filePath);
+    }
+
+    const data = await readFile(fullPath);
+    const base64 = data.toString('base64');
+
+    // Determine MIME type from extension
+    const ext = fullPath.split('.').pop()?.toLowerCase() || '';
+    const mimeTypes: Record<string, string> = {
+      'png': 'image/png',
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'gif': 'image/gif',
+      'svg': 'image/svg+xml',
+      'webp': 'image/webp',
+      'ico': 'image/x-icon',
+      'bmp': 'image/bmp',
+    };
+    const mimeType = mimeTypes[ext] || 'application/octet-stream';
+
+    return { success: true, data: `data:${mimeType};base64,${base64}` };
+  } catch (error) {
+    return { success: false, error: String(error) };
+  }
+});
+
+// Get current file directory for relative path resolution
+ipcMain.handle('get-current-directory', () => {
+  return currentFilePath ? dirname(currentFilePath) : null;
+});
 
 ipcMain.handle('print-to-pdf', async (_, htmlContent: string, pdfPath: string) => {
   try {

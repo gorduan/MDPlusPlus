@@ -8,6 +8,9 @@ import Preview from './components/Preview';
 import Toolbar, { Theme } from './components/Toolbar';
 import StatusBar from './components/StatusBar';
 import SettingsDialog, { ParserSettings, DEFAULT_SETTINGS } from './components/SettingsDialog';
+import SearchReplace from './components/SearchReplace';
+import HelpDialog from './components/HelpDialog';
+import TableEditor from './components/TableEditor';
 import type { ViewMode } from '../../electron/preload';
 
 // Welcome content shown when app starts
@@ -535,6 +538,15 @@ export default function App() {
   const [theme, setTheme] = useState<Theme>('dark');
   const editorRef = useRef<{ insert: (text: string) => void; insertWrap: (wrapper: string) => void } | null>(null);
 
+  // New feature states
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchMode, setSearchMode] = useState<'find' | 'replace'>('find');
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [tableEditorOpen, setTableEditorOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Apply theme to document
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -543,6 +555,83 @@ export default function App() {
   // Toggle theme
   const toggleTheme = useCallback(() => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  }, []);
+
+  // Auto-save functionality
+  useEffect(() => {
+    if (isModified && filePath) {
+      // Clear any existing timeout
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+
+      // Set up auto-save after 3 seconds of inactivity
+      autoSaveTimeoutRef.current = setTimeout(async () => {
+        setAutoSaveStatus('saving');
+        try {
+          await window.electronAPI?.writeFile(filePath, content);
+          setIsModified(false);
+          window.electronAPI?.setModified(false);
+          setAutoSaveStatus('saved');
+          // Reset status after 2 seconds
+          setTimeout(() => setAutoSaveStatus('idle'), 2000);
+        } catch (error) {
+          console.error('Auto-save failed:', error);
+          setAutoSaveStatus('idle');
+        }
+      }, 3000);
+    }
+
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [content, isModified, filePath]);
+
+  // Drag & drop handlers
+  useEffect(() => {
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.dataTransfer?.types.includes('Files')) {
+        setIsDragging(true);
+      }
+    };
+
+    const handleDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Only set to false if leaving the window
+      if (e.relatedTarget === null) {
+        setIsDragging(false);
+      }
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+
+      const files = e.dataTransfer?.files;
+      if (files && files.length > 0) {
+        const file = files[0];
+        if (file.name.match(/\.(md|mdpp|markdown|txt)$/i)) {
+          // The main process will handle opening via will-navigate
+          // We just need to allow the default behavior
+        }
+      }
+    };
+
+    window.addEventListener('dragover', handleDragOver);
+    window.addEventListener('dragleave', handleDragLeave);
+    window.addEventListener('drop', handleDrop);
+
+    return () => {
+      window.removeEventListener('dragover', handleDragOver);
+      window.removeEventListener('dragleave', handleDragLeave);
+      window.removeEventListener('drop', handleDrop);
+    };
   }, []);
 
   // Handle content changes
@@ -595,6 +684,16 @@ export default function App() {
     const unsubMenuAction = window.electronAPI.onMenuAction((action) => {
       if (action === 'toggle-ai-context') {
         setShowAIContext((prev) => !prev);
+      } else if (action === 'find') {
+        setSearchMode('find');
+        setSearchOpen(true);
+      } else if (action === 'replace') {
+        setSearchMode('replace');
+        setSearchOpen(true);
+      } else if (action === 'insert-table') {
+        setTableEditorOpen(true);
+      } else if (action === 'show-help') {
+        setHelpOpen(true);
       }
     });
 
@@ -1523,17 +1622,39 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
     window.electronAPI?.setModified(isModified);
   }, [isModified]);
 
-  // Keyboard shortcut for settings (Ctrl+,)
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Settings: Ctrl+,
       if (e.ctrlKey && e.key === ',') {
         e.preventDefault();
         setSettingsOpen(true);
       }
+      // Help: F1
+      if (e.key === 'F1') {
+        e.preventDefault();
+        setHelpOpen(true);
+      }
+      // Find: Ctrl+F
+      if (e.ctrlKey && e.key === 'f') {
+        e.preventDefault();
+        setSearchMode('find');
+        setSearchOpen(true);
+      }
+      // Replace: Ctrl+H
+      if (e.ctrlKey && e.key === 'h') {
+        e.preventDefault();
+        setSearchMode('replace');
+        setSearchOpen(true);
+      }
+      // Close search: Escape
+      if (e.key === 'Escape' && searchOpen) {
+        setSearchOpen(false);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [searchOpen]);
 
   return (
     <div className="app">
@@ -1577,6 +1698,36 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
         onSettingsChange={setSettings}
         availablePlugins={AVAILABLE_PLUGINS}
       />
+      <SearchReplace
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        content={content}
+        onReplace={setContent}
+        mode={searchMode}
+      />
+      <HelpDialog
+        isOpen={helpOpen}
+        onClose={() => setHelpOpen(false)}
+      />
+      <TableEditor
+        isOpen={tableEditorOpen}
+        onClose={() => setTableEditorOpen(false)}
+        onInsert={(markdown) => {
+          editorRef.current?.insert('\n' + markdown + '\n');
+        }}
+      />
+      {isDragging && (
+        <div className="drop-overlay">
+          <div className="drop-overlay-content">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            <p>Datei hier ablegen</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
