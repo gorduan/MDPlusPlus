@@ -1675,6 +1675,7 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
               content={content}
               onChange={handleContentChange}
               onCursorChange={setCursorPosition}
+              theme={theme}
             />
           </div>
         )}
