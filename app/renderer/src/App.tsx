@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import Editor from './components/Editor';
+import EditorPane, { EditorPaneRef } from './components/EditorPane';
 import Preview from './components/Preview';
 import Toolbar, { Theme } from './components/Toolbar';
 import StatusBar from './components/StatusBar';
@@ -536,7 +536,7 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<ParserSettings>(DEFAULT_SETTINGS);
   const [theme, setTheme] = useState<Theme>('dark');
-  const editorRef = useRef<{ insert: (text: string) => void; insertWrap: (wrapper: string) => void } | null>(null);
+  const editorRef = useRef<EditorPaneRef | null>(null);
 
   // New feature states
   const [searchOpen, setSearchOpen] = useState(false);
@@ -1670,7 +1670,7 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
       <div className={`main-content view-${viewMode}`}>
         {(viewMode === 'editor' || viewMode === 'split') && (
           <div className="editor-pane">
-            <Editor
+            <EditorPane
               ref={editorRef}
               content={content}
               onChange={handleContentChange}

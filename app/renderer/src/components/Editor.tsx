@@ -4,8 +4,8 @@
  */
 
 import React, { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
-import MonacoEditor, { OnMount, OnChange } from '@monaco-editor/react';
-import type { editor, Monaco } from 'monaco-editor';
+import MonacoEditor, { OnMount, OnChange, Monaco } from '@monaco-editor/react';
+import type { editor } from 'monaco-editor';
 
 type Theme = 'dark' | 'light';
 

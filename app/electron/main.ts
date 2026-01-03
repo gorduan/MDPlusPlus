@@ -3,7 +3,7 @@
  * Handles file operations, window management, and system integration
  */
 
-import { app, BrowserWindow, ipcMain, dialog, Menu, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, Menu, shell, screen } from 'electron';
 import { join, dirname, resolve } from 'path';
 import { readFile, writeFile, stat } from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
@@ -108,6 +108,33 @@ function createWindow(): void {
   });
 
   mainWindow.loadFile(rendererPath);
+
+  // Force window to front and ensure it's visible on primary display
+  mainWindow.once('ready-to-show', () => {
+    if (!mainWindow) return;
+
+    // Get primary display bounds
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+
+    // Center on primary display
+    const winBounds = mainWindow.getBounds();
+    const x = Math.round((screenWidth - winBounds.width) / 2);
+    const y = Math.round((screenHeight - winBounds.height) / 2);
+    mainWindow.setBounds({ x, y, width: winBounds.width, height: winBounds.height });
+
+    // Force visibility
+    mainWindow.show();
+    mainWindow.setAlwaysOnTop(true);
+    mainWindow.focus();
+
+    // Remove always-on-top after a short delay
+    setTimeout(() => {
+      mainWindow?.setAlwaysOnTop(false);
+    }, 500);
+
+    console.log('Window shown on primary display at:', x, y);
+  });
 
   // Create application menu
   createMenu();
