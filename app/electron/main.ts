@@ -29,7 +29,7 @@ function createWindow(): void {
     height: 800,
     title: 'MD++ Editor',
     webPreferences: {
-      preload: join(__dirname, '../preload/index.mjs'),
+      preload: join(__dirname, '../preload/index.js'),
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: false,
@@ -49,7 +49,7 @@ function createWindow(): void {
     if (url.startsWith('file://')) {
       event.preventDefault();
       const filePath = decodeURIComponent(url.replace('file:///', '').replace('file://', ''));
-      if (filePath.match(/\.(md|mdpp|markdown|txt)$/i)) {
+      if (filePath.match(/\.(md|mdpp|mdsc|markdown|txt)$/i)) {
         openFilePath(filePath);
       }
     }
@@ -410,7 +410,7 @@ async function openFile(): Promise<void> {
   const result = await dialog.showOpenDialog(mainWindow!, {
     properties: ['openFile'],
     filters: [
-      { name: 'Markdown Files', extensions: ['md', 'mdpp', 'markdown'] },
+      { name: 'Markdown Files', extensions: ['md', 'mdpp', 'mdsc', 'markdown'] },
       { name: 'All Files', extensions: ['*'] },
     ],
   });
@@ -463,8 +463,14 @@ async function saveFile(): Promise<boolean> {
 
 /**
  * Check if content uses MD++ specific features
+ * Returns 'mdsc' for MarkdownScript, 'mdpp' for MD++, or 'md' for plain markdown
  */
-function usesMDPlusPlusFeatures(content: string): boolean {
+function detectFileFormat(content: string): 'mdsc' | 'mdpp' | 'md' {
+  // Check for MarkdownScript (:::script blocks)
+  if (/:::script(?::output)?[\s{]/.test(content)) {
+    return 'mdsc';
+  }
+
   // Check for MD++ specific syntax:
   // - AI context blocks: :::ai-context
   // - Component directives: ::component{} or ::component[]
@@ -475,7 +481,18 @@ function usesMDPlusPlusFeatures(content: string): boolean {
     /:[\w-]+[{\[]/,        // Inline directives with attributes
   ];
 
-  return mdppPatterns.some(pattern => pattern.test(content));
+  if (mdppPatterns.some(pattern => pattern.test(content))) {
+    return 'mdpp';
+  }
+
+  return 'md';
+}
+
+/**
+ * Check if content uses MD++ specific features (legacy wrapper)
+ */
+function usesMDPlusPlusFeatures(content: string): boolean {
+  return detectFileFormat(content) !== 'md';
 }
 
 /**
@@ -488,44 +505,57 @@ async function saveFileAs(): Promise<boolean> {
     mainWindow?.webContents.send('get-content');
   });
 
-  const usesMDPP = usesMDPlusPlusFeatures(content);
+  const format = detectFileFormat(content);
 
   // Determine default extension:
-  // 1. If file was opened, keep original extension (unless MD++ features added to .md file)
-  // 2. For new files, use .md unless MD++ features are used
-  let defaultExt = 'md'; // Default for new files
+  // 1. If file was opened, keep original extension (unless format changed)
+  // 2. For new files, use detected format
+  let defaultExt = format; // Default based on content
 
   if (currentFilePath) {
-    // File was opened - preserve original extension
+    // File was opened - preserve original extension unless format upgraded
     const originalExt = currentFilePath.split('.').pop()?.toLowerCase();
-    if (originalExt === 'mdpp' || originalExt === 'md' || originalExt === 'markdown') {
-      defaultExt = originalExt;
-      // Only suggest .mdpp if .md file now has MD++ features
-      if (originalExt === 'md' && usesMDPP) {
+    if (originalExt === 'mdsc' || originalExt === 'mdpp' || originalExt === 'md' || originalExt === 'markdown') {
+      defaultExt = originalExt === 'markdown' ? 'md' : originalExt;
+      // Upgrade .md to .mdpp if MD++ features added
+      if (originalExt === 'md' && format === 'mdpp') {
         defaultExt = 'mdpp';
       }
+      // Upgrade to .mdsc if script blocks added
+      if ((originalExt === 'md' || originalExt === 'mdpp') && format === 'mdsc') {
+        defaultExt = 'mdsc';
+      }
     }
-  } else if (usesMDPP) {
-    // New file with MD++ features
-    defaultExt = 'mdpp';
   }
 
   const defaultName = currentFilePath
-    ? currentFilePath.split(/[\\/]/).pop()?.replace(/\.(md|mdpp|markdown)$/, `.${defaultExt}`)
+    ? currentFilePath.split(/[\\/]/).pop()?.replace(/\.(md|mdpp|mdsc|markdown)$/, `.${defaultExt}`)
     : `untitled.${defaultExt}`;
 
   // Order filters based on detected format
-  const filters = usesMDPP
-    ? [
-        { name: 'MD++ Files', extensions: ['mdpp'] },
-        { name: 'Markdown Files', extensions: ['md'] },
-        { name: 'All Files', extensions: ['*'] },
-      ]
-    : [
-        { name: 'Markdown Files', extensions: ['md'] },
-        { name: 'MD++ Files', extensions: ['mdpp'] },
-        { name: 'All Files', extensions: ['*'] },
-      ];
+  let filters;
+  if (format === 'mdsc') {
+    filters = [
+      { name: 'MarkdownScript Files', extensions: ['mdsc'] },
+      { name: 'MD++ Files', extensions: ['mdpp'] },
+      { name: 'Markdown Files', extensions: ['md'] },
+      { name: 'All Files', extensions: ['*'] },
+    ];
+  } else if (format === 'mdpp') {
+    filters = [
+      { name: 'MD++ Files', extensions: ['mdpp'] },
+      { name: 'MarkdownScript Files', extensions: ['mdsc'] },
+      { name: 'Markdown Files', extensions: ['md'] },
+      { name: 'All Files', extensions: ['*'] },
+    ];
+  } else {
+    filters = [
+      { name: 'Markdown Files', extensions: ['md'] },
+      { name: 'MD++ Files', extensions: ['mdpp'] },
+      { name: 'MarkdownScript Files', extensions: ['mdsc'] },
+      { name: 'All Files', extensions: ['*'] },
+    ];
+  }
 
   const result = await dialog.showSaveDialog(mainWindow!, {
     filters,
@@ -625,6 +655,39 @@ function addToRecentFiles(filePath: string): void {
 ipcMain.on('content-modified', (_, modified: boolean) => {
   isModified = modified;
   updateWindowTitle();
+});
+
+// Menu-triggered file operations from renderer keyboard shortcuts
+ipcMain.on('menu-open-file', () => openFile());
+ipcMain.on('menu-save-file', () => saveFile());
+ipcMain.on('menu-save-file-as', () => saveFileAs());
+ipcMain.on('menu-export-html', () => exportAsHTML());
+ipcMain.on('menu-export-pdf', () => exportAsPDF());
+
+// Direct file open handler that returns the file content (workaround for event issues)
+ipcMain.handle('open-file-dialog', async () => {
+  const result = await dialog.showOpenDialog(mainWindow!, {
+    properties: ['openFile'],
+    filters: [
+      { name: 'Markdown Files', extensions: ['md', 'mdpp', 'mdsc', 'markdown'] },
+      { name: 'All Files', extensions: ['*'] },
+    ],
+  });
+
+  if (!result.canceled && result.filePaths.length > 0) {
+    const filePath = result.filePaths[0];
+    try {
+      const content = await readFile(filePath, 'utf-8');
+      currentFilePath = filePath;
+      isModified = false;
+      updateWindowTitle();
+      addToRecentFiles(filePath);
+      return { success: true, path: filePath, content };
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+  return { success: false, canceled: true };
 });
 
 ipcMain.handle('read-file', async (_, filePath: string) => {

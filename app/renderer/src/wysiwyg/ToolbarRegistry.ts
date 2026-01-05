@@ -55,6 +55,7 @@ class ToolbarRegistryClass {
     this.groups.set('heading', { label: 'Heading', priority: 20 });
     this.groups.set('list', { label: 'List', priority: 30 });
     this.groups.set('insert', { label: 'Insert', priority: 40 });
+    this.groups.set('callout', { label: 'Callouts', priority: 45 });
     this.groups.set('mdpp', { label: 'MD++', priority: 50 });
     this.groups.set('plugin', { label: 'Plugins', priority: 100 });
   }

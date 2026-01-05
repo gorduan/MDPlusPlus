@@ -1,0 +1,222 @@
+/**
+ * MD++ Status Bar Styles
+ * Modern status bar with enhanced features
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+.status-bar {
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 map.get($spacing, 4);
+  background: linear-gradient(90deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 80%, var(--accent-light)) 100%);
+  font-size: map.get($font-sizes, xs);
+  color: white;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+
+  // Subtle shine effect
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  }
+
+  &__left,
+  &__center,
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 4);
+  }
+
+  &__left {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__center {
+    flex-shrink: 0;
+  }
+
+  &__right {
+    flex: 1;
+    justify-content: flex-end;
+    min-width: 0;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 1);
+    white-space: nowrap;
+
+    svg {
+      width: 0.875rem;
+      height: 0.875rem;
+      opacity: 0.9;
+    }
+  }
+
+  // File name section
+  &__file {
+    font-weight: map.get($font-weights, medium);
+    max-width: 200px;
+    overflow: hidden;
+
+    &--modified {
+      .status-bar__filename {
+        font-style: italic;
+      }
+    }
+  }
+
+  &__filename {
+    @include text-truncate;
+  }
+
+  &__modified-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    background: var(--color-warning);
+    border-radius: map.get($radii, full);
+    flex-shrink: 0;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.9); }
+  }
+
+  // Auto-save status
+  &__autosave {
+    font-size: map.get($font-sizes, xs);
+    opacity: 0.9;
+
+    &--saving {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    &--saved {
+      color: rgba(255, 255, 255, 0.9);
+      animation: fadeInOut 2s ease-in-out;
+    }
+
+    svg {
+      width: 0.75rem;
+      height: 0.75rem;
+    }
+  }
+
+  @keyframes fadeInOut {
+    0% { opacity: 0; transform: translateX(-5px); }
+    20% { opacity: 1; transform: translateX(0); }
+    80% { opacity: 1; }
+    100% { opacity: 0.5; }
+  }
+
+  &__spinner {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  // View mode
+  &__viewmode {
+    padding: map.get($spacing, 1) map.get($spacing, 2);
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: map.get($radii, sm);
+    font-weight: map.get($font-weights, medium);
+    transition: background $transition-fast;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  }
+
+  // Stats
+  &__stats {
+    opacity: 0.9;
+    cursor: help;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  // Cursor position
+  &__cursor {
+    @include font-mono;
+    font-size: 0.6875rem;
+    opacity: 0.9;
+    padding: map.get($spacing, 1) map.get($spacing, 2);
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: map.get($radii, sm);
+  }
+
+  &__separator {
+    opacity: 0.6;
+  }
+
+  // File format badge
+  &__format {
+    padding: map.get($spacing, 1) map.get($spacing, 2);
+    border-radius: map.get($radii, sm);
+    font-weight: map.get($font-weights, semibold);
+    font-size: 0.625rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+
+    &--accent {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    &--info {
+      background: rgba(59, 130, 246, 0.3);
+      color: white;
+    }
+
+    &--default {
+      background: rgba(0, 0, 0, 0.2);
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+}
+
+// Responsive adjustments
+@include breakpoint-down(md) {
+  .status-bar {
+    &__stats {
+      display: none;
+    }
+
+    &__file {
+      max-width: 120px;
+    }
+  }
+}
+
+@include breakpoint-down(sm) {
+  .status-bar {
+    &__viewmode span {
+      display: none;
+    }
+
+    &__cursor {
+      display: none;
+    }
+  }
+}

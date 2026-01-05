@@ -1,0 +1,133 @@
+/**
+ * MD++ Unified Syntax Highlighting Styles
+ *
+ * Uses CSS variables from _colors.scss for consistency
+ * between WYSIWYG (lowlight) and Preview (highlight.js)
+ *
+ * IMPORTANT: This is the ONLY source of syntax highlighting styles.
+ * Both WYSIWYG (TipTap/lowlight) and Preview (highlight.js) use these styles.
+ */
+
+@use '../abstracts' as *;
+
+// ===========================================
+// Base Code Block Styling
+// ===========================================
+.hljs,
+pre code {
+  background: var(--bg-code);
+  color: var(--text-code);
+}
+
+// ===========================================
+// Unified Syntax Tokens
+// ===========================================
+
+// Comments (gray, italic)
+.hljs-comment,
+.hljs-quote {
+  color: var(--syntax-comment);
+  font-style: italic;
+}
+
+// Keywords: function, if, else, return, const, let, var, etc. (purple)
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-doctag,
+.hljs-formula {
+  color: var(--syntax-keyword);
+}
+
+// Strings: "text", 'text', `template` (green)
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-meta .hljs-string {
+  color: var(--syntax-string);
+}
+
+// Numbers and boolean literals (cyan)
+.hljs-number,
+.hljs-literal {
+  color: var(--syntax-literal);
+}
+
+// Variables and template variables (red)
+.hljs-variable,
+.hljs-template-variable {
+  color: var(--syntax-variable);
+}
+
+// Function names (blue)
+.hljs-function,
+.hljs-title.function_,
+.hljs-title {
+  color: var(--syntax-function);
+}
+
+// Built-in functions and classes (yellow)
+.hljs-built_in,
+.hljs-title.class_,
+.hljs-class .hljs-title,
+.hljs-type {
+  color: var(--syntax-class);
+}
+
+// Attributes in HTML/JSX (orange)
+.hljs-attr,
+.hljs-attribute {
+  color: var(--syntax-attribute);
+}
+
+// HTML/XML tag names (red)
+.hljs-name,
+.hljs-tag,
+.hljs-selector-tag,
+.hljs-deletion,
+.hljs-subst {
+  color: var(--syntax-tag);
+}
+
+// Section headers in markdown (red)
+.hljs-section {
+  color: var(--syntax-tag);
+}
+
+// CSS selectors
+.hljs-selector-class,
+.hljs-selector-attr,
+.hljs-selector-pseudo,
+.hljs-selector-id {
+  color: var(--syntax-attribute);
+}
+
+// Symbols, bullets, links (blue)
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link,
+.hljs-meta {
+  color: var(--syntax-meta);
+}
+
+// Punctuation (gray)
+.hljs-punctuation {
+  color: var(--syntax-punctuation);
+}
+
+// Operators: +, -, =, etc. (cyan)
+.hljs-operator {
+  color: var(--syntax-operator);
+}
+
+// Emphasis styles
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+
+.hljs-link {
+  text-decoration: underline;
+}

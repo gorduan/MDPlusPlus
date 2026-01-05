@@ -1,0 +1,62 @@
+/**
+ * MD++ Header/Toolbar Layout
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+.app-header {
+  @include flex-between;
+  height: $header-height;
+  padding: 0 map.get($spacing, 4);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+  -webkit-app-region: drag; // Electron draggable area
+
+  &__left,
+  &__center,
+  &__right {
+    @include flex-center;
+    gap: map.get($spacing, 2);
+    -webkit-app-region: no-drag; // Allow button clicks
+  }
+
+  &__title {
+    font-size: map.get($font-sizes, sm);
+    font-weight: map.get($font-weights, medium);
+    color: var(--text-primary);
+  }
+
+  &__subtitle {
+    font-size: map.get($font-sizes, xs);
+    color: var(--text-secondary);
+  }
+}
+
+// Toolbar
+.toolbar {
+  @include flex-center;
+  gap: map.get($spacing, 1);
+  padding: map.get($spacing, 2);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+
+  &__group {
+    @include flex-center;
+    gap: map.get($spacing, 1);
+    padding: 0 map.get($spacing, 2);
+    border-right: 1px solid var(--border-color);
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+
+  &__separator {
+    width: 1px;
+    height: 20px;
+    background-color: var(--border-color);
+    margin: 0 map.get($spacing, 2);
+  }
+}

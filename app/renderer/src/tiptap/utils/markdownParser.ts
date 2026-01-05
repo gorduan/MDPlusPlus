@@ -9,11 +9,15 @@ interface ParseContext {
   inFrontmatter: boolean;
   inCodeBlock: boolean;
   codeBlockLang: string;
+  codeBlockNestLevel: number; // Track nested code blocks
   inDirective: boolean;
   directiveStack: DirectiveInfo[];
   inAIContext: boolean;
   inTable: boolean;
   tableRows: JSONContent[];
+  inCallout: boolean;
+  calloutType: string;
+  calloutContent: string[];
 }
 
 interface DirectiveInfo {
@@ -35,11 +39,15 @@ export function parseMarkdownToTipTap(markdown: string): JSONContent {
     inFrontmatter: false,
     inCodeBlock: false,
     codeBlockLang: '',
+    codeBlockNestLevel: 0,
     inDirective: false,
     directiveStack: [],
     inAIContext: false,
     inTable: false,
     tableRows: [],
+    inCallout: false,
+    calloutType: '',
+    calloutContent: [],
   };
 
   let frontmatterContent = '';
@@ -77,21 +85,54 @@ export function parseMarkdownToTipTap(markdown: string): JSONContent {
     if (codeBlockMatch && !ctx.inCodeBlock) {
       ctx.inCodeBlock = true;
       ctx.codeBlockLang = codeBlockMatch[1] || '';
+      ctx.codeBlockNestLevel = 0;
       i++;
       continue;
     }
 
     if (ctx.inCodeBlock) {
+      // Check for nested code block start (```something inside the code block)
+      const nestedCodeBlockStart = line.match(/^```\w*$/);
+      if (nestedCodeBlockStart && line !== '```') {
+        // This is a nested code block start - treat as content
+        ctx.codeBlockNestLevel++;
+        codeBlockContent += (codeBlockContent ? '\n' : '') + line;
+        i++;
+        continue;
+      }
+
       if (line === '```') {
+        // Check if we're closing a nested code block
+        if (ctx.codeBlockNestLevel > 0) {
+          ctx.codeBlockNestLevel--;
+          codeBlockContent += (codeBlockContent ? '\n' : '') + line;
+          i++;
+          continue;
+        }
+
+        // Closing the main code block
         ctx.inCodeBlock = false;
-        const node: JSONContent = {
-          type: 'codeBlock',
-          attrs: { language: ctx.codeBlockLang },
-          content: codeBlockContent ? [{ type: 'text', text: codeBlockContent.trimEnd() }] : [],
-        };
-        addToCurrentContext(content, ctx, node);
+        // Check if this is a mermaid block (only at top level, not nested)
+        if (ctx.codeBlockLang === 'mermaid') {
+          const node: JSONContent = {
+            type: 'mermaidBlock',
+            attrs: {
+              code: codeBlockContent.trimEnd(),
+              viewMode: 'preview',
+            },
+          };
+          addToCurrentContext(content, ctx, node);
+        } else {
+          const node: JSONContent = {
+            type: 'codeBlock',
+            attrs: { language: ctx.codeBlockLang },
+            content: codeBlockContent ? [{ type: 'text', text: codeBlockContent.trimEnd() }] : [],
+          };
+          addToCurrentContext(content, ctx, node);
+        }
         codeBlockContent = '';
         ctx.codeBlockLang = '';
+        ctx.codeBlockNestLevel = 0;
       } else {
         codeBlockContent += (codeBlockContent ? '\n' : '') + line;
       }
@@ -175,6 +216,48 @@ export function parseMarkdownToTipTap(markdown: string): JSONContent {
       }
     }
 
+    // GitHub-style callout: > [!NOTE], > [!TIP], > [!WARNING], etc.
+    const calloutStartMatch = line.match(/^>\s*\[!(NOTE|TIP|INFO|HINT|IMPORTANT|WARNING|CAUTION|DANGER|ERROR|SUCCESS|QUESTION|QUOTE|EXAMPLE|ABSTRACT|BUG)\]\s*(.*)$/i);
+    if (calloutStartMatch && !ctx.inCallout) {
+      ctx.inCallout = true;
+      ctx.calloutType = calloutStartMatch[1].toLowerCase();
+      ctx.calloutContent = [];
+      // If there's content on the same line, add it
+      if (calloutStartMatch[2]) {
+        ctx.calloutContent.push(calloutStartMatch[2]);
+      }
+      i++;
+      continue;
+    }
+
+    // Continue callout content: > content
+    if (ctx.inCallout) {
+      const calloutContinue = line.match(/^>\s?(.*)$/);
+      if (calloutContinue) {
+        ctx.calloutContent.push(calloutContinue[1]);
+        i++;
+        continue;
+      } else {
+        // End of callout
+        ctx.inCallout = false;
+        const calloutNode: JSONContent = {
+          type: 'admonitionBlock',
+          attrs: {
+            type: ctx.calloutType,
+            title: ctx.calloutType.charAt(0).toUpperCase() + ctx.calloutType.slice(1),
+          },
+          content: ctx.calloutContent.length > 0 ? [{
+            type: 'paragraph',
+            content: parseInlineContent(ctx.calloutContent.join('\n')),
+          }] : [{ type: 'paragraph' }],
+        };
+        addToCurrentContext(content, ctx, calloutNode);
+        ctx.calloutType = '';
+        ctx.calloutContent = [];
+        // Don't increment i - we need to process this line normally
+      }
+    }
+
     // Container directive start: :::framework:component[title]{attrs}
     const directiveMatch = line.match(/^:::(\w+):(\w+)(?:\[([^\]]*)\])?(?:\{([^}]*)\})?\s*$/);
     if (directiveMatch) {
@@ -232,6 +315,22 @@ export function parseMarkdownToTipTap(markdown: string): JSONContent {
       content: ctx.tableRows,
     };
     addToCurrentContext(content, ctx, tableNode);
+  }
+
+  // Handle end of document while in callout
+  if (ctx.inCallout && ctx.calloutContent.length > 0) {
+    const calloutNode: JSONContent = {
+      type: 'admonitionBlock',
+      attrs: {
+        type: ctx.calloutType,
+        title: ctx.calloutType.charAt(0).toUpperCase() + ctx.calloutType.slice(1),
+      },
+      content: [{
+        type: 'paragraph',
+        content: parseInlineContent(ctx.calloutContent.join('\n')),
+      }],
+    };
+    addToCurrentContext(content, ctx, calloutNode);
   }
 
   return {

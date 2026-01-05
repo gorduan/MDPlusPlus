@@ -1,0 +1,23 @@
+/**
+ * MD++ Spacing Utilities (Minimal)
+ *
+ * Only essential utility classes.
+ * Most spacing is done via mixins in components.
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+// Essential spacing utilities only
+.m-0 { margin: 0 !important; }
+.m-auto { margin: auto !important; }
+.mx-auto { margin-left: auto !important; margin-right: auto !important; }
+.my-auto { margin-top: auto !important; margin-bottom: auto !important; }
+
+.p-0 { padding: 0 !important; }
+
+// Common gap values
+.gap-1 { gap: map.get($spacing, 1) !important; }
+.gap-2 { gap: map.get($spacing, 2) !important; }
+.gap-3 { gap: map.get($spacing, 3) !important; }
+.gap-4 { gap: map.get($spacing, 4) !important; }

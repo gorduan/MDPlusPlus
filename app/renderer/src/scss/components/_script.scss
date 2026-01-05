@@ -1,0 +1,371 @@
+/**
+ * MarkdownScript Styles
+ *
+ * Styles for script blocks, security dialog, and execution output.
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+// ============================================
+// Script Block Styles
+// ============================================
+
+.mdsc-script-block {
+  position: relative;
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+
+  // Placeholder before execution
+  .mdsc-placeholder {
+    padding: 0.75rem 1rem;
+    @include font-mono;
+    font-size: map.get($font-sizes, sm);
+    color: var(--text-muted);
+    background: var(--bg-code);
+    border: 1px dashed var(--border-color);
+  }
+
+  // Execute mode (no visible output)
+  &.mdsc-execute {
+    .mdsc-placeholder {
+      display: none;
+    }
+  }
+
+  // Output mode
+  &.mdsc-output {
+    .mdsc-placeholder {
+      display: block;
+    }
+
+    // When output is available
+    &[data-script-result] .mdsc-placeholder {
+      display: none;
+    }
+  }
+
+  // Script output container
+  .mdsc-output-content {
+    // Output inherits normal markdown styles
+  }
+
+  // Async indicator
+  &.mdsc-async::before {
+    content: 'async';
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    padding: 0.125rem 0.375rem;
+    font-size: map.get($font-sizes, xs);
+    @include font-mono;
+    background: var(--accent);
+    color: white;
+    border-radius: map.get($radii, sm);
+    opacity: 0.7;
+  }
+}
+
+// Script error display
+.mdsc-error {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba($red-500, 0.1);
+  border: 1px solid rgba($red-500, 0.3);
+  border-left: 4px solid $red-500;
+  border-radius: 0 0.5rem 0.5rem 0;
+
+  .mdsc-error-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: $red-400;
+
+    .mdsc-error-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.25rem;
+      height: 1.25rem;
+      font-size: 0.75rem;
+      background: $red-500;
+      color: white;
+      border-radius: 50%;
+    }
+  }
+
+  .mdsc-error-message {
+    @include font-mono;
+    font-size: map.get($font-sizes, sm);
+    color: $red-300;
+    margin-bottom: 0.5rem;
+  }
+
+  .mdsc-error-location {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  details {
+    margin-top: 0.75rem;
+
+    summary {
+      cursor: pointer;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+
+      &:hover {
+        color: var(--text-primary);
+      }
+    }
+
+    pre {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: var(--bg-code);
+      border-radius: 0.25rem;
+      overflow-x: auto;
+
+      code {
+        font-size: 0.75rem;
+        color: var(--text-code);
+      }
+    }
+  }
+}
+
+// Executing indicator
+.mdsc-executing {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border-radius: 0.25rem;
+
+  .mdsc-spinner {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: mdsc-spin 0.8s linear infinite;
+  }
+}
+
+@keyframes mdsc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ============================================
+// Security Dialog
+// ============================================
+
+.script-security-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.script-security-dialog {
+  width: 100%;
+  max-width: 420px;
+  margin: 1rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  animation: script-dialog-in 0.2s ease-out;
+}
+
+@keyframes script-dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+}
+
+.script-security-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+
+  h2 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .script-security-icon {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+
+    &.warning {
+      color: $yellow-500;
+    }
+  }
+}
+
+.script-security-content {
+  padding: 1.25rem;
+
+  p {
+    margin: 0 0 0.75rem 0;
+    color: var(--text-secondary);
+  }
+}
+
+.script-security-filepath {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  @include font-mono;
+  font-size: map.get($font-sizes, sm);
+  background: var(--bg-code);
+  border-radius: map.get($radii, base);
+  color: var(--accent-light);
+  word-break: break-all;
+}
+
+.script-security-warning {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  background: rgba($yellow-500, 0.1);
+  border: 1px solid rgba($yellow-500, 0.2);
+  border-radius: 0.5rem;
+
+  svg {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: $yellow-500;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: $yellow-200;
+    line-height: 1.5;
+  }
+}
+
+.script-security-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+
+  input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--accent);
+  }
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
+.script-security-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+
+.script-security-btn {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &.secondary {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+
+    &:hover {
+      background: var(--border-color);
+      color: var(--text-primary);
+    }
+  }
+
+  &.primary {
+    background: var(--accent);
+    color: white;
+
+    &:hover {
+      background: var(--accent-hover);
+    }
+  }
+}
+
+// ============================================
+// Console Log Display
+// ============================================
+
+.mdsc-console {
+  margin: 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-code);
+  border-radius: map.get($radii, sm);
+  @include font-mono;
+  font-size: map.get($font-sizes, sm);
+
+  .mdsc-console-entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+
+    &.log {
+      color: var(--text-code);
+    }
+
+    &.warn {
+      color: $yellow-400;
+    }
+
+    &.error {
+      color: $red-400;
+    }
+
+    &.info {
+      color: $blue-400;
+    }
+
+    .mdsc-console-level {
+      flex-shrink: 0;
+      width: 3rem;
+      text-transform: uppercase;
+      font-size: 0.625rem;
+      font-weight: 600;
+      opacity: 0.7;
+    }
+  }
+}

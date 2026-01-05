@@ -1,0 +1,181 @@
+/**
+ * MD++ Color System - Semantic Tokens
+ *
+ * Uses the modern CSS light-dark() function for automatic theme switching.
+ * Based on: https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/light-dark
+ *
+ * Browser Support (Baseline 2024):
+ * - Chrome 123+, Edge 123+, Firefox 120+, Safari 17.5+
+ *
+ * Hierarchy:
+ * 1. PRIMITIVE TOKENS (_tokens.scss) - Raw values
+ * 2. SEMANTIC TOKENS (this file) - Contextual mappings
+ * 3. COMPONENT TOKENS (plugins/) - Plugin-specific tokens
+ */
+
+@use 'tokens' as *;
+
+// ===========================================
+// Root with color-scheme support
+// ===========================================
+:root {
+  // Enable light-dark() function
+  // This tells the browser to support both color schemes
+  color-scheme: light dark;
+
+  // ===========================================
+  // Background Colors
+  // ===========================================
+  --bg-primary: light-dark(#{$white}, #{$slate-900});
+  --bg-secondary: light-dark(#{$slate-50}, #{$slate-800});
+  --bg-card: light-dark(#{$slate-100}, #{$slate-700});
+  --bg-hover: light-dark(#{$slate-200}, #{$slate-600});
+  --bg-code: light-dark(#{$slate-50}, #{$slate-800});
+
+  // ===========================================
+  // Text Colors
+  // ===========================================
+  --text-primary: light-dark(#{$slate-800}, #{$slate-50});
+  --text-secondary: light-dark(#{$slate-500}, #{$slate-400});
+  --text-muted: light-dark(#{$slate-400}, #{$slate-500});
+  --text-code: light-dark(#{$slate-800}, #{$slate-200});
+
+  // ===========================================
+  // Accent Colors (Purple)
+  // ===========================================
+  --accent: #{$purple-600};
+  --accent-hover: #{$purple-700};
+  --accent-light: light-dark(#{$purple-700}, #{$purple-400});
+
+  // ===========================================
+  // Semantic Colors
+  // ===========================================
+  --color-success: light-dark(#{$green-600}, #{$green-500});
+  --color-warning: light-dark(#{$yellow-600}, #{$yellow-500});
+  --color-error: light-dark(#{$red-600}, #{$red-500});
+  --color-danger: light-dark(#{$red-600}, #{$red-500});
+  --color-info: light-dark(#{$blue-600}, #{$blue-500});
+
+  // ===========================================
+  // Border Colors
+  // ===========================================
+  --border-color: light-dark(#{$slate-200}, #{$slate-600});
+
+  // ===========================================
+  // Code Block Colors
+  // ===========================================
+  --code-bg: light-dark(#{$slate-50}, #{$slate-800});
+  --code-text: light-dark(#{$slate-800}, #{$slate-200});
+  --inline-code-bg: light-dark(#{$slate-100}, #{$slate-700});
+  --inline-code-text: light-dark(#{$purple-700}, #{$purple-400});
+
+  // ===========================================
+  // Alert/Notification Backgrounds
+  // ===========================================
+  --alert-primary-bg: light-dark(
+    rgba(124, 58, 237, 0.1),
+    rgba(124, 58, 237, 0.15)
+  );
+  --alert-success-bg: light-dark(
+    rgba(5, 150, 105, 0.1),
+    rgba(16, 185, 129, 0.15)
+  );
+  --alert-warning-bg: light-dark(
+    rgba(217, 119, 6, 0.1),
+    rgba(245, 158, 11, 0.15)
+  );
+  --alert-danger-bg: light-dark(
+    rgba(220, 38, 38, 0.1),
+    rgba(239, 68, 68, 0.15)
+  );
+  --alert-info-bg: light-dark(
+    rgba(37, 99, 235, 0.1),
+    rgba(59, 130, 246, 0.15)
+  );
+
+  // ===========================================
+  // Admonition Colors
+  // ===========================================
+  --admonition-note: light-dark(#{$blue-600}, #{$blue-500});
+  --admonition-tip: light-dark(#{$green-600}, #{$green-500});
+  --admonition-warning: light-dark(#{$yellow-600}, #{$yellow-500});
+  --admonition-danger: light-dark(#{$red-600}, #{$red-500});
+  --admonition-important: light-dark(#{$purple-600}, #{$purple-500});
+
+  // Additional admonition colors
+  --cyan-500: light-dark(#{$cyan-600}, #{$cyan-500});
+  --indigo-500: light-dark(#{$indigo-600}, #{$indigo-500});
+  --teal-500: light-dark(#{$teal-600}, #{$teal-500});
+
+  // ===========================================
+  // Status Indicators
+  // ===========================================
+  --status-modified: light-dark(#{$yellow-600}, #{$yellow-300});
+
+  // ===========================================
+  // Syntax Highlighting (Unified for WYSIWYG + Preview)
+  // ===========================================
+  --syntax-comment: light-dark(#{$syntax-light-comment}, #{$syntax-dark-comment});
+  --syntax-punctuation: light-dark(#{$syntax-light-punctuation}, #{$syntax-dark-punctuation});
+  --syntax-keyword: light-dark(#{$syntax-light-keyword}, #{$syntax-dark-keyword});
+  --syntax-string: light-dark(#{$syntax-light-string}, #{$syntax-dark-string});
+  --syntax-number: light-dark(#{$syntax-light-number}, #{$syntax-dark-number});
+  --syntax-function: light-dark(#{$syntax-light-function}, #{$syntax-dark-function});
+  --syntax-variable: light-dark(#{$syntax-light-variable}, #{$syntax-dark-variable});
+  --syntax-operator: light-dark(#{$syntax-light-operator}, #{$syntax-dark-operator});
+  --syntax-class: light-dark(#{$syntax-light-class}, #{$syntax-dark-class});
+  --syntax-tag: light-dark(#{$syntax-light-tag}, #{$syntax-dark-tag});
+  --syntax-attribute: light-dark(#{$syntax-light-attribute}, #{$syntax-dark-attribute});
+  --syntax-regex: light-dark(#{$syntax-light-regex}, #{$syntax-dark-regex});
+  --syntax-builtin: light-dark(#{$syntax-light-builtin}, #{$syntax-dark-builtin});
+  --syntax-literal: light-dark(#{$syntax-light-literal}, #{$syntax-dark-literal});
+  --syntax-meta: light-dark(#{$syntax-light-meta}, #{$syntax-dark-meta});
+  --syntax-title: light-dark(#{$syntax-light-title}, #{$syntax-dark-title});
+  --syntax-section: light-dark(#{$syntax-light-section}, #{$syntax-dark-section});
+
+  // ===========================================
+  // Highlight/Mark Color
+  // ===========================================
+  --highlight-bg: light-dark(#fff3cd, #fef08a);
+  --highlight-color: #{$slate-800};
+
+  // ===========================================
+  // Selection Color
+  // ===========================================
+  --selection-bg: light-dark(
+    rgba(124, 58, 237, 0.25),
+    rgba(124, 58, 237, 0.3)
+  );
+
+  // ===========================================
+  // Scrollbar Colors
+  // ===========================================
+  --scrollbar-track: var(--bg-primary);
+  --scrollbar-thumb: light-dark(#{$slate-300}, #{$slate-700});
+  --scrollbar-thumb-hover: light-dark(#{$slate-400}, #{$slate-600});
+}
+
+// ===========================================
+// Force Dark Theme (Override)
+// ===========================================
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+// ===========================================
+// Force Light Theme (Override)
+// ===========================================
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+// ===========================================
+// Legacy Support: Body class for Mermaid
+// ===========================================
+body.light {
+  color-scheme: light;
+}
+
+body.dark {
+  color-scheme: dark;
+}

@@ -17,7 +17,7 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
 
 // MD++ Extensions
-import { Frontmatter, AIContextBlock, MDPPDirective } from '../tiptap/extensions';
+import { Frontmatter, AIContextBlock, MDPPDirective, MermaidBlock, AdmonitionBlock } from '../tiptap/extensions';
 import { parseMarkdownToTipTap } from '../tiptap/utils/markdownParser';
 import { serializeTipTapToMarkdown } from '../tiptap/utils/markdownSerializer';
 
@@ -82,6 +82,8 @@ export default function WysiwygEditor({ content, onChange, theme = 'dark' }: Wys
       Frontmatter,
       AIContextBlock,
       MDPPDirective,
+      MermaidBlock,
+      AdmonitionBlock,
     ],
     content: parseMarkdownToTipTap(content),
     editorProps: {

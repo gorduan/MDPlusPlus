@@ -85,6 +85,44 @@ function serializeNode(node: JSONContent, state: SerializerState): void {
       state.output += ':::\n\n';
     },
 
+    // Admonition/Callout block
+    admonitionBlock: (node, state) => {
+      const type = (node.attrs?.type || 'note').toUpperCase();
+      state.output += `> [!${type}]\n`;
+
+      if (node.content) {
+        for (const child of node.content) {
+          if (child.type === 'paragraph') {
+            state.output += '> ';
+            serializeInlineContent(child.content || [], state);
+            state.output += '\n';
+          } else {
+            // For other content types, serialize and prefix with >
+            const tempState: SerializerState = { output: '', listDepth: 0, orderedListCounters: [] };
+            serializeNode(child, tempState);
+            const lines = tempState.output.split('\n');
+            for (const line of lines) {
+              if (line.trim()) {
+                state.output += '> ' + line + '\n';
+              }
+            }
+          }
+        }
+      }
+      state.output += '\n';
+    },
+
+    // Mermaid diagram block
+    mermaidBlock: (node, state) => {
+      const code = node.attrs?.code || 'graph TD\n  A[Start] --> B[End]';
+      state.output += '```mermaid\n';
+      state.output += code;
+      if (!code.endsWith('\n')) {
+        state.output += '\n';
+      }
+      state.output += '```\n\n';
+    },
+
     // Headings
     heading: (node, state) => {
       const level = node.attrs?.level || 1;

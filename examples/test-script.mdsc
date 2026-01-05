@@ -1,0 +1,55 @@
+# MarkdownScript Demo
+
+This is a demonstration of **MarkdownScript** (.mdsc) - Markdown with embedded JavaScript!
+
+## Variable Definition
+
+:::script{lang="js"}
+const products = [
+  { name: "Widget A", price: 29.99, stock: 150 },
+  { name: "Widget B", price: 49.99, stock: 75 },
+  { name: "Widget C", price: 19.99, stock: 200 },
+];
+
+const total = products.reduce((sum, p) => sum + p.price * p.stock, 0);
+const formatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
+:::
+
+## Product List
+
+:::script:output{lang="js"}
+return products.map(p => `- **${p.name}**: ${formatter.format(p.price)} (${p.stock} in stock)`).join('\n');
+:::
+
+## Summary
+
+:::script:output{lang="js"}
+return `> **Total Inventory Value:** ${formatter.format(total)}`;
+:::
+
+## Dynamic Date
+
+:::script:output{lang="js"}
+const now = new Date();
+const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+return `*Generated on: ${now.toLocaleDateString('de-DE', options)}*`;
+:::
+
+---
+
+## Math Example
+
+:::script{lang="js"}
+const fibonacci = (n) => {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+};
+:::
+
+:::script:output{lang="js"}
+const sequence = [];
+for (let i = 0; i < 10; i++) {
+  sequence.push(fibonacci(i));
+}
+return `**Fibonacci sequence (first 10):** ${sequence.join(', ')}`;
+:::

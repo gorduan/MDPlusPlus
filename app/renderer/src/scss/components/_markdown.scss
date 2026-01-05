@@ -1,0 +1,302 @@
+/**
+ * MD++ Markdown Content Styles
+ *
+ * Unified styles for both WYSIWYG editor and Preview.
+ * These styles apply to rendered markdown content.
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+// Base markdown container
+.markdown-content,
+.preview-content,
+.ProseMirror {
+  color: var(--text-primary);
+  font-size: map.get($font-sizes, base);
+  line-height: map.get($line-heights, relaxed);
+
+  // Headings - Unified colors for WYSIWYG and Preview
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: map.get($font-weights, bold);
+    line-height: map.get($line-heights, tight);
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+
+    &:first-child {
+      margin-top: 0;
+    }
+
+    // Anchor links in headings should inherit heading color
+    // (Parser wraps heading text in <a> for anchor links)
+    a {
+      color: inherit;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: none;
+      }
+    }
+  }
+
+  // H1: Accent color with border (like original global.css)
+  h1 {
+    font-size: 2em;
+    padding-bottom: 0.3em;
+    border-bottom: 2px solid var(--accent);
+    color: var(--accent-light);
+  }
+
+  // H2: Primary text color
+  h2 {
+    font-size: 1.5em;
+    padding-bottom: 0.3em;
+    color: var(--text-primary);
+  }
+
+  // H3: Accent color (like original)
+  h3 {
+    font-size: 1.25em;
+    color: var(--accent-light);
+  }
+
+  // H4-H6: Normal text colors
+  h4 {
+    font-size: 1em;
+    color: var(--text-primary);
+  }
+
+  h5 {
+    font-size: 0.875em;
+    color: var(--text-primary);
+  }
+
+  h6 {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+  }
+
+  // Paragraphs
+  p {
+    margin: 0 0 1em;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  // Links
+  a {
+    color: var(--accent);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  // Text emphasis
+  strong, b {
+    font-weight: map.get($font-weights, bold);
+  }
+
+  em, i {
+    font-style: italic;
+  }
+
+  // Strikethrough
+  del, s {
+    text-decoration: line-through;
+    color: var(--text-secondary);
+  }
+
+  // Lists
+  ul, ol {
+    margin: 0 0 1em;
+    padding-left: 2em;
+  }
+
+  ul {
+    list-style-type: disc;
+
+    ul {
+      list-style-type: circle;
+
+      ul {
+        list-style-type: square;
+      }
+    }
+  }
+
+  ol {
+    list-style-type: decimal;
+  }
+
+  li {
+    margin-bottom: 0.25em;
+
+    > p {
+      margin: 0;
+    }
+
+    > ul,
+    > ol {
+      margin-top: 0.25em;
+      margin-bottom: 0;
+    }
+  }
+
+  // Task lists
+  ul.task-list,
+  ul[data-type="taskList"] {
+    list-style: none;
+    padding-left: 0;
+
+    li {
+      display: flex;
+      align-items: flex-start;
+      gap: map.get($spacing, 2);
+
+      &::before {
+        content: none;
+      }
+
+      input[type="checkbox"] {
+        margin-top: 0.25em;
+        accent-color: var(--accent);
+      }
+    }
+  }
+
+  // Inline code
+  code {
+    @include font-mono;
+    font-size: 0.875em;
+    padding: 0.2em 0.4em;
+    background-color: var(--bg-code);
+    color: var(--text-code);
+    border-radius: map.get($radii, sm);
+  }
+
+  // Code blocks
+  pre {
+    @include font-mono;
+    margin: 0 0 1em;
+    padding: map.get($spacing, 4);
+    background-color: var(--bg-code);
+    border-radius: map.get($radii, base);
+    overflow-x: auto;
+
+    code {
+      padding: 0;
+      background: none;
+      border-radius: 0;
+      color: inherit;
+    }
+  }
+
+  // Blockquotes
+  blockquote {
+    margin: 0 0 1em;
+    padding: map.get($spacing, 2) map.get($spacing, 4);
+    border-left: 4px solid var(--accent);
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+
+    > :last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  // Horizontal rule
+  hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 1.5em 0;
+  }
+
+  // Tables
+  table {
+    width: 100%;
+    margin: 0 0 1em;
+    border-collapse: collapse;
+    overflow-x: auto;
+    display: block;
+
+    @include breakpoint(md) {
+      display: table;
+    }
+  }
+
+  thead {
+    background-color: var(--bg-secondary);
+  }
+
+  th, td {
+    padding: map.get($spacing, 2) map.get($spacing, 3);
+    border: 1px solid var(--border-color);
+    text-align: left;
+  }
+
+  th {
+    font-weight: map.get($font-weights, semibold);
+  }
+
+  // Images
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: map.get($radii, sm);
+  }
+
+  // Definition lists
+  dl {
+    margin: 0 0 1em;
+  }
+
+  dt {
+    font-weight: map.get($font-weights, semibold);
+  }
+
+  dd {
+    margin-left: map.get($spacing, 4);
+    margin-bottom: map.get($spacing, 2);
+  }
+
+  // Footnotes
+  .footnotes {
+    margin-top: map.get($spacing, 8);
+    padding-top: map.get($spacing, 4);
+    border-top: 1px solid var(--border-color);
+    font-size: map.get($font-sizes, sm);
+    color: var(--text-secondary);
+  }
+
+  sup {
+    font-size: 0.75em;
+  }
+
+  // Keyboard
+  kbd {
+    @include font-mono;
+    font-size: 0.875em;
+    padding: 0.1em 0.4em;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: map.get($radii, sm);
+    box-shadow: inset 0 -1px 0 var(--border-color);
+  }
+
+  // Mark/Highlight - uses unified highlight variables
+  mark {
+    background-color: var(--highlight-bg);
+    color: var(--highlight-color);
+    padding: 0.1em 0.2em;
+    border-radius: 2px;
+  }
+
+  // Selection color - unified across app
+  ::selection {
+    background-color: var(--selection-bg);
+  }
+}

@@ -1,0 +1,321 @@
+/**
+ * MD++ Dialog Styles
+ *
+ * Settings, Help, and other dialog windows.
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+// Settings Dialog
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.85);
+  @include flex-center;
+  z-index: map.get($z-index, modal);
+  animation: fadeIn $transition-base;
+}
+
+.settings-dialog {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: map.get($radii, lg);
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: map.get($shadows, xl);
+  animation: slideIn 0.2s ease;
+}
+
+.settings-header {
+  @include flex-between;
+  padding: map.get($spacing, 4) map.get($spacing, 5);
+  border-bottom: 1px solid var(--border-color);
+
+  h2 {
+    font-size: map.get($font-sizes, xl);
+    font-weight: map.get($font-weights, semibold);
+    color: var(--text-primary);
+    margin: 0;
+  }
+}
+
+.settings-close {
+  @include flex-center;
+  width: 2rem;
+  height: 2rem;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  border-radius: map.get($radii, sm);
+  transition: all $transition-fast;
+
+  &:hover {
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+  }
+}
+
+.settings-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: map.get($spacing, 4) map.get($spacing, 5);
+}
+
+.settings-section {
+  margin-bottom: map.get($spacing, 6);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  h3 {
+    font-size: map.get($font-sizes, sm);
+    font-weight: map.get($font-weights, semibold);
+    color: var(--accent-light);
+    margin-bottom: map.get($spacing, 3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+.settings-toggle {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 3);
+  padding: map.get($spacing, 2) 0;
+  cursor: pointer;
+  user-select: none;
+
+  input[type="checkbox"] {
+    width: 1.125rem;
+    height: 1.125rem;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  span {
+    font-size: 0.9375rem;
+    color: var(--text-primary);
+  }
+
+  &:hover span {
+    color: var(--accent-light);
+  }
+}
+
+.settings-subsection {
+  padding-left: map.get($spacing, 6);
+  margin-top: map.get($spacing, 1);
+  border-left: 2px solid var(--border-color);
+
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+.settings-hint {
+  font-size: map.get($font-sizes, sm);
+  color: var(--text-secondary);
+  font-style: italic;
+  margin: 0;
+  padding: map.get($spacing, 2) 0;
+}
+
+.settings-footer {
+  @include flex-between;
+  justify-content: flex-end;
+  gap: map.get($spacing, 3);
+  padding: map.get($spacing, 4) map.get($spacing, 5);
+  border-top: 1px solid var(--border-color);
+}
+
+.settings-btn {
+  padding: map.get($spacing, 2) map.get($spacing, 4);
+  border-radius: map.get($radii, sm);
+  font-size: map.get($font-sizes, sm);
+  font-weight: map.get($font-weights, medium);
+  cursor: pointer;
+  transition: all $transition-fast;
+  border: none;
+
+  &.primary {
+    background-color: var(--accent);
+    color: white;
+
+    &:hover {
+      background-color: var(--accent-hover);
+    }
+  }
+
+  &.secondary {
+    background-color: var(--bg-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+
+    &:hover {
+      background-color: var(--border-color);
+      color: var(--text-primary);
+    }
+  }
+}
+
+// Help Dialog
+.help-dialog {
+  max-width: 800px;
+  max-height: 80vh;
+}
+
+.help-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: map.get($spacing, 6);
+  max-height: 60vh;
+  overflow-y: auto;
+
+  @include breakpoint-down(md) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.help-section {
+  h3 {
+    font-size: map.get($font-sizes, base);
+    font-weight: map.get($font-weights, semibold);
+    color: var(--accent-light);
+    margin-bottom: map.get($spacing, 3);
+    padding-bottom: map.get($spacing, 2);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  &:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+.shortcut-groups {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: map.get($spacing, 4);
+
+  @include breakpoint-down(md) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.shortcut-group {
+  h4 {
+    font-size: map.get($font-sizes, sm);
+    font-weight: map.get($font-weights, semibold);
+    color: var(--text-primary);
+    margin-bottom: map.get($spacing, 2);
+  }
+}
+
+.shortcut-list {
+  @include flex-column;
+  gap: map.get($spacing, 1);
+}
+
+.shortcut-item {
+  @include flex-between;
+  font-size: map.get($font-sizes, sm);
+
+  kbd {
+    padding: map.get($spacing, 1) map.get($spacing, 2);
+    font-size: map.get($font-sizes, xs);
+    @include font-mono;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: map.get($radii, sm);
+    color: var(--accent-light);
+  }
+
+  span {
+    color: var(--text-secondary);
+  }
+}
+
+.markdown-reference {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: map.get($spacing, 2);
+}
+
+.reference-item {
+  @include flex-between;
+  padding: map.get($spacing, 1) map.get($spacing, 2);
+  background-color: var(--bg-card);
+  border-radius: map.get($radii, sm);
+  font-size: map.get($font-sizes, sm);
+
+  code {
+    @include font-mono;
+    color: var(--accent-light);
+    font-size: map.get($font-sizes, xs);
+  }
+
+  span {
+    color: var(--text-secondary);
+    font-size: map.get($font-sizes, xs);
+  }
+}
+
+// Table Editor Dialog
+.table-editor-dialog {
+  max-width: 900px;
+  width: 90%;
+}
+
+.table-editor-content {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.table-editor-toolbar {
+  display: flex;
+  gap: map.get($spacing, 2);
+  margin-bottom: map.get($spacing, 4);
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 1);
+    padding: map.get($spacing, 2) map.get($spacing, 3);
+    font-size: map.get($font-sizes, sm);
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: map.get($radii, sm);
+    color: var(--text-primary);
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

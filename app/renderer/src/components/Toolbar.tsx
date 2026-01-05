@@ -1,5 +1,6 @@
 /**
  * MD++ Toolbar Component
+ * Modern toolbar with grouped actions and visual feedback
  */
 
 import React, { useState, useEffect } from 'react';
@@ -13,8 +14,11 @@ interface ToolbarProps {
   showAIContext: boolean;
   onToggleAIContext: () => void;
   onOpenSettings: () => void;
+  onOpenThemeEditor: () => void;
   theme: Theme;
   onToggleTheme: () => void;
+  onToggleSidebar?: () => void;
+  sidebarOpen?: boolean;
 }
 
 export default function Toolbar({
@@ -23,8 +27,11 @@ export default function Toolbar({
   showAIContext,
   onToggleAIContext,
   onOpenSettings,
+  onOpenThemeEditor,
   theme,
   onToggleTheme,
+  onToggleSidebar,
+  sidebarOpen = false,
 }: ToolbarProps) {
   const [devToolsOpen, setDevToolsOpen] = useState(false);
 
@@ -47,108 +54,149 @@ export default function Toolbar({
   };
 
   return (
-    <div className="toolbar">
-      <div className="toolbar-section toolbar-left">
-        <span className="toolbar-title">MD++</span>
-        <button
-          className="theme-toggle"
-          onClick={onToggleTheme}
-          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-        >
-          {theme === 'dark' ? (
-            // Sun icon for switching to light mode
+    <header className="toolbar">
+      {/* Left Section - Logo & Menu */}
+      <div className="toolbar__section toolbar__section--left">
+        {onToggleSidebar && (
+          <button
+            className={`toolbar__btn toolbar__btn--icon ${sidebarOpen ? 'toolbar__btn--active' : ''}`}
+            onClick={onToggleSidebar}
+            title={sidebarOpen ? 'Close Sidebar' : 'Open Sidebar'}
+          >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="5"/>
-              <line x1="12" y1="1" x2="12" y2="3"/>
-              <line x1="12" y1="21" x2="12" y2="23"/>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-              <line x1="1" y1="12" x2="3" y2="12"/>
-              <line x1="21" y1="12" x2="23" y2="12"/>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
-          ) : (
-            // Moon icon for switching to dark mode
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-            </svg>
-          )}
-        </button>
+          </button>
+        )}
+        <div className="toolbar__brand">
+          <span className="toolbar__logo">M++</span>
+          <span className="toolbar__title">MD++</span>
+        </div>
       </div>
 
-      <div className="toolbar-section toolbar-center">
-        <div className="view-mode-buttons">
+      {/* Center Section - View Modes */}
+      <div className="toolbar__section toolbar__section--center">
+        <div className="toolbar__group toolbar__viewmodes">
           <button
-            className={`toolbar-btn ${viewMode === 'editor' ? 'active' : ''}`}
+            className={`toolbar__viewmode-btn ${viewMode === 'editor' ? 'toolbar__viewmode-btn--active' : ''}`}
             onClick={() => onViewModeChange('editor')}
             title="Editor Only (Ctrl+1)"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M14 1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 14V2h12v12H2z"/>
-              <path d="M4 4h8v1H4zM4 6h8v1H4zM4 8h6v1H4z"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <line x1="7" y1="8" x2="17" y2="8" />
+              <line x1="7" y1="12" x2="15" y2="12" />
+              <line x1="7" y1="16" x2="13" y2="16" />
             </svg>
             <span>Editor</span>
           </button>
           <button
-            className={`toolbar-btn ${viewMode === 'split' ? 'active' : ''}`}
+            className={`toolbar__viewmode-btn ${viewMode === 'split' ? 'toolbar__viewmode-btn--active' : ''}`}
             onClick={() => onViewModeChange('split')}
             title="Split View (Ctrl+3)"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M14 1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 14V2h5v12H2zm6 0V2h6v12H8z"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <line x1="12" y1="3" x2="12" y2="21" />
             </svg>
             <span>Split</span>
           </button>
           <button
-            className={`toolbar-btn ${viewMode === 'preview' ? 'active' : ''}`}
+            className={`toolbar__viewmode-btn ${viewMode === 'preview' ? 'toolbar__viewmode-btn--active' : ''}`}
             onClick={() => onViewModeChange('preview')}
             title="Preview Only (Ctrl+2)"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 3C4.5 3 1.5 5.5 1 8c.5 2.5 3.5 5 7 5s6.5-2.5 7-5c-.5-2.5-3.5-5-7-5zm0 8a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
-              <circle cx="8" cy="8" r="1.5"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
             </svg>
             <span>Preview</span>
           </button>
         </div>
       </div>
 
-      <div className="toolbar-section toolbar-right">
+      {/* Right Section - Actions */}
+      <div className="toolbar__section toolbar__section--right">
+        {/* AI Context Toggle */}
         <button
-          className={`toolbar-btn ${showAIContext ? 'active' : ''}`}
+          className={`toolbar__btn toolbar__btn--feature ${showAIContext ? 'toolbar__btn--active' : ''}`}
           onClick={onToggleAIContext}
           title="Toggle AI Context Visibility (Ctrl+Shift+A)"
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 12.5a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
-            <path d="M8 4a1 1 0 0 0-1 1v3a1 1 0 0 0 2 0V5a1 1 0 0 0-1-1zM8 10a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
+            <path d="M12 6a1 1 0 0 0-1 1v5a1 1 0 0 0 2 0V7a1 1 0 0 0-1-1z" />
+            <circle cx="12" cy="16" r="1" />
           </svg>
           <span>AI</span>
         </button>
+
+        {/* Divider */}
+        <div className="toolbar__divider" />
+
+        {/* Theme Toggle */}
         <button
-          className="toolbar-btn"
+          className="toolbar__btn toolbar__btn--icon"
+          onClick={onToggleTheme}
+          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {theme === 'dark' ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          )}
+        </button>
+
+        {/* Theme Editor */}
+        <button
+          className="toolbar__btn toolbar__btn--icon"
+          onClick={onOpenThemeEditor}
+          title="Theme Editor"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.555C21.965 6.012 17.461 2 12 2z" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <circle cx="15.5" cy="8.5" r="1.5" />
+            <circle cx="6.5" cy="13.5" r="1.5" />
+          </svg>
+        </button>
+
+        {/* Settings */}
+        <button
+          className="toolbar__btn toolbar__btn--icon"
           onClick={onOpenSettings}
           title="Settings (Ctrl+,)"
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
-            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
-          <span>Settings</span>
         </button>
+
+        {/* DevTools */}
         <button
-          className={`toolbar-btn ${devToolsOpen ? 'active' : ''}`}
+          className={`toolbar__btn toolbar__btn--icon ${devToolsOpen ? 'toolbar__btn--active' : ''}`}
           onClick={handleToggleDevTools}
           title="Toggle Developer Tools (F12)"
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M4.5 2A2.5 2.5 0 0 0 2 4.5v7A2.5 2.5 0 0 0 4.5 14h7a2.5 2.5 0 0 0 2.5-2.5v-7A2.5 2.5 0 0 0 11.5 2h-7zM3 4.5A1.5 1.5 0 0 1 4.5 3h7A1.5 1.5 0 0 1 13 4.5v7a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 3 11.5v-7z"/>
-            <path d="M5.5 6l2 2-2 2-.7-.7L6.1 8 4.8 6.7l.7-.7zM8 10h3v1H8v-1z"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="16 18 22 12 16 6" />
+            <polyline points="8 6 2 12 8 18" />
           </svg>
-          <span>DevTools</span>
         </button>
       </div>
-    </div>
+    </header>
   );
 }

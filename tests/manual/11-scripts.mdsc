@@ -1,0 +1,329 @@
+# Test 11: MarkdownScript (.mdsc)
+
+> **Kategorie:** MarkdownScript Erweiterung
+> **Dateien:**
+> - `src/parser.ts` - remarkScriptBlock
+> - `app/renderer/src/script/` - Script Runtime
+> - `app/renderer/src/components/ScriptSecurityDialog.tsx`
+> **Feature:** enableScripts
+> **Dateiendung:** .mdsc (nicht .md!)
+
+---
+
+## 11.1 Basis Script-Block
+
+### Test: Einfaches Script
+**Eingabe:**
+```markdown
+:::script
+// JavaScript Code hier
+const message = "Hello from Script!";
+console.log(message);
+:::
+```
+
+**Erwartung:** Script wird erkannt (aber evtl. Sicherheitsdialog)
+**Ergebnis:** [ ] PASS / [ ] FAIL
+
+**Ausgabe:**
+:::script
+// JavaScript Code hier
+const message = "Hello from Script!";
+console.log(message);
+:::
+
+---
+
+### Test: Script mit ID
+**Eingabe:**
+```markdown
+:::script{id="my-script"}
+function greet(name) {
+  return `Hello, ${name}!`;
+}
+:::
+```
+
+**Erwartung:** Script hat ID-Attribut
+**Ergebnis:** [ ] PASS / [ ] FAIL
+
+**Ausgabe:**
+:::script{id="my-script"}
+function greet(name) {
+  return `Hello, ${name}!`;
+}
+:::
+
+---
+
+## 11.2 Script mit Output
+
+### Test: Script mit Ausgabe-Bereich
+**Eingabe:**
+```markdown
+:::script{output="result-1"}
+const x = 5;
+const y = 10;
+return x + y;
+:::
+
+:::output{id="result-1"}
+:::
+```
+
+**Erwartung:** Output-Block zeigt Ergebnis
+**Ergebnis:** [ ] PASS / [ ] FAIL
+
+**Ausgabe:**
+:::script{output="result-1"}
+const x = 5;
+const y = 10;
+return x + y;
+:::
+
+:::output{id="result-1"}
+:::
+
+---
+
+## 11.3 Interaktive Elemente
+
+### Test: Input-Bindung
+**Eingabe:**
+```markdown
+:::input{type="text" bind="userName" placeholder="Name eingeben"}
+:::
+
+:::script
+const name = bindings.userName || "Unbekannt";
+return `Hallo, ${name}!`;
+:::
+```
+
+**Erwartung:** Input-Feld mit reaktiver Bindung
+**Ergebnis:** [ ] PASS / [ ] FAIL
+
+**Ausgabe:**
+:::input{type="text" bind="userName" placeholder="Name eingeben"}
+:::
+
+:::script
+const name = bindings.userName || "Unbekannt";
+return `Hallo, ${name}!`;
+:::
+
+---
+
+### Test: Slider
+**Eingabe:**
+```markdown
+Wert: :::slider{bind="sliderVal" min="0" max="100" value="50"}:::
+
+:::script
+return `Slider-Wert: ${bindings.sliderVal}`;
+:::
+```
+
+**Erwartung:** Slider mit reaktivem Wert
+**Ergebnis:** [ ] PASS / [ ] FAIL
+
+**Ausgabe:**
+Wert: :::slider{bind="sliderVal" min="0" max="100" value="50"}:::
+
+:::script
+return `Slider-Wert: ${bindings.sliderVal}`;
+:::
+
+---
+
+## 11.4 Sicherheit
+
+### Test: Sicherheitsdialog
+**Schritte:**
+1. Öffne diese .mdsc Datei
+2. Prüfe ob Sicherheitsdialog erscheint
+3. Dialog sollte Script-Ausführung fragen
+
+**Ergebnis:** [ ] PASS / [ ] FAIL
+
+---
+
+### Test: Gefährlicher Code (sollte blockiert werden)
+**Eingabe:**
+```markdown
+:::script
+// Sollte NICHT ausgeführt werden ohne Bestätigung
+fetch('https://evil.com');
+localStorage.setItem('hack', 'true');
+:::
+```
+
+**Erwartung:** Warnung oder Blockierung
+**Ergebnis:** [ ] PASS / [ ] FAIL
+
+**Ausgabe:**
+:::script
+// Sollte NICHT ausgeführt werden ohne Bestätigung
+fetch('https://evil.com');
+localStorage.setItem('hack', 'true');
+:::
+
+---
+
+## 11.5 Script mit Markdown-Mischung
+
+### Test: Script zwischen Markdown
+**Eingabe:**
+```markdown
+# Überschrift
+
+Normaler Text vor dem Script.
+
+:::script
+const now = new Date();
+return now.toLocaleString('de-DE');
+:::
+
+Normaler Text nach dem Script.
+
+- Liste
+- Nach
+- Script
+```
+
+**Erwartung:** Alles korrekt gemischt
+**Ergebnis:** [ ] PASS / [ ] FAIL
+
+**Ausgabe:**
+# Überschrift
+
+Normaler Text vor dem Script.
+
+:::script
+const now = new Date();
+return now.toLocaleString('de-DE');
+:::
+
+Normaler Text nach dem Script.
+
+- Liste
+- Nach
+- Script
+
+---
+
+## 11.6 Komplexeres Script
+
+### Test: Rechner-Script
+**Eingabe:**
+```markdown
+## Mini-Rechner
+
+:::input{type="number" bind="num1" value="10"}:::
++
+:::input{type="number" bind="num2" value="5"}:::
+=
+
+:::script{output="calc-result"}
+const a = Number(bindings.num1) || 0;
+const b = Number(bindings.num2) || 0;
+return a + b;
+:::
+
+:::output{id="calc-result"}
+:::
+```
+
+**Erwartung:** Interaktiver Rechner
+**Ergebnis:** [ ] PASS / [ ] FAIL
+
+**Ausgabe:**
+## Mini-Rechner
+
+:::input{type="number" bind="num1" value="10"}:::
++
+:::input{type="number" bind="num2" value="5"}:::
+=
+
+:::script{output="calc-result"}
+const a = Number(bindings.num1) || 0;
+const b = Number(bindings.num2) || 0;
+return a + b;
+:::
+
+:::output{id="calc-result"}
+:::
+
+---
+
+## 11.7 Edge Cases
+
+### Test: Leeres Script
+**Eingabe:**
+```markdown
+:::script
+:::
+```
+
+**Erwartung:** Kein Fehler
+**Ergebnis:** [ ] PASS / [ ] FAIL
+
+**Ausgabe:**
+:::script
+:::
+
+---
+
+### Test: Script mit Syntax-Fehler
+**Eingabe:**
+```markdown
+:::script
+const x = // Syntax-Fehler!
+:::
+```
+
+**Erwartung:** Fehler wird angezeigt, kein Crash
+**Ergebnis:** [ ] PASS / [ ] FAIL
+
+**Ausgabe:**
+:::script
+const x = // Syntax-Fehler!
+:::
+
+---
+
+## Zusammenfassung
+
+| Test | Status | Problem-Datei |
+|------|--------|---------------|
+| 11.1 Einfaches Script | [ ] | |
+| 11.1 Script mit ID | [ ] | |
+| 11.2 Script mit Output | [ ] | |
+| 11.3 Input-Bindung | [ ] | |
+| 11.3 Slider | [ ] | |
+| 11.4 Sicherheitsdialog | [ ] | |
+| 11.4 Gefährlicher Code | [ ] | |
+| 11.5 Markdown-Mischung | [ ] | |
+| 11.6 Rechner-Script | [ ] | |
+| 11.7 Leeres Script | [ ] | |
+| 11.7 Syntax-Fehler | [ ] | |
+
+**Gesamt:** ____ / 11 PASS
+
+---
+
+## Bekannte Probleme bei diesem Test
+
+| Problem | Datei zum Bearbeiten |
+|---------|---------------------|
+| | |
+
+---
+
+## Hinweis
+
+Diese Datei muss mit der Endung `.mdsc` gespeichert werden, damit Scripts aktiviert werden. Falls Scripts nicht funktionieren:
+
+1. Prüfe ob `enableScripts: true` in den Einstellungen
+2. Prüfe ob Datei als `.mdsc` erkannt wird
+3. Sicherheitsdialog bestätigen

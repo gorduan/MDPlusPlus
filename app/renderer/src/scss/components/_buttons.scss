@@ -1,0 +1,61 @@
+/**
+ * MD++ Button Styles
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+.btn {
+  @include button-base;
+
+  // Variants
+  &--primary {
+    @include button-primary;
+  }
+
+  &--secondary {
+    @include button-secondary;
+  }
+
+  &--ghost {
+    background: transparent;
+    color: var(--text-secondary);
+
+    &:hover:not(:disabled) {
+      background-color: var(--bg-hover);
+      color: var(--text-primary);
+    }
+  }
+
+  &--danger {
+    background-color: var(--color-danger);
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-danger-hover);
+    }
+  }
+
+  // Sizes
+  &--sm {
+    padding: map.get($spacing, 1) map.get($spacing, 2);
+    font-size: map.get($font-sizes, xs);
+  }
+
+  &--lg {
+    padding: map.get($spacing, 3) map.get($spacing, 6);
+    font-size: map.get($font-sizes, base);
+  }
+
+  // Icon button
+  &--icon {
+    padding: map.get($spacing, 2);
+
+    svg {
+      width: 1em;
+      height: 1em;
+    }
+  }
+}
+
+// .toolbar-btn is defined in _toolbar.scss

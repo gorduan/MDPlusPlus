@@ -1,0 +1,133 @@
+/**
+ * MD++ Admonition/Callout Styles
+ *
+ * Styles for callout boxes: note, tip, warning, etc.
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+// Base admonition
+.admonition,
+[data-type="admonition"] {
+  margin: 1em 0;
+  padding: map.get($spacing, 4);
+  border-radius: map.get($radii, base);
+  border-left: 4px solid var(--admonition-color, var(--accent));
+  background-color: var(--admonition-bg, var(--bg-secondary));
+
+  .admonition-title,
+  .callout-title {
+    @include flex-center;
+    justify-content: flex-start;
+    gap: map.get($spacing, 2);
+    font-weight: map.get($font-weights, semibold);
+    margin-bottom: map.get($spacing, 2);
+    color: var(--admonition-color, var(--accent));
+  }
+
+  .admonition-content,
+  .callout-content {
+    color: var(--text-primary);
+
+    > :last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .admonition-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// Note (blue)
+.admonition-note,
+.callout-note {
+  --admonition-color: var(--color-info);
+  --admonition-bg: color-mix(in srgb, var(--color-info) 10%, var(--bg-secondary));
+}
+
+// Info (blue)
+.admonition-info,
+.callout-info {
+  --admonition-color: var(--color-info);
+  --admonition-bg: color-mix(in srgb, var(--color-info) 10%, var(--bg-secondary));
+}
+
+// Tip / Hint (green)
+.admonition-tip,
+.admonition-hint,
+.callout-tip,
+.callout-hint {
+  --admonition-color: var(--color-success);
+  --admonition-bg: color-mix(in srgb, var(--color-success) 10%, var(--bg-secondary));
+}
+
+// Important (purple)
+.admonition-important,
+.callout-important {
+  --admonition-color: var(--accent);
+  --admonition-bg: color-mix(in srgb, var(--accent) 10%, var(--bg-secondary));
+}
+
+// Warning / Caution (yellow/orange)
+.admonition-warning,
+.admonition-caution,
+.callout-warning,
+.callout-caution {
+  --admonition-color: var(--color-warning);
+  --admonition-bg: color-mix(in srgb, var(--color-warning) 10%, var(--bg-secondary));
+}
+
+// Danger / Error (red)
+.admonition-danger,
+.admonition-error,
+.callout-danger,
+.callout-error {
+  --admonition-color: var(--color-danger);
+  --admonition-bg: color-mix(in srgb, var(--color-danger) 10%, var(--bg-secondary));
+}
+
+// Success (green)
+.admonition-success,
+.callout-success {
+  --admonition-color: var(--color-success);
+  --admonition-bg: color-mix(in srgb, var(--color-success) 10%, var(--bg-secondary));
+}
+
+// Question (cyan)
+.admonition-question,
+.callout-question {
+  --admonition-color: var(--cyan-500, #06b6d4);
+  --admonition-bg: color-mix(in srgb, var(--cyan-500, #06b6d4) 10%, var(--bg-secondary));
+}
+
+// Quote (gray)
+.admonition-quote,
+.callout-quote {
+  --admonition-color: var(--text-secondary);
+  --admonition-bg: var(--bg-secondary);
+  font-style: italic;
+}
+
+// Example (indigo)
+.admonition-example,
+.callout-example {
+  --admonition-color: var(--indigo-500, #6366f1);
+  --admonition-bg: color-mix(in srgb, var(--indigo-500, #6366f1) 10%, var(--bg-secondary));
+}
+
+// Abstract (teal)
+.admonition-abstract,
+.callout-abstract {
+  --admonition-color: var(--teal-500, #14b8a6);
+  --admonition-bg: color-mix(in srgb, var(--teal-500, #14b8a6) 10%, var(--bg-secondary));
+}
+
+// Bug (red)
+.admonition-bug,
+.callout-bug {
+  --admonition-color: var(--color-danger);
+  --admonition-bg: color-mix(in srgb, var(--color-danger) 10%, var(--bg-secondary));
+}

@@ -1,0 +1,74 @@
+/**
+ * MD++ Card Styles
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+.card {
+  @include card;
+  padding: map.get($spacing, 4);
+
+  &__header {
+    @include flex-between;
+    margin-bottom: map.get($spacing, 4);
+    padding-bottom: map.get($spacing, 3);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  &__title {
+    font-size: map.get($font-sizes, lg);
+    font-weight: map.get($font-weights, semibold);
+    color: var(--text-primary);
+  }
+
+  &__subtitle {
+    font-size: map.get($font-sizes, sm);
+    color: var(--text-secondary);
+    margin-top: map.get($spacing, 1);
+  }
+
+  &__body {
+    color: var(--text-primary);
+  }
+
+  &__footer {
+    @include flex-between;
+    margin-top: map.get($spacing, 4);
+    padding-top: map.get($spacing, 3);
+    border-top: 1px solid var(--border-color);
+  }
+
+  // Variants
+  &--hover {
+    @include hover-lift;
+    cursor: pointer;
+  }
+
+  &--compact {
+    padding: map.get($spacing, 3);
+  }
+
+  &--flat {
+    box-shadow: none;
+  }
+}
+
+// Panel variant
+.panel {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: map.get($radii, base);
+
+  &__header {
+    @include flex-between;
+    padding: map.get($spacing, 3) map.get($spacing, 4);
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    border-radius: map.get($radii, base) map.get($radii, base) 0 0;
+  }
+
+  &__body {
+    padding: map.get($spacing, 4);
+  }
+}

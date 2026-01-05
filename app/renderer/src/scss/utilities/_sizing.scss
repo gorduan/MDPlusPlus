@@ -1,0 +1,16 @@
+/**
+ * MD++ Sizing Utilities (Minimal)
+ *
+ * Essential width/height utilities only.
+ */
+
+// Width
+.w-full { width: 100% !important; }
+
+// Height
+.h-full { height: 100% !important; }
+.h-screen { height: 100vh !important; }
+
+// Min dimensions
+.min-w-0 { min-width: 0 !important; }
+.min-h-0 { min-height: 0 !important; }

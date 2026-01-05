@@ -1,0 +1,69 @@
+/**
+ * MD++ SCSS Functions
+ *
+ * Helper functions for the styling system.
+ * These provide shortcuts for common operations.
+ */
+
+@use 'sass:map';
+@use 'variables' as v;
+
+// ===========================================
+// Map Access Functions
+// ===========================================
+
+/// Get a value from the spacing map
+/// @param {String} $key - The spacing key (0, 1, 2, 3, 4, etc.)
+/// @return {Length} The spacing value
+@function spacing($key) {
+  @return map.get(v.$spacing, $key);
+}
+
+/// Get a value from the font-sizes map
+/// @param {String} $key - The size key (xs, sm, base, lg, xl, etc.)
+/// @return {Length} The font-size value
+@function font-size($key) {
+  @return map.get(v.$font-sizes, $key);
+}
+
+/// Get a value from the font-weights map
+/// @param {String} $key - The weight key (normal, medium, semibold, bold)
+/// @return {Number} The font-weight value
+@function font-weight($key) {
+  @return map.get(v.$font-weights, $key);
+}
+
+/// Get a value from the line-heights map
+/// @param {String} $key - The line-height key (tight, normal, relaxed)
+/// @return {Number} The line-height value
+@function line-height($key) {
+  @return map.get(v.$line-heights, $key);
+}
+
+/// Get a value from the radii map
+/// @param {String} $key - The radius key (none, sm, base, md, lg, xl, full)
+/// @return {Length} The border-radius value
+@function radius($key) {
+  @return map.get(v.$radii, $key);
+}
+
+/// Get a value from the shadows map
+/// @param {String} $key - The shadow key (sm, base, lg, xl)
+/// @return {String} The box-shadow value
+@function shadow($key) {
+  @return map.get(v.$shadows, $key);
+}
+
+/// Get a value from the z-index map
+/// @param {String} $key - The z-index key (dropdown, sticky, modal, tooltip, toast)
+/// @return {Number} The z-index value
+@function z($key) {
+  @return map.get(v.$z-index, $key);
+}
+
+/// Get a value from the breakpoints map
+/// @param {String} $key - The breakpoint key (sm, md, lg, xl, 2xl)
+/// @return {Length} The breakpoint value
+@function breakpoint($key) {
+  @return map.get(v.$breakpoints, $key);
+}

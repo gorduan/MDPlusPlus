@@ -1,0 +1,106 @@
+/**
+ * MD++ App Layout Styles
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+// App Container
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+// Main Content
+.main-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+
+  // View modes
+  &.view-editor .editor-pane {
+    flex: 1;
+  }
+
+  &.view-split .editor-pane {
+    width: 50%;
+    border-right: 1px solid var(--border-color);
+  }
+
+  &.view-preview .preview-pane {
+    flex: 1;
+  }
+
+  &.view-split .preview-pane {
+    width: 50%;
+  }
+}
+
+// Editor Pane Container
+.editor-pane-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.editor-pane-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+
+  .editor-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+}
+
+// Preview Pane
+.preview-pane {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  background-color: var(--bg-primary);
+}
+
+.preview-container {
+  flex: 1;
+  overflow: auto;
+  padding: map.get($spacing, 8);
+}
+
+.preview-loading {
+  padding: map.get($spacing, 4);
+  color: var(--text-secondary);
+  font-size: map.get($font-sizes, sm);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.preview-errors {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-bottom: 1px solid var(--color-danger);
+  padding: map.get($spacing, 3) map.get($spacing, 4);
+}
+
+.preview-error {
+  display: flex;
+  gap: map.get($spacing, 2);
+  font-size: map.get($font-sizes, sm);
+  color: var(--color-danger);
+}
+
+.error-type {
+  font-weight: map.get($font-weights, semibold);
+}

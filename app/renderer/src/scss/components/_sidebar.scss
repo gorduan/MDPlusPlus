@@ -1,0 +1,430 @@
+/**
+ * MD++ Sidebar Styles
+ * Modern collapsible sidebar with glassmorphism effects
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+// Sidebar Variables
+$sidebar-width: 280px;
+$sidebar-collapsed-width: 0;
+$sidebar-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+// Sidebar Toggle (when collapsed)
+.sidebar-toggle {
+  position: fixed;
+  left: map.get($spacing, 3);
+  top: map.get($spacing, 3);
+  z-index: map.get($z-index, sticky);
+  @include flex-center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: map.get($radii, md);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all $transition-fast;
+  box-shadow: map.get($shadows, sm);
+
+  &:hover {
+    background: var(--accent);
+    color: white;
+    transform: scale(1.05);
+  }
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  &--collapsed {
+    opacity: 0;
+    animation: fadeInSlide 0.3s ease forwards;
+    animation-delay: 0.2s;
+  }
+}
+
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Main Sidebar
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: $sidebar-width;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  z-index: map.get($z-index, sticky) + 10;
+  transition: transform $sidebar-transition, box-shadow $sidebar-transition;
+
+  // Glassmorphism effect
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(124, 58, 237, 0.03) 0%,
+      transparent 50%,
+      rgba(59, 130, 246, 0.03) 100%
+    );
+    pointer-events: none;
+  }
+
+  &--open {
+    transform: translateX(0);
+    box-shadow: map.get($shadows, lg);
+  }
+
+  &--closed {
+    transform: translateX(-100%);
+    box-shadow: none;
+  }
+
+  // Sidebar Header
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: map.get($spacing, 4);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  &__logo {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 2);
+  }
+
+  &__logo-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+    border-radius: map.get($radii, md);
+    font-size: map.get($font-sizes, xs);
+    font-weight: map.get($font-weights, bold);
+    color: white;
+    letter-spacing: -0.5px;
+  }
+
+  &__logo-text {
+    font-size: map.get($font-sizes, lg);
+    font-weight: map.get($font-weights, bold);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  &__close {
+    @include flex-center;
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: map.get($radii, sm);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+
+  // File Info
+  &__file-info {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 3);
+    padding: map.get($spacing, 4);
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  &__file-icon {
+    @include flex-center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--bg-secondary);
+    border-radius: map.get($radii, md);
+    color: var(--accent-light);
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+
+  &__file-details {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 1);
+  }
+
+  &__file-name {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 2);
+    font-size: map.get($font-sizes, sm);
+    font-weight: map.get($font-weights, medium);
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__modified-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    background: var(--status-modified);
+    border-radius: map.get($radii, full);
+    flex-shrink: 0;
+  }
+
+  &__file-format {
+    display: inline-flex;
+    align-items: center;
+    padding: map.get($spacing, 1) map.get($spacing, 2);
+    font-size: map.get($font-sizes, xs);
+    font-weight: map.get($font-weights, semibold);
+    color: var(--format-color);
+    background: rgba(124, 58, 237, 0.1);
+    border-radius: map.get($radii, sm);
+    width: fit-content;
+    letter-spacing: 0.025em;
+  }
+
+  // Content
+  &__content {
+    flex: 1;
+    overflow-y: auto;
+    padding: map.get($spacing, 2) 0;
+  }
+
+  // Sections
+  &__section {
+    margin-bottom: map.get($spacing, 1);
+  }
+
+  &__section-header {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 3);
+    width: 100%;
+    padding: map.get($spacing, 3) map.get($spacing, 4);
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: map.get($font-sizes, sm);
+    font-weight: map.get($font-weights, medium);
+    cursor: pointer;
+    transition: all $transition-fast;
+    text-align: left;
+
+    &:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    &.expanded {
+      color: var(--accent-light);
+      background: rgba(124, 58, 237, 0.05);
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+      flex-shrink: 0;
+
+      &:first-child {
+        color: inherit;
+      }
+    }
+
+    span {
+      flex: 1;
+    }
+  }
+
+  &__section-arrow {
+    transition: transform $transition-fast;
+
+    .expanded & {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__section-content {
+    padding: map.get($spacing, 1) 0;
+    animation: slideDown 0.2s ease;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  // Actions
+  &__action {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 3);
+    width: 100%;
+    padding: map.get($spacing, 2) map.get($spacing, 4);
+    padding-left: map.get($spacing, 8);
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: map.get($font-sizes, sm);
+    cursor: pointer;
+    transition: all $transition-fast;
+    text-align: left;
+
+    &:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+
+      svg {
+        color: var(--accent-light);
+      }
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+      flex-shrink: 0;
+      color: var(--text-muted);
+      transition: color $transition-fast;
+    }
+
+    span {
+      flex: 1;
+    }
+
+    kbd {
+      padding: map.get($spacing, 1) map.get($spacing, 2);
+      font-size: map.get($font-sizes, xs);
+      @include font-mono;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: map.get($radii, sm);
+      color: var(--text-muted);
+    }
+
+    &--file {
+      .sidebar__file-name-truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  // Footer
+  &__footer {
+    display: flex;
+    gap: map.get($spacing, 2);
+    padding: map.get($spacing, 3) map.get($spacing, 4);
+    border-top: 1px solid var(--border-color);
+  }
+
+  &__footer-action {
+    @include flex-center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: none;
+    border-radius: map.get($radii, md);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: var(--accent);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    svg {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+  }
+
+  // Backdrop (mobile)
+  &__backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: map.get($z-index, sticky);
+    animation: fadeIn $transition-fast;
+
+    @include breakpoint-down(md) {
+      display: block;
+    }
+  }
+}
+
+// Adjust main content when sidebar is open
+.app--sidebar-open {
+  .toolbar {
+    margin-left: $sidebar-width;
+    width: calc(100% - #{$sidebar-width});
+    transition: margin-left $sidebar-transition, width $sidebar-transition;
+  }
+
+  .main-content {
+    margin-left: $sidebar-width;
+    width: calc(100% - #{$sidebar-width});
+    transition: margin-left $sidebar-transition, width $sidebar-transition;
+  }
+
+  .status-bar {
+    margin-left: $sidebar-width;
+    width: calc(100% - #{$sidebar-width});
+    transition: margin-left $sidebar-transition, width $sidebar-transition;
+  }
+
+  // Mobile: Don't shift content
+  @include breakpoint-down(md) {
+    .toolbar,
+    .main-content,
+    .status-bar {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+}

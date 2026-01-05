@@ -1,0 +1,260 @@
+---
+title: AI Placeholder Demo
+description: Minimales System mit :::ai-generate und :ai{}
+version: 1.0.0
+---
+
+# MarkdownScript - AI Placeholders
+
+> **Das Konzept:** Dokumente mit Platzhaltern, die AI Agents ausfüllen.
+> Mensch definiert WAS gebraucht wird, AI liefert den Content.
+
+---
+
+## Die zwei Basis-Direktiven
+
+### 1. Inline-Placeholder: `:ai{}`
+
+Für einzelne Werte mitten im Text:
+
+```markdown
+Das Unternehmen wurde :ai{prompt="Gründungsjahr von Apple"} gegründet.
+Der CEO ist :ai{prompt="Aktueller CEO von Apple"}.
+```
+
+**Ergebnis nach AI-Verarbeitung:**
+> Das Unternehmen wurde **1976** gegründet.
+> Der CEO ist **Tim Cook**.
+
+---
+
+### 2. Block-Placeholder: `:::ai-generate`
+
+Für ganze Abschnitte:
+
+```markdown
+:::ai-generate{prompt="Schreibe 3 Vorteile von Remote Work"}
+:::
+```
+
+**Ergebnis nach AI-Verarbeitung:**
+
+:::card{.border}
+1. **Flexibilität** - Arbeiten von überall
+2. **Work-Life-Balance** - Keine Pendelzeit
+3. **Produktivität** - Weniger Ablenkungen im Büro
+:::
+
+---
+
+## Attribute
+
+| Attribut | Zweck | Default |
+|----------|-------|---------|
+| `prompt` | Anweisung für AI | *Pflicht* |
+| `format` | Ausgabeformat | `paragraph` |
+| `fallback` | Text wenn keine AI | `[AI-Platzhalter]` |
+
+### Format-Optionen
+
+```markdown
+:::ai-generate{prompt="Top 5 Programmiersprachen" format="list"}
+:::
+
+:::ai-generate{prompt="Vergleich Python vs JavaScript" format="table"}
+:::
+
+:::ai-generate{prompt="Erkläre Machine Learning" format="paragraph"}
+:::
+```
+
+---
+
+## Praktische Beispiele
+
+### Beispiel 1: Produktbeschreibung
+
+```markdown
+# :ai{prompt="Produktname für innovative Smartwatch"}
+
+:ai{prompt="Kurzer Marketing-Slogan, max 10 Wörter"}
+
+## Überblick
+
+:::ai-generate{prompt="Produktbeschreibung für Premium-Smartwatch, 2 Absätze"}
+:::
+
+## Features
+
+:::ai-generate{prompt="5 Key-Features einer Smartwatch" format="list"}
+:::
+
+## Technische Daten
+
+:::ai-generate{prompt="Technische Spezifikationen Smartwatch" format="table"}
+:::
+```
+
+---
+
+### Beispiel 2: Blog-Artikel Template
+
+```markdown
+# :ai{prompt="Catchy Titel für Artikel über KI im Alltag"}
+
+*Lesezeit: :ai{prompt="Geschätzte Lesezeit für 1500 Wörter Artikel"} Minuten*
+
+## Einleitung
+
+:::ai-generate{prompt="Einleitung über KI im Alltag, hook the reader, 1 Absatz"}
+:::
+
+## :ai{prompt="Überschrift für ersten Hauptteil"}
+
+:::ai-generate{prompt="Erster Abschnitt: Beispiele für KI im täglichen Leben"}
+:::
+
+## :ai{prompt="Überschrift für zweiten Hauptteil"}
+
+:::ai-generate{prompt="Zweiter Abschnitt: Zukunftsperspektiven"}
+:::
+
+## Fazit
+
+:::ai-generate{prompt="Abschließendes Fazit, Call-to-Action"}
+:::
+```
+
+---
+
+### Beispiel 3: Meeting-Protokoll
+
+```markdown
+# Meeting-Protokoll
+
+**Datum:** :ai{prompt="Aktuelles Datum im Format TT.MM.JJJJ"}
+**Teilnehmer:** Max, Anna, Tim
+
+## Agenda
+
+:::ai-generate{prompt="Standard Meeting-Agenda für Projekt-Standup" format="list"}
+:::
+
+## Zusammenfassung
+
+:::ai-generate{prompt="Platzhalter für Meeting-Zusammenfassung"}
+[Wird nach dem Meeting ausgefüllt]
+:::
+
+## Action Items
+
+:::ai-generate{prompt="Vorlage für Action Items mit Verantwortlichem und Deadline" format="table"}
+:::
+```
+
+---
+
+### Beispiel 4: Daten + AI kombiniert
+
+Das Beste: **MarkdownScript + AI Placeholders zusammen!**
+
+:::script{lang="js"}
+const produkte = [
+  { name: "Laptop Pro", preis: 1299, kategorie: "Electronics" },
+  { name: "Wireless Mouse", preis: 49, kategorie: "Accessories" },
+  { name: "USB-C Hub", preis: 79, kategorie: "Accessories" },
+];
+
+$$('produktListe', produkte);
+$$('gesamtwert', produkte.reduce((s, p) => s + p.preis, 0));
+:::
+
+:::script:output{lang="js"}
+return `## Produktkatalog
+
+${utils.table(
+  ['Produkt', 'Preis', 'Kategorie'],
+  produkte.map(p => [p.name, utils.currency(p.preis), p.kategorie])
+)}
+
+**Gesamtwert:** ${utils.currency($('gesamtwert'))}`;
+:::
+
+### AI-generierte Analyse
+
+```markdown
+:::ai-generate{prompt="Analysiere diese Produktdaten und gib Empfehlungen: {{produktListe}}"}
+:::
+```
+
+> **Das Mächtige:** Script berechnet Daten, AI interpretiert sie!
+
+---
+
+## Workflow
+
+```
+┌─────────────────────────────────────────────────────┐
+│  1. AUTOR schreibt Dokument mit Placeholders        │
+│     - :ai{prompt="..."}                             │
+│     - :::ai-generate{prompt="..."}                  │
+└──────────────────────┬──────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────┐
+│  2. AI AGENT verarbeitet Dokument                   │
+│     - Erkennt Placeholders                          │
+│     - Führt Prompts aus                             │
+│     - Fügt Content ein                              │
+└──────────────────────┬──────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────┐
+│  3. FERTIGES DOKUMENT                               │
+│     - Alle Placeholders gefüllt                     │
+│     - Bereit zur Veröffentlichung                   │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## Warum dieses System?
+
+:::script:output{lang="js"}
+const vorteile = [
+  '**Einfach** - Nur 2 Direktiven zu lernen',
+  '**Konsistent** - Nutzt bestehende MD++ Syntax',
+  '**Flexibel** - Inline oder Block, wie gebraucht',
+  '**Erweiterbar** - Später mehr Attribute/Features möglich',
+  '**Kombinierbar** - Funktioniert mit Scripts, Context, allem'
+];
+
+return utils.list(vorteile);
+:::
+
+---
+
+## Syntax-Referenz
+
+```markdown
+# INLINE - einzelner Wert
+:ai{prompt="Deine Anweisung"}
+:ai{prompt="..." fallback="Default-Wert"}
+
+# BLOCK - ganzer Abschnitt
+:::ai-generate{prompt="Deine Anweisung"}
+:::
+
+:::ai-generate{prompt="..." format="list"}
+:::
+
+:::ai-generate{prompt="..." format="table"}
+:::
+
+:::ai-generate{prompt="..." format="paragraph"}
+:::
+```
+
+---
+
+*Erstellt mit MD++ MarkdownScript - Die Zukunft von Markdown*

@@ -9,7 +9,10 @@ import { Buffer } from 'buffer';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import './styles/global.css';
+// New SCSS-based styling system
+import './scss/style.scss';
+// Legacy CSS (backup - can be removed after testing)
+// import './styles/global.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

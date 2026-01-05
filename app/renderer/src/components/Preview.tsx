@@ -1,12 +1,16 @@
 /**
  * MD++ Preview Component
  * Renders MD++ content as HTML with live updates
+ * Supports MarkdownScript (.mdsc) execution
  */
 
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { MDPlusPlus } from '../../../../src/parser';
 import type { RenderResult, RenderError, PluginDefinition } from '../../../../src/types';
+import type { ScriptBlockData } from '../script/types';
 import type { ParserSettings } from './SettingsDialog';
+import ScriptSecurityDialog from './ScriptSecurityDialog';
+import { useScriptExecution, extractScriptsFromDOM } from '../hooks/useScriptExecution';
 import mermaid from 'mermaid';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
@@ -23,19 +27,79 @@ const PLUGINS: Record<string, PluginDefinition> = {
 };
 
 type Theme = 'dark' | 'light';
+type ScriptPermission = 'pending' | 'allowed' | 'denied';
+
+// Storage key for trusted files
+const TRUSTED_FILES_KEY = 'mdpp-trusted-script-files';
 
 interface PreviewProps {
   content: string;
   showAIContext?: boolean;
   settings?: ParserSettings;
   theme?: Theme;
+  filePath?: string | null;
 }
 
-export default function Preview({ content, showAIContext = false, settings, theme = 'dark' }: PreviewProps) {
+export default function Preview({ content, showAIContext = false, settings, theme = 'dark', filePath }: PreviewProps) {
   const [html, setHtml] = useState('');
   const [errors, setErrors] = useState<RenderError[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
+
+  // Script execution state
+  const [scripts, setScripts] = useState<ScriptBlockData[]>([]);
+  const [scriptPermission, setScriptPermission] = useState<ScriptPermission>('pending');
+  const [trustedFiles, setTrustedFiles] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem(TRUSTED_FILES_KEY);
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
+  // Check if this is an .mdsc file
+  const isMdscFile = filePath?.toLowerCase().endsWith('.mdsc') ?? false;
+
+  // Check if file is trusted
+  useEffect(() => {
+    if (!isMdscFile) {
+      setScriptPermission('denied');
+      return;
+    }
+
+    if (filePath && trustedFiles.has(filePath)) {
+      setScriptPermission('allowed');
+    } else {
+      setScriptPermission('pending');
+    }
+  }, [filePath, isMdscFile, trustedFiles]);
+
+  // Script execution hook
+  const { results: scriptResults, isExecuting: isScriptExecuting } = useScriptExecution(
+    scripts,
+    {
+      enabled: scriptPermission === 'allowed' && isMdscFile,
+      securityLevel: settings?.scriptSecurityLevel || 'standard',
+      timeout: 5000,
+      documentInfo: filePath ? { title: filePath.split(/[/\\]/).pop() || '', path: filePath, frontmatter: {} } : undefined,
+    }
+  );
+
+  // Handle script permission
+  const handleAllowScripts = (trustPermanently: boolean) => {
+    setScriptPermission('allowed');
+    if (trustPermanently && filePath) {
+      const newTrusted = new Set(trustedFiles);
+      newTrusted.add(filePath);
+      setTrustedFiles(newTrusted);
+      localStorage.setItem(TRUSTED_FILES_KEY, JSON.stringify([...newTrusted]));
+    }
+  };
+
+  const handleDenyScripts = () => {
+    setScriptPermission('denied');
+  };
 
   // Update Mermaid theme when app theme changes
   useEffect(() => {
@@ -112,6 +176,28 @@ export default function Preview({ content, showAIContext = false, settings, them
   useEffect(() => {
     if (!previewRef.current) return;
 
+    // Enhance admonitions (wrap content, no title bar - colors indicate type)
+    const enhanceAdmonitions = () => {
+      const admonitions = previewRef.current!.querySelectorAll('.admonition');
+      admonitions.forEach((el) => {
+        // Skip if already enhanced
+        if (el.querySelector('.admonition-content')) return;
+
+        // Wrap existing content
+        const contentEl = document.createElement('div');
+        contentEl.className = 'admonition-content';
+        while (el.firstChild) {
+          contentEl.appendChild(el.firstChild);
+        }
+
+        // Add data attribute
+        el.setAttribute('data-type', 'admonition');
+
+        // Insert content only (no title)
+        el.appendChild(contentEl);
+      });
+    };
+
     // Render Mermaid diagrams
     const renderMermaid = async () => {
       const mermaidElements = previewRef.current!.querySelectorAll('.mermaid');
@@ -175,13 +261,72 @@ export default function Preview({ content, showAIContext = false, settings, them
       });
     };
 
+    enhanceAdmonitions();
     renderMermaid();
     renderKaTeX();
     renderHighlight();
-  }, [html, theme]);
+
+    // Extract scripts from DOM for .mdsc files
+    if (isMdscFile) {
+      const extractedScripts = extractScriptsFromDOM(previewRef.current!);
+      setScripts(extractedScripts);
+    }
+  }, [html, theme, isMdscFile]);
+
+  // Inject script results into the DOM
+  useEffect(() => {
+    if (!previewRef.current || scriptResults.size === 0) return;
+
+    scriptResults.forEach((result, scriptId) => {
+      const el = previewRef.current!.querySelector(`[data-script-id="${scriptId}"]`);
+      if (!el) return;
+
+      // Clear previous output
+      const existingOutput = el.querySelector('.mdsc-output-content');
+      if (existingOutput) {
+        existingOutput.remove();
+      }
+      const existingError = el.querySelector('.mdsc-error');
+      if (existingError) {
+        existingError.remove();
+      }
+
+      if (result.success && result.output) {
+        // Render output as HTML (scripts can return markdown that gets rendered)
+        const outputEl = document.createElement('div');
+        outputEl.className = 'mdsc-output-content';
+        outputEl.innerHTML = result.output;
+        el.appendChild(outputEl);
+        el.setAttribute('data-script-result', 'success');
+      } else if (!result.success && result.error) {
+        // Display error
+        const errorEl = document.createElement('div');
+        errorEl.className = 'mdsc-error';
+        errorEl.innerHTML = `
+          <div class="mdsc-error-header">
+            <span class="mdsc-error-icon">!</span>
+            <span>Script Error</span>
+          </div>
+          <div class="mdsc-error-message">${escapeHtml(result.error.message)}</div>
+          ${result.error.line ? `<div class="mdsc-error-location">Line ${result.error.line}</div>` : ''}
+        `;
+        el.appendChild(errorEl);
+        el.setAttribute('data-script-result', 'error');
+      }
+    });
+  }, [scriptResults]);
 
   return (
     <div className="preview-container">
+      {/* Script Security Dialog for .mdsc files */}
+      {isMdscFile && scriptPermission === 'pending' && scripts.length > 0 && (
+        <ScriptSecurityDialog
+          filePath={filePath || 'Unknown file'}
+          onAllow={handleAllowScripts}
+          onDeny={handleDenyScripts}
+        />
+      )}
+
       {errors.length > 0 && (
         <div className="preview-errors">
           {errors.map((error, index) => (
@@ -193,11 +338,13 @@ export default function Preview({ content, showAIContext = false, settings, them
           ))}
         </div>
       )}
-      {isLoading && (
+
+      {(isLoading || isScriptExecuting) && (
         <div className="preview-loading">
-          <span>Processing...</span>
+          <span>{isScriptExecuting ? 'Executing scripts...' : 'Processing...'}</span>
         </div>
       )}
+
       <div
         ref={previewRef}
         className="preview-content"
@@ -205,4 +352,11 @@ export default function Preview({ content, showAIContext = false, settings, them
       />
     </div>
   );
+}
+
+// Helper to escape HTML in error messages
+function escapeHtml(text: string): string {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }

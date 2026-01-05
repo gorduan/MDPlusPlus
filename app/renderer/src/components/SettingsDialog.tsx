@@ -4,6 +4,8 @@
 
 import React from 'react';
 
+export type ScriptSecurityLevel = 'strict' | 'standard' | 'permissive';
+
 export interface ParserSettings {
   // GFM Features
   enableGfm: boolean;
@@ -23,6 +25,10 @@ export interface ParserSettings {
   enableDirectives: boolean;
   enableAIContext: boolean;
 
+  // MarkdownScript (.mdsc)
+  enableScripts: boolean;
+  scriptSecurityLevel: ScriptSecurityLevel;
+
   // Plugins
   enabledPlugins: string[];
 }
@@ -40,6 +46,8 @@ export const DEFAULT_SETTINGS: ParserSettings = {
   enableHeadingAnchors: true,
   enableDirectives: true,
   enableAIContext: true,
+  enableScripts: true,
+  scriptSecurityLevel: 'standard',
   enabledPlugins: ['bootstrap', 'admonitions'],
 };
 
@@ -198,6 +206,39 @@ export default function SettingsDialog({
               />
               <span>AI Context Blocks</span>
             </label>
+          </section>
+
+          {/* MarkdownScript Section */}
+          <section className="settings-section">
+            <h3>MarkdownScript (.mdsc)</h3>
+            <label className="settings-toggle">
+              <input
+                type="checkbox"
+                checked={settings.enableScripts}
+                onChange={() => handleToggle('enableScripts')}
+              />
+              <span>Enable Script Execution</span>
+            </label>
+            <div className={`settings-subsection ${!settings.enableScripts ? 'disabled' : ''}`}>
+              <label className="settings-select">
+                <span>Security Level</span>
+                <select
+                  value={settings.scriptSecurityLevel}
+                  onChange={(e) => onSettingsChange({
+                    ...settings,
+                    scriptSecurityLevel: e.target.value as ScriptSecurityLevel
+                  })}
+                  disabled={!settings.enableScripts}
+                >
+                  <option value="strict">Strict (Math, JSON only)</option>
+                  <option value="standard">Standard (+ Date, Array, Promise)</option>
+                  <option value="permissive">Permissive (+ fetch)</option>
+                </select>
+              </label>
+              <p className="settings-hint">
+                Scripts require explicit permission per file. Trusted files are remembered.
+              </p>
+            </div>
           </section>
 
           {/* Plugins Section */}

@@ -1,0 +1,178 @@
+/**
+ * MD++ Design Tokens - Primitive Values
+ *
+ * This file contains the raw, immutable color values.
+ * These are the foundation of the design token hierarchy:
+ *
+ * 1. PRIMITIVE TOKENS (this file) - Raw values, never change per theme
+ * 2. SEMANTIC TOKENS (_colors.scss) - Contextual mappings using light-dark()
+ * 3. COMPONENT TOKENS (plugins/) - Plugin-specific tokens
+ *
+ * Based on:
+ * - https://penpot.app/blog/the-developers-guide-to-design-tokens-and-css-variables
+ * - https://developer.atlassian.com/platform/forge/design-tokens-and-theming/
+ */
+
+// ===========================================
+// Purple Palette (Primary/Accent)
+// ===========================================
+$purple-50: #F5F3FF;
+$purple-100: #EDE9FE;
+$purple-200: #DDD6FE;
+$purple-300: #C4B5FD;
+$purple-400: #A78BFA;
+$purple-500: #8B5CF6;
+$purple-600: #7C3AED;
+$purple-700: #6D28D9;
+$purple-800: #5B21B6;
+$purple-900: #4C1D95;
+
+// ===========================================
+// Slate Palette (Neutrals)
+// ===========================================
+$slate-50: #F8FAFC;
+$slate-100: #F1F5F9;
+$slate-200: #E2E8F0;
+$slate-300: #CBD5E1;
+$slate-400: #94A3B8;
+$slate-500: #64748B;
+$slate-600: #475569;
+$slate-700: #334155;
+$slate-800: #1E293B;
+$slate-900: #0F172A;
+
+// ===========================================
+// Semantic Color Palette
+// ===========================================
+
+// Green (Success)
+$green-50: #ECFDF5;
+$green-100: #D1FAE5;
+$green-200: #A7F3D0;
+$green-300: #6EE7B7;
+$green-400: #34D399;
+$green-500: #10B981;
+$green-600: #059669;
+$green-700: #047857;
+$green-800: #065F46;
+$green-900: #064E3B;
+
+// Yellow (Warning)
+$yellow-50: #FFFBEB;
+$yellow-100: #FEF3C7;
+$yellow-200: #FDE68A;
+$yellow-300: #FCD34D;
+$yellow-400: #FBBF24;
+$yellow-500: #F59E0B;
+$yellow-600: #D97706;
+$yellow-700: #B45309;
+$yellow-800: #92400E;
+$yellow-900: #78350F;
+
+// Red (Danger/Error)
+$red-50: #FEF2F2;
+$red-100: #FEE2E2;
+$red-200: #FECACA;
+$red-300: #FCA5A5;
+$red-400: #F87171;
+$red-500: #EF4444;
+$red-600: #DC2626;
+$red-700: #B91C1C;
+$red-800: #991B1B;
+$red-900: #7F1D1D;
+
+// Blue (Info)
+$blue-50: #EFF6FF;
+$blue-100: #DBEAFE;
+$blue-200: #BFDBFE;
+$blue-300: #93C5FD;
+$blue-400: #60A5FA;
+$blue-500: #3B82F6;
+$blue-600: #2563EB;
+$blue-700: #1D4ED8;
+$blue-800: #1E40AF;
+$blue-900: #1E3A8A;
+
+// Cyan (Question/Special)
+$cyan-50: #ECFEFF;
+$cyan-100: #CFFAFE;
+$cyan-200: #A5F3FC;
+$cyan-300: #67E8F9;
+$cyan-400: #22D3EE;
+$cyan-500: #06B6D4;
+$cyan-600: #0891B2;
+$cyan-700: #0E7490;
+$cyan-800: #155E75;
+$cyan-900: #164E63;
+
+// Indigo (Example)
+$indigo-50: #EEF2FF;
+$indigo-100: #E0E7FF;
+$indigo-200: #C7D2FE;
+$indigo-300: #A5B4FC;
+$indigo-400: #818CF8;
+$indigo-500: #6366F1;
+$indigo-600: #4F46E5;
+$indigo-700: #4338CA;
+$indigo-800: #3730A3;
+$indigo-900: #312E81;
+
+// Teal (Abstract)
+$teal-50: #F0FDFA;
+$teal-100: #CCFBF1;
+$teal-200: #99F6E4;
+$teal-300: #5EEAD4;
+$teal-400: #2DD4BF;
+$teal-500: #14B8A6;
+$teal-600: #0D9488;
+$teal-700: #0F766E;
+$teal-800: #115E59;
+$teal-900: #134E4A;
+
+// ===========================================
+// Syntax Highlighting Tokens (One Dark Theme)
+// ===========================================
+// Dark Mode
+$syntax-dark-comment: #5c6370;
+$syntax-dark-punctuation: #abb2bf;
+$syntax-dark-keyword: #c678dd;
+$syntax-dark-string: #98c379;
+$syntax-dark-number: #d19a66;
+$syntax-dark-function: #61aeee;
+$syntax-dark-variable: #e06c75;
+$syntax-dark-operator: #56b6c2;
+$syntax-dark-class: #e6c07b;
+$syntax-dark-tag: #e06c75;
+$syntax-dark-attribute: #d19a66;
+$syntax-dark-regex: #98c379;
+$syntax-dark-builtin: #e6c07b;
+$syntax-dark-literal: #56b6c2;
+$syntax-dark-meta: #61aeee;
+$syntax-dark-title: #61aeee;
+$syntax-dark-section: #e06c75;
+
+// Light Mode (One Light Theme)
+$syntax-light-comment: #a0a1a7;
+$syntax-light-punctuation: #383a42;
+$syntax-light-keyword: #a626a4;
+$syntax-light-string: #50a14f;
+$syntax-light-number: #986801;
+$syntax-light-function: #4078f2;
+$syntax-light-variable: #e45649;
+$syntax-light-operator: #0184bb;
+$syntax-light-class: #c18401;
+$syntax-light-tag: #e45649;
+$syntax-light-attribute: #986801;
+$syntax-light-regex: #50a14f;
+$syntax-light-builtin: #c18401;
+$syntax-light-literal: #0184bb;
+$syntax-light-meta: #4078f2;
+$syntax-light-title: #4078f2;
+$syntax-light-section: #e45649;
+
+// ===========================================
+// Special Values
+// ===========================================
+$white: #FFFFFF;
+$black: #000000;
+$transparent: transparent;

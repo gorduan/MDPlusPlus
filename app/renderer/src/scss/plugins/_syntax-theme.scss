@@ -1,0 +1,185 @@
+/**
+ * MD++ Syntax Highlighting Plugin Theme
+ *
+ * Defines color tokens for code syntax highlighting.
+ * Unified for both WYSIWYG (TipTap/lowlight) and Preview (highlight.js).
+ * Uses light-dark() for automatic theme switching.
+ *
+ * Based on:
+ * - One Dark Pro (Dark theme)
+ * - One Light (Light theme)
+ */
+
+@use '../abstracts/tokens' as *;
+
+// ===========================================
+// Syntax Highlighting Plugin Color Tokens
+// ===========================================
+:root {
+  // Language-specific token overrides can be added here
+  // Example: --syntax-js-keyword, --syntax-py-decorator, etc.
+
+  // JSON syntax
+  --syntax-json-key: var(--syntax-variable);
+  --syntax-json-string: var(--syntax-string);
+  --syntax-json-number: var(--syntax-number);
+  --syntax-json-boolean: var(--syntax-literal);
+  --syntax-json-null: var(--syntax-literal);
+
+  // HTML/XML syntax
+  --syntax-html-tag: var(--syntax-tag);
+  --syntax-html-attr-name: var(--syntax-attribute);
+  --syntax-html-attr-value: var(--syntax-string);
+  --syntax-html-doctype: var(--syntax-meta);
+
+  // CSS syntax
+  --syntax-css-selector: var(--syntax-tag);
+  --syntax-css-property: var(--syntax-attribute);
+  --syntax-css-value: var(--syntax-string);
+  --syntax-css-unit: var(--syntax-number);
+  --syntax-css-function: var(--syntax-function);
+  --syntax-css-variable: var(--syntax-variable);
+
+  // JavaScript/TypeScript syntax
+  --syntax-js-keyword: var(--syntax-keyword);
+  --syntax-js-function: var(--syntax-function);
+  --syntax-js-variable: var(--syntax-variable);
+  --syntax-js-string: var(--syntax-string);
+  --syntax-js-number: var(--syntax-number);
+  --syntax-js-class: var(--syntax-class);
+  --syntax-js-decorator: var(--syntax-meta);
+  --syntax-js-template: var(--syntax-string);
+  --syntax-js-regex: var(--syntax-regex);
+
+  // Python syntax
+  --syntax-py-keyword: var(--syntax-keyword);
+  --syntax-py-function: var(--syntax-function);
+  --syntax-py-class: var(--syntax-class);
+  --syntax-py-decorator: var(--syntax-meta);
+  --syntax-py-string: var(--syntax-string);
+  --syntax-py-docstring: var(--syntax-comment);
+  --syntax-py-builtin: var(--syntax-builtin);
+
+  // Markdown syntax
+  --syntax-md-heading: var(--syntax-section);
+  --syntax-md-bold: var(--syntax-keyword);
+  --syntax-md-italic: var(--syntax-string);
+  --syntax-md-link: var(--syntax-function);
+  --syntax-md-code: var(--syntax-literal);
+  --syntax-md-quote: var(--syntax-comment);
+
+  // Shell/Bash syntax
+  --syntax-sh-command: var(--syntax-function);
+  --syntax-sh-variable: var(--syntax-variable);
+  --syntax-sh-string: var(--syntax-string);
+  --syntax-sh-option: var(--syntax-keyword);
+
+  // Diff syntax
+  --syntax-diff-add: light-dark(#{$green-600}, #{$green-400});
+  --syntax-diff-delete: light-dark(#{$red-600}, #{$red-400});
+  --syntax-diff-change: light-dark(#{$yellow-600}, #{$yellow-400});
+  --syntax-diff-header: light-dark(#{$blue-600}, #{$blue-400});
+}
+
+// ===========================================
+// Language-Specific Overrides
+// ===========================================
+
+// JSON
+.hljs.language-json {
+  .hljs-attr {
+    color: var(--syntax-json-key);
+  }
+  .hljs-string {
+    color: var(--syntax-json-string);
+  }
+  .hljs-number {
+    color: var(--syntax-json-number);
+  }
+  .hljs-literal {
+    color: var(--syntax-json-boolean);
+  }
+}
+
+// HTML/XML
+.hljs.language-html,
+.hljs.language-xml {
+  .hljs-tag {
+    color: var(--syntax-html-tag);
+  }
+  .hljs-attr {
+    color: var(--syntax-html-attr-name);
+  }
+  .hljs-string {
+    color: var(--syntax-html-attr-value);
+  }
+  .hljs-meta {
+    color: var(--syntax-html-doctype);
+  }
+}
+
+// CSS/SCSS
+.hljs.language-css,
+.hljs.language-scss,
+.hljs.language-less {
+  .hljs-selector-class,
+  .hljs-selector-tag,
+  .hljs-selector-id {
+    color: var(--syntax-css-selector);
+  }
+  .hljs-attribute {
+    color: var(--syntax-css-property);
+  }
+  .hljs-string {
+    color: var(--syntax-css-value);
+  }
+  .hljs-number {
+    color: var(--syntax-css-unit);
+  }
+}
+
+// Diff
+.hljs.language-diff {
+  .hljs-addition {
+    color: var(--syntax-diff-add);
+    background: light-dark(
+      rgba(5, 150, 105, 0.1),
+      rgba(16, 185, 129, 0.15)
+    );
+  }
+  .hljs-deletion {
+    color: var(--syntax-diff-delete);
+    background: light-dark(
+      rgba(220, 38, 38, 0.1),
+      rgba(239, 68, 68, 0.15)
+    );
+  }
+  .hljs-meta {
+    color: var(--syntax-diff-header);
+  }
+}
+
+// Markdown
+.hljs.language-markdown {
+  .hljs-section {
+    color: var(--syntax-md-heading);
+    font-weight: bold;
+  }
+  .hljs-strong {
+    color: var(--syntax-md-bold);
+    font-weight: bold;
+  }
+  .hljs-emphasis {
+    color: var(--syntax-md-italic);
+    font-style: italic;
+  }
+  .hljs-link {
+    color: var(--syntax-md-link);
+  }
+  .hljs-code {
+    color: var(--syntax-md-code);
+  }
+  .hljs-quote {
+    color: var(--syntax-md-quote);
+  }
+}

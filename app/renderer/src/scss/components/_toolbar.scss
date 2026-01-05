@@ -1,0 +1,324 @@
+/**
+ * MD++ Toolbar Styles
+ * Modern toolbar with glassmorphism and grouped actions
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+// Main Toolbar / App Header
+.toolbar {
+  height: $header-height;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 map.get($spacing, 4);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  -webkit-app-region: drag;
+  position: relative;
+  z-index: map.get($z-index, sticky);
+
+  // Subtle glassmorphism effect
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.02) 0%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+
+  // Sections
+  &__section {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 3);
+    -webkit-app-region: no-drag;
+
+    &--left {
+      flex: 1;
+      min-width: 0;
+    }
+
+    &--center {
+      flex-shrink: 0;
+    }
+
+    &--right {
+      flex: 1;
+      justify-content: flex-end;
+      min-width: 0;
+    }
+  }
+
+  // Brand
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 2);
+  }
+
+  &__logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+    border-radius: map.get($radii, md);
+    font-size: map.get($font-sizes, xs);
+    font-weight: map.get($font-weights, bold);
+    color: white;
+    letter-spacing: -0.5px;
+  }
+
+  &__title {
+    font-size: map.get($font-sizes, lg);
+    font-weight: map.get($font-weights, bold);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  // Groups
+  &__group {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 1);
+  }
+
+  // View Mode Buttons
+  &__viewmodes {
+    background: var(--bg-card);
+    border-radius: map.get($radii, md);
+    padding: map.get($spacing, 1);
+    border: 1px solid var(--border-color);
+  }
+
+  &__viewmode-btn {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 2);
+    padding: map.get($spacing, 2) map.get($spacing, 3);
+    border: none;
+    border-radius: map.get($radii, sm);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all $transition-fast;
+    font-size: map.get($font-sizes, sm);
+    font-weight: map.get($font-weights, medium);
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    &--active {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 2px 4px rgba(124, 58, 237, 0.3);
+
+      &:hover {
+        background: var(--accent-hover);
+        color: white;
+      }
+    }
+  }
+
+  // Generic Buttons
+  &__btn {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 2);
+    padding: map.get($spacing, 2) map.get($spacing, 3);
+    border: none;
+    border-radius: map.get($radii, sm);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all $transition-fast;
+    font-size: map.get($font-sizes, sm);
+    font-weight: map.get($font-weights, medium);
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      background: var(--bg-card);
+      color: var(--text-primary);
+    }
+
+    &--icon {
+      padding: map.get($spacing, 2);
+      border-radius: map.get($radii, md);
+
+      svg {
+        width: 1.125rem;
+        height: 1.125rem;
+      }
+    }
+
+    &--active {
+      background: rgba(124, 58, 237, 0.15);
+      color: var(--accent-light);
+
+      &:hover {
+        background: rgba(124, 58, 237, 0.25);
+      }
+    }
+
+    &--feature {
+      padding: map.get($spacing, 2) map.get($spacing, 3);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+
+      &:hover {
+        border-color: var(--accent);
+      }
+
+      &.toolbar__btn--active {
+        background: rgba(124, 58, 237, 0.15);
+        border-color: var(--accent);
+        color: var(--accent-light);
+      }
+    }
+  }
+
+  // Divider
+  &__divider {
+    width: 1px;
+    height: 1.5rem;
+    background: var(--border-color);
+    margin: 0 map.get($spacing, 1);
+  }
+}
+
+// Legacy class support (for backward compatibility)
+.toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 3);
+  -webkit-app-region: no-drag;
+}
+
+.toolbar-title {
+  font-size: map.get($font-sizes, xl);
+  font-weight: map.get($font-weights, bold);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.version-badge {
+  font-size: map.get($font-sizes, xs);
+  padding: map.get($spacing, 1) map.get($spacing, 2);
+  border-radius: map.get($radii, full);
+  background-color: rgba(124, 58, 237, 0.2);
+  color: var(--accent-light);
+  border: 1px solid rgba(124, 58, 237, 0.3);
+}
+
+.view-mode-buttons {
+  display: flex;
+  gap: map.get($spacing, 1);
+  background-color: var(--bg-card);
+  border-radius: map.get($radii, base);
+  padding: map.get($spacing, 1);
+}
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 2);
+  padding: map.get($spacing, 2) map.get($spacing, 4);
+  border: none;
+  border-radius: map.get($radii, sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all $transition-fast;
+  font-size: map.get($font-sizes, sm);
+  font-weight: map.get($font-weights, medium);
+
+  &:hover {
+    background-color: var(--border-color);
+    color: var(--text-primary);
+  }
+
+  &.active {
+    background-color: var(--accent);
+    color: white;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+// Theme Toggle
+.theme-toggle {
+  @include flex-center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  border-radius: map.get($radii, base);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover {
+    background-color: var(--border-color);
+    color: var(--text-primary);
+  }
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+// Responsive
+@include breakpoint-down(md) {
+  .toolbar {
+    &__viewmode-btn span,
+    &__btn span {
+      display: none;
+    }
+
+    &__viewmode-btn,
+    &__btn {
+      padding: map.get($spacing, 2);
+    }
+  }
+}
+
+@include breakpoint-down(sm) {
+  .toolbar {
+    padding: 0 map.get($spacing, 2);
+
+    &__title {
+      display: none;
+    }
+
+    &__divider {
+      display: none;
+    }
+  }
+}

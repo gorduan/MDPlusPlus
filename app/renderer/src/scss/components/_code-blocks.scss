@@ -1,0 +1,176 @@
+/**
+ * MD++ Code Block Styles
+ *
+ * Styles for code blocks with syntax highlighting.
+ * Uses unified CSS variables from _colors.scss
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+// Code block wrapper
+.code-block {
+  position: relative;
+  margin: 1em 0;
+  border-radius: map.get($radii, base);
+  overflow: hidden;
+  background-color: var(--bg-code);
+
+  &__header {
+    @include flex-between;
+    padding: map.get($spacing, 2) map.get($spacing, 4);
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    font-size: map.get($font-sizes, xs);
+  }
+
+  &__language {
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: map.get($font-weights, medium);
+  }
+
+  &__copy {
+    @include flex-center;
+    padding: map.get($spacing, 1) map.get($spacing, 2);
+    background: transparent;
+    border: none;
+    border-radius: map.get($radii, sm);
+    color: var(--text-secondary);
+    font-size: map.get($font-sizes, xs);
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      background-color: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    svg {
+      width: 14px;
+      height: 14px;
+      margin-right: map.get($spacing, 1);
+    }
+  }
+
+  &__content {
+    padding: map.get($spacing, 4);
+    overflow-x: auto;
+
+    pre {
+      margin: 0;
+      padding: 0;
+      background: none;
+    }
+
+    code {
+      @include font-mono;
+      font-size: map.get($font-sizes, sm);
+      line-height: map.get($line-heights, relaxed);
+    }
+  }
+
+  // With line numbers
+  &--line-numbers {
+    .code-block__content {
+      display: flex;
+    }
+
+    .line-numbers {
+      flex-shrink: 0;
+      padding-right: map.get($spacing, 4);
+      margin-right: map.get($spacing, 4);
+      border-right: 1px solid var(--border-color);
+      color: var(--text-muted);
+      text-align: right;
+      user-select: none;
+    }
+  }
+}
+
+// Syntax highlighting tokens (Prism.js)
+// Uses unified CSS variables - no hardcoded fallbacks
+.token {
+  &.comment,
+  &.prolog,
+  &.doctype,
+  &.cdata {
+    color: var(--syntax-comment);
+  }
+
+  &.punctuation {
+    color: var(--syntax-punctuation);
+  }
+
+  &.property,
+  &.tag,
+  &.boolean,
+  &.number,
+  &.constant,
+  &.symbol,
+  &.deleted {
+    color: var(--syntax-literal);
+  }
+
+  &.selector,
+  &.attr-name,
+  &.string,
+  &.char,
+  &.builtin,
+  &.inserted {
+    color: var(--syntax-string);
+  }
+
+  &.operator,
+  &.entity,
+  &.url,
+  &.variable {
+    color: var(--syntax-operator);
+  }
+
+  &.atrule,
+  &.attr-value,
+  &.keyword {
+    color: var(--syntax-keyword);
+  }
+
+  &.function,
+  &.class-name {
+    color: var(--syntax-function);
+  }
+
+  &.regex,
+  &.important {
+    color: var(--syntax-regex);
+  }
+
+  &.important,
+  &.bold {
+    font-weight: bold;
+  }
+
+  &.italic {
+    font-style: italic;
+  }
+
+  &.entity {
+    cursor: help;
+  }
+}
+
+// Line highlighting
+.line-highlight {
+  background-color: var(--alert-primary-bg);
+  display: block;
+  margin: 0 calc(-1 * map.get($spacing, 4));
+  padding: 0 map.get($spacing, 4);
+}
+
+// Diff highlighting
+.token.deleted {
+  background-color: var(--alert-danger-bg);
+}
+
+.token.inserted {
+  background-color: var(--alert-success-bg);
+}

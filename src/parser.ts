@@ -26,8 +26,22 @@ import type {
   RenderError,
   AIContext,
   ParserOptions,
-  SecurityConfig
+  SecurityConfig,
+  ScriptBlockData,
+  ScriptRenderResult,
+  AIPlaceholderData,
+  FullRenderResult,
+  FileFormat,
+  FormatCapabilities,
+  StyleBlockData
 } from './types';
+import {
+  detectFileFormat,
+  getFormatCapabilities,
+  FORMAT_CAPABILITIES
+} from './types';
+import { remarkScriptBlock, extractScriptsFromFile } from './plugins/script-block';
+import { remarkAIPlaceholder, extractPlaceholdersFromFile } from './plugins/ai-placeholder';
 
 /**
  * Default security configuration
@@ -129,6 +143,11 @@ export class MDPlusPlus {
     // Code block handling (mermaid, math blocks)
     processor = processor.use(this.createCodeBlockPlugin());
 
+    // MarkdownScript blocks (:::script)
+    if (this.isEnabled('enableScripts')) {
+      processor = processor.use(remarkScriptBlock);
+    }
+
     // Convert to HTML
     processor = processor.use(remarkRehype, { allowDangerousHtml: true });
 
@@ -164,6 +183,298 @@ export class MDPlusPlus {
   }
 
   /**
+   * Convert MD++ markdown to HTML with script extraction
+   * Returns both HTML and script block data for execution
+   */
+  async convertWithScripts(markdown: string): Promise<ScriptRenderResult> {
+    // Reset state
+    this.errors = [];
+    this.aiContexts = [];
+
+    // Parse frontmatter
+    const { content, data: frontmatter } = matter(markdown);
+
+    // Preprocess directives and callouts (only if enabled)
+    let processedContent = content;
+    if (this.isEnabled('enableDirectives') || this.isEnabled('enableCallouts')) {
+      processedContent = this.preprocessDirectives(content);
+    }
+
+    // Build processor pipeline based on enabled features
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let processor: any = unified().use(remarkParse);
+
+    // GFM: tables, strikethrough, task lists, autolinks
+    if (this.isEnabled('enableGfm')) {
+      processor = processor.use(remarkGfm);
+    }
+
+    // Directives (:::plugin:component)
+    if (this.isEnabled('enableDirectives')) {
+      processor = processor.use(remarkDirective);
+      processor = processor.use(this.createDirectivePlugin());
+    }
+
+    // Math/LaTeX
+    if (this.isEnabled('enableMath')) {
+      processor = processor.use(remarkMath);
+    }
+
+    // Code block handling (mermaid, math blocks)
+    processor = processor.use(this.createCodeBlockPlugin());
+
+    // MarkdownScript blocks (:::script) - always enabled for this method
+    processor = processor.use(remarkScriptBlock);
+
+    // Convert to HTML
+    processor = processor.use(remarkRehype, { allowDangerousHtml: true });
+
+    // Heading anchors
+    if (this.isEnabled('enableHeadingAnchors')) {
+      processor = processor.use(rehypeSlug);
+      processor = processor.use(rehypeAutolinkHeadings, { behavior: 'wrap' });
+    }
+
+    // Stringify
+    processor = processor.use(rehypeStringify, { allowDangerousHtml: true });
+
+    // Process markdown
+    const file = await processor.process(processedContent);
+    let html = String(file);
+
+    // Extract scripts from file data
+    const scripts: ScriptBlockData[] = extractScriptsFromFile(file);
+
+    // Prepend error alerts if any (unless suppressed)
+    if (this.errors.length > 0 && !this.options.suppressErrors) {
+      html = this.generateErrorAlerts() + html;
+    }
+
+    // Prepend plugin assets if requested
+    if (this.options.includeAssets) {
+      html = this.generateAssetTags() + html;
+    }
+
+    return {
+      html,
+      aiContexts: this.aiContexts,
+      frontmatter: Object.keys(frontmatter).length > 0 ? frontmatter : undefined,
+      errors: this.errors,
+      scripts,
+    };
+  }
+
+  /**
+   * Convert MD++ markdown with full feature extraction
+   * Returns HTML, scripts, AND AI placeholders for processing
+   */
+  async convertFull(markdown: string): Promise<FullRenderResult> {
+    // Reset state
+    this.errors = [];
+    this.aiContexts = [];
+
+    // Parse frontmatter
+    const { content, data: frontmatter } = matter(markdown);
+
+    // Preprocess directives and callouts (only if enabled)
+    let processedContent = content;
+    if (this.isEnabled('enableDirectives') || this.isEnabled('enableCallouts')) {
+      processedContent = this.preprocessDirectives(content);
+    }
+
+    // Build processor pipeline based on enabled features
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let processor: any = unified().use(remarkParse);
+
+    // GFM: tables, strikethrough, task lists, autolinks
+    if (this.isEnabled('enableGfm')) {
+      processor = processor.use(remarkGfm);
+    }
+
+    // Directives (:::plugin:component)
+    if (this.isEnabled('enableDirectives')) {
+      processor = processor.use(remarkDirective);
+      processor = processor.use(this.createDirectivePlugin());
+    }
+
+    // Math/LaTeX
+    if (this.isEnabled('enableMath')) {
+      processor = processor.use(remarkMath);
+    }
+
+    // Code block handling (mermaid, math blocks)
+    processor = processor.use(this.createCodeBlockPlugin());
+
+    // MarkdownScript blocks (:::script)
+    processor = processor.use(remarkScriptBlock);
+
+    // AI Placeholders (:::ai-generate, :ai{})
+    processor = processor.use(remarkAIPlaceholder);
+
+    // Convert to HTML
+    processor = processor.use(remarkRehype, { allowDangerousHtml: true });
+
+    // Heading anchors
+    if (this.isEnabled('enableHeadingAnchors')) {
+      processor = processor.use(rehypeSlug);
+      processor = processor.use(rehypeAutolinkHeadings, { behavior: 'wrap' });
+    }
+
+    // Stringify
+    processor = processor.use(rehypeStringify, { allowDangerousHtml: true });
+
+    // Process markdown
+    const file = await processor.process(processedContent);
+    let html = String(file);
+
+    // Extract scripts and placeholders from file data
+    const scripts: ScriptBlockData[] = extractScriptsFromFile(file);
+    const placeholders: AIPlaceholderData[] = extractPlaceholdersFromFile(file);
+
+    // Prepend error alerts if any (unless suppressed)
+    if (this.errors.length > 0 && !this.options.suppressErrors) {
+      html = this.generateErrorAlerts() + html;
+    }
+
+    // Prepend plugin assets if requested
+    if (this.options.includeAssets) {
+      html = this.generateAssetTags() + html;
+    }
+
+    return {
+      html,
+      aiContexts: this.aiContexts,
+      frontmatter: Object.keys(frontmatter).length > 0 ? frontmatter : undefined,
+      errors: this.errors,
+      scripts,
+      placeholders,
+      format: 'mdsc' as FileFormat, // convertFull assumes full features
+    };
+  }
+
+  /**
+   * Convert markdown with format-aware feature detection
+   * Automatically detects format from filename and enables appropriate features
+   *
+   * @param markdown - The markdown content to convert
+   * @param filename - Optional filename to detect format (e.g., 'doc.md', 'doc.mdsc')
+   * @param formatOverride - Optional explicit format override
+   */
+  async convertWithFormat(
+    markdown: string,
+    filename?: string,
+    formatOverride?: FileFormat
+  ): Promise<FullRenderResult> {
+    // Determine format
+    const format: FileFormat = formatOverride || (filename ? detectFileFormat(filename) : 'mdplus');
+    const caps = getFormatCapabilities(format);
+
+    // Reset state
+    this.errors = [];
+    this.aiContexts = [];
+
+    // Parse frontmatter
+    const { content, data: frontmatter } = matter(markdown);
+
+    // Preprocess directives and callouts (only if enabled by format)
+    let processedContent = content;
+    if (caps.components || caps.callouts) {
+      processedContent = this.preprocessDirectives(content);
+    }
+
+    // Build processor pipeline based on format capabilities
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let processor: any = unified().use(remarkParse);
+
+    // GFM: tables, strikethrough, task lists, autolinks
+    if (caps.gfm) {
+      processor = processor.use(remarkGfm);
+    }
+
+    // Directives (:::plugin:component) - needed for components, callouts, ai-context, scripts, styles
+    if (caps.components || caps.callouts || caps.aiContext || caps.scripts || caps.styles) {
+      processor = processor.use(remarkDirective);
+      processor = processor.use(this.createDirectivePlugin());
+    }
+
+    // Math/LaTeX
+    if (caps.math) {
+      processor = processor.use(remarkMath);
+    }
+
+    // Code block handling (mermaid, math blocks)
+    if (caps.mermaid || caps.math) {
+      processor = processor.use(this.createCodeBlockPlugin());
+    }
+
+    // MarkdownScript blocks (:::script) - only for .mdsc
+    if (caps.scripts) {
+      processor = processor.use(remarkScriptBlock);
+    }
+
+    // AI Placeholders (:::ai-generate, :ai{}) - for mdplus and mdsc
+    if (caps.aiPlaceholders) {
+      processor = processor.use(remarkAIPlaceholder);
+    }
+
+    // Convert to HTML
+    processor = processor.use(remarkRehype, { allowDangerousHtml: true });
+
+    // Heading anchors
+    if (this.isEnabled('enableHeadingAnchors')) {
+      processor = processor.use(rehypeSlug);
+      processor = processor.use(rehypeAutolinkHeadings, { behavior: 'wrap' });
+    }
+
+    // Stringify
+    processor = processor.use(rehypeStringify, { allowDangerousHtml: true });
+
+    // Process markdown
+    const file = await processor.process(processedContent);
+    let html = String(file);
+
+    // Extract data based on format capabilities
+    const scripts: ScriptBlockData[] = caps.scripts ? extractScriptsFromFile(file) : [];
+    const placeholders: AIPlaceholderData[] = caps.aiPlaceholders ? extractPlaceholdersFromFile(file) : [];
+    const styles: StyleBlockData[] = []; // TODO: Extract styles when plugin is ready
+
+    // Prepend error alerts if any (unless suppressed)
+    if (this.errors.length > 0 && !this.options.suppressErrors) {
+      html = this.generateErrorAlerts() + html;
+    }
+
+    // Prepend plugin assets if requested
+    if (this.options.includeAssets) {
+      html = this.generateAssetTags() + html;
+    }
+
+    return {
+      html,
+      aiContexts: this.aiContexts,
+      frontmatter: Object.keys(frontmatter).length > 0 ? frontmatter : undefined,
+      errors: this.errors,
+      scripts,
+      placeholders,
+      styles: caps.styles ? styles : undefined,
+      format,
+    };
+  }
+
+  /**
+   * Get format capabilities for a file
+   */
+  static getCapabilities(format: FileFormat): FormatCapabilities {
+    return getFormatCapabilities(format);
+  }
+
+  /**
+   * Detect format from filename
+   */
+  static detectFormat(filename: string): FileFormat {
+    return detectFileFormat(filename);
+  }
+
+  /**
    * Preprocess directives and callouts
    */
   private preprocessDirectives(content: string): string {
@@ -174,24 +485,30 @@ export class MDPlusPlus {
     // > [!NOTE]        -> :::admonitions_note
     // > [!WARNING]     -> :::admonitions_warning
     // > [!TIP] Title   -> :::admonitions_tip[Title]
+    // We mark these with a special prefix so closeCalloutBlocks can identify them
     processed = processed.replace(
       /^(>[ ]?)\[!(\w+)\][ ]?(.*)$/gm,
       (match, prefix, type, title) => {
         const typeLower = type.toLowerCase();
         const titleAttr = title.trim() ? `[${title.trim()}]` : '';
-        return `:::admonitions_${typeLower}${titleAttr}`;
+        // Use a marker to distinguish GitHub callouts from manual directives
+        return `:::__callout__admonitions_${typeLower}${titleAttr}`;
       }
     );
 
-    // Close callout blocks (when we see a line that's not a blockquote after a callout)
-    // This is a simplified approach - full implementation would need proper AST handling
+    // Close callout blocks (only for converted GitHub/Obsidian callouts)
     processed = this.closeCalloutBlocks(processed);
+
+    // Remove the callout marker after processing
+    processed = processed.replace(/:::__callout__/g, ':::');
 
     return processed;
   }
 
   /**
-   * Close callout blocks that were opened
+   * Close callout blocks that were opened from GitHub/Obsidian syntax
+   * Only processes blocks that have the __callout__ marker (converted from > [!TYPE] syntax)
+   * Manual :::admonitions_* directives are NOT modified
    */
   private closeCalloutBlocks(content: string): string {
     const lines = content.split('\n');
@@ -201,14 +518,15 @@ export class MDPlusPlus {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
 
-      // Check if this line starts a callout
-      if (line.startsWith(':::admonitions_')) {
+      // Only process callouts that were converted from GitHub/Obsidian syntax
+      // These have the __callout__ marker
+      if (line.startsWith(':::__callout__')) {
         inCallout = true;
         result.push(line);
         continue;
       }
 
-      // If we're in a callout and hit a non-blockquote line
+      // If we're in a converted callout and hit a non-blockquote line
       if (inCallout) {
         if (line.startsWith('> ') || line.startsWith('>')) {
           // Continue the callout, remove the > prefix
@@ -585,9 +903,22 @@ export class MDPlusPlus {
       }
     }
 
-    // Handle variant if specified
-    if (attributes.variant && componentDef?.variants?.[attributes.variant]) {
-      classes.push(...componentDef.variants[attributes.variant]);
+    // Handle variant if specified (support both 'variant' and 'type' attributes)
+    const variantValue = attributes.variant || attributes.type;
+    if (variantValue && componentDef?.variants?.[variantValue]) {
+      classes.push(...componentDef.variants[variantValue]);
+    }
+
+    // Handle dynamic class based on type attribute (e.g., for admonitions)
+    // This adds classes like "admonition-note" when type="note" is used
+    if (attributes.type && !componentDef?.variants?.[attributes.type]) {
+      // Add type-based class if no variant matched
+      const typeClass = `${componentDef?.tag || 'div'}-${attributes.type}`;
+      // Check if base class exists and add type variant
+      if (componentDef?.classes?.length > 0) {
+        const baseClass = componentDef.classes[0];
+        classes.push(`${baseClass}-${attributes.type}`);
+      }
     }
 
     if (classes.length > 0) {

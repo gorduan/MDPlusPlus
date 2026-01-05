@@ -1,0 +1,36 @@
+/**
+ * MD++ Typography Utilities (Minimal)
+ *
+ * Essential text utility classes only.
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+// Font sizes (commonly used)
+.text-xs { font-size: map.get($font-sizes, xs) !important; }
+.text-sm { font-size: map.get($font-sizes, sm) !important; }
+.text-lg { font-size: map.get($font-sizes, lg) !important; }
+
+// Font weight
+.font-medium { font-weight: map.get($font-weights, medium) !important; }
+.font-semibold { font-weight: map.get($font-weights, semibold) !important; }
+.font-bold { font-weight: map.get($font-weights, bold) !important; }
+
+// Font family
+.font-mono { font-family: $font-family-mono !important; }
+
+// Text align
+.text-center { text-align: center !important; }
+
+// Text colors
+.text-primary { color: var(--text-primary) !important; }
+.text-secondary { color: var(--text-secondary) !important; }
+.text-muted { color: var(--text-muted) !important; }
+
+// Text overflow
+.truncate {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}

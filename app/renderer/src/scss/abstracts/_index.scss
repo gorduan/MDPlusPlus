@@ -1,0 +1,21 @@
+/**
+ * MD++ SCSS Abstracts Index
+ *
+ * Forward all abstract partials for easy import.
+ * Usage: @use 'abstracts' as *;
+ */
+
+// Variables first (no dependencies)
+@forward 'variables';
+
+// Primitive Tokens (raw color values)
+@forward 'tokens';
+
+// Functions depend on variables
+@forward 'functions';
+
+// Colors output CSS custom properties using light-dark()
+@forward 'colors';
+
+// Mixins use variables and functions
+@forward 'mixins';

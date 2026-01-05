@@ -4,6 +4,27 @@
   "author": "MD++ Team",
   "description": "Admonitions/Callouts - Compatible with Obsidian, MkDocs, and GitHub alerts",
   "components": {
+    "admonition": {
+      "tag": "div",
+      "classes": ["admonition"],
+      "variants": {
+        "note": ["admonition-note"],
+        "info": ["admonition-info"],
+        "tip": ["admonition-tip"],
+        "hint": ["admonition-tip"],
+        "important": ["admonition-important"],
+        "warning": ["admonition-warning"],
+        "caution": ["admonition-caution"],
+        "danger": ["admonition-danger"],
+        "error": ["admonition-danger"],
+        "success": ["admonition-success"],
+        "question": ["admonition-question"],
+        "quote": ["admonition-quote"],
+        "example": ["admonition-example"],
+        "abstract": ["admonition-abstract"],
+        "bug": ["admonition-bug"]
+      }
+    },
     "note": {
       "tag": "div",
       "classes": ["admonition", "admonition-note"],

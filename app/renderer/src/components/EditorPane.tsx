@@ -47,7 +47,7 @@ const EditorPane = forwardRef<EditorPaneRef, EditorPaneProps>(
       },
       getMode: () => mode,
       setMode: (newMode: EditorMode) => setMode(newMode),
-    }));
+    }), [mode, content, onChange]);
 
     const handleModeChange = useCallback((newMode: EditorMode) => {
       setMode(newMode);

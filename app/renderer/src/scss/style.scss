@@ -1,0 +1,75 @@
+/**
+ * MD++ Main Stylesheet
+ *
+ * This is the main entry point for all styles.
+ * Import order matters for proper cascade.
+ *
+ * Architecture: 7-1 SASS Pattern + Plugins
+ * ├── abstracts/   - Variables, mixins, functions, tokens (no CSS output)
+ * ├── base/        - Reset, typography, base elements
+ * ├── components/  - Reusable UI components
+ * ├── layout/      - Layout & structure
+ * ├── plugins/     - Plugin-specific themes (Mermaid, Admonitions, Syntax)
+ * ├── themes/      - Theme-specific styles
+ * ├── vendors/     - Third-party overrides
+ * └── utilities/   - Utility classes
+ *
+ * Theme System:
+ * - Uses CSS light-dark() function (Baseline 2024)
+ * - Three modes: system, light, dark
+ * - Plugin-specific color tokens
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/light-dark
+ */
+
+// ===========================================
+// 1. ABSTRACTS (no CSS output, just tools)
+// ===========================================
+// Note: Abstracts are imported via @use in each partial
+// They don't need to be forwarded here
+
+// ===========================================
+// 2. BASE - Reset, typography, base elements
+// ===========================================
+@use 'base';
+
+// ===========================================
+// 3. ABSTRACTS/COLORS - CSS Custom Properties
+// ===========================================
+// Colors are output here to generate :root CSS variables
+// Uses light-dark() for automatic theme switching
+@use 'abstracts/colors';
+
+// ===========================================
+// 4. COMPONENTS - UI components & widgets
+// ===========================================
+@use 'components';
+
+// ===========================================
+// 5. LAYOUT - Structure & page layouts
+// ===========================================
+@use 'layout';
+
+// ===========================================
+// 6. PLUGINS - Plugin-specific themes
+// ===========================================
+// Each plugin can define its own color tokens
+// - Mermaid: Diagram colors
+// - Admonitions: Callout colors
+// - Syntax: Code highlighting colors
+@use 'plugins';
+
+// ===========================================
+// 7. THEMES - Theme-specific overrides
+// ===========================================
+@use 'themes';
+
+// ===========================================
+// 8. VENDORS - Third-party overrides
+// ===========================================
+@use 'vendors';
+
+// ===========================================
+// 9. UTILITIES - Helper classes (last for specificity)
+// ===========================================
+@use 'utilities';

@@ -1,0 +1,90 @@
+/**
+ * MD++ Modal Styles
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: map.get($z-index, modal);
+  @include flex-center;
+  animation: fadeIn $transition-base;
+}
+
+.modal {
+  @include card;
+  min-width: 400px;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp $transition-base;
+
+  &__header {
+    @include flex-between;
+    padding: map.get($spacing, 4);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  &__title {
+    font-size: map.get($font-sizes, lg);
+    font-weight: map.get($font-weights, semibold);
+  }
+
+  &__close {
+    @include flex-center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    border-radius: map.get($radii, sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      background-color: var(--bg-hover);
+      color: var(--text-primary);
+    }
+  }
+
+  &__body {
+    padding: map.get($spacing, 4);
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  &__footer {
+    @include flex-between;
+    padding: map.get($spacing, 4);
+    border-top: 1px solid var(--border-color);
+    gap: map.get($spacing, 3);
+
+    &--right {
+      justify-content: flex-end;
+    }
+  }
+
+  // Sizes
+  &--sm {
+    min-width: 300px;
+    max-width: 400px;
+  }
+
+  &--lg {
+    min-width: 600px;
+    max-width: 800px;
+  }
+
+  &--fullscreen {
+    min-width: 100vw;
+    min-height: 100vh;
+    border-radius: 0;
+  }
+}
+
+// Animations defined in _dialogs.scss (shared)

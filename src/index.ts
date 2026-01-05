@@ -11,7 +11,38 @@ export {
   hasAIContext
 } from './ai-context';
 
+// File format utilities
+export {
+  detectFileFormat,
+  getFormatCapabilities,
+  hasCapability,
+  FORMAT_CAPABILITIES
+} from './types';
+
+// AI Placeholder utilities
+export {
+  remarkAIPlaceholder,
+  extractPlaceholdersFromFile,
+  extractPlaceholdersFromHTML,
+  replacePlaceholderContent,
+  interpolatePlaceholders
+} from './plugins/ai-placeholder';
+
+// Script block utilities
+export {
+  remarkScriptBlock,
+  extractScriptsFromFile,
+  extractScriptsFromHTML
+} from './plugins/script-block';
+
 export type {
+  // File format types
+  FileFormat,
+  FormatCapabilities,
+  // Style types (for .mdsc)
+  StyleBlockData,
+  StyleCompileResult,
+  // Core types
   PluginDefinition,
   ComponentDefinition,
   StructureDefinition,
@@ -21,5 +52,23 @@ export type {
   RenderError,
   ParserOptions,
   SecurityProfile,
-  SecurityConfig
+  SecurityConfig,
+  // Script types
+  ScriptMode,
+  ScriptSecurityLevel,
+  ScriptBlockData,
+  ScriptError,
+  ScriptExecutionResult,
+  ScriptLogEntry,
+  ScriptAPI,
+  ScriptRenderResult,
+  // AI Placeholder types
+  AIPlaceholderFormat,
+  AIPlaceholderStatus,
+  AIPlaceholderData,
+  AIPlaceholderResult,
+  AIAgent,
+  AIAgentContext,
+  AIPlaceholderRenderResult,
+  FullRenderResult
 } from './types';

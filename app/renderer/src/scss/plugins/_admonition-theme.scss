@@ -1,0 +1,237 @@
+/**
+ * MD++ Admonition Plugin Theme
+ *
+ * Defines color tokens specific to Admonitions/Callouts.
+ * Compatible with Obsidian, MkDocs, and GitHub alerts.
+ * Uses light-dark() for automatic theme switching.
+ *
+ * Admonition Types:
+ * - note, info (blue)
+ * - tip, hint, success (green)
+ * - warning, caution (yellow/orange)
+ * - danger, error, bug (red)
+ * - important (purple)
+ * - question (cyan)
+ * - quote (gray)
+ * - example (indigo)
+ * - abstract (teal)
+ */
+
+@use '../abstracts/tokens' as *;
+
+// ===========================================
+// Admonition Plugin Color Tokens
+// ===========================================
+:root {
+  // Note / Info (Blue)
+  --admonition-note-color: light-dark(#{$blue-600}, #{$blue-500});
+  --admonition-note-bg: light-dark(
+    rgba(37, 99, 235, 0.08),
+    rgba(59, 130, 246, 0.12)
+  );
+  --admonition-note-border: light-dark(#{$blue-400}, #{$blue-600});
+
+  // Tip / Hint / Success (Green)
+  --admonition-tip-color: light-dark(#{$green-600}, #{$green-500});
+  --admonition-tip-bg: light-dark(
+    rgba(5, 150, 105, 0.08),
+    rgba(16, 185, 129, 0.12)
+  );
+  --admonition-tip-border: light-dark(#{$green-400}, #{$green-600});
+
+  // Warning / Caution (Yellow/Orange)
+  --admonition-warning-color: light-dark(#{$yellow-600}, #{$yellow-500});
+  --admonition-warning-bg: light-dark(
+    rgba(217, 119, 6, 0.08),
+    rgba(245, 158, 11, 0.12)
+  );
+  --admonition-warning-border: light-dark(#{$yellow-400}, #{$yellow-600});
+
+  // Danger / Error / Bug (Red)
+  --admonition-danger-color: light-dark(#{$red-600}, #{$red-500});
+  --admonition-danger-bg: light-dark(
+    rgba(220, 38, 38, 0.08),
+    rgba(239, 68, 68, 0.12)
+  );
+  --admonition-danger-border: light-dark(#{$red-400}, #{$red-600});
+
+  // Important (Purple)
+  --admonition-important-color: light-dark(#{$purple-600}, #{$purple-500});
+  --admonition-important-bg: light-dark(
+    rgba(124, 58, 237, 0.08),
+    rgba(139, 92, 246, 0.12)
+  );
+  --admonition-important-border: light-dark(#{$purple-400}, #{$purple-600});
+
+  // Question (Cyan)
+  --admonition-question-color: light-dark(#{$cyan-600}, #{$cyan-500});
+  --admonition-question-bg: light-dark(
+    rgba(8, 145, 178, 0.08),
+    rgba(6, 182, 212, 0.12)
+  );
+  --admonition-question-border: light-dark(#{$cyan-400}, #{$cyan-600});
+
+  // Quote (Gray)
+  --admonition-quote-color: light-dark(#{$slate-500}, #{$slate-400});
+  --admonition-quote-bg: light-dark(
+    rgba(71, 85, 105, 0.05),
+    rgba(100, 116, 139, 0.08)
+  );
+  --admonition-quote-border: light-dark(#{$slate-300}, #{$slate-500});
+
+  // Example (Indigo)
+  --admonition-example-color: light-dark(#{$indigo-600}, #{$indigo-500});
+  --admonition-example-bg: light-dark(
+    rgba(79, 70, 229, 0.08),
+    rgba(99, 102, 241, 0.12)
+  );
+  --admonition-example-border: light-dark(#{$indigo-400}, #{$indigo-600});
+
+  // Abstract (Teal)
+  --admonition-abstract-color: light-dark(#{$teal-600}, #{$teal-500});
+  --admonition-abstract-bg: light-dark(
+    rgba(13, 148, 136, 0.08),
+    rgba(20, 184, 166, 0.12)
+  );
+  --admonition-abstract-border: light-dark(#{$teal-400}, #{$teal-600});
+
+  // Success (Green - alias for tip)
+  --admonition-success-color: var(--admonition-tip-color);
+  --admonition-success-bg: var(--admonition-tip-bg);
+  --admonition-success-border: var(--admonition-tip-border);
+
+  // Info (Blue - alias for note)
+  --admonition-info-color: var(--admonition-note-color);
+  --admonition-info-bg: var(--admonition-note-bg);
+  --admonition-info-border: var(--admonition-note-border);
+
+  // Caution (Yellow - alias for warning)
+  --admonition-caution-color: var(--admonition-warning-color);
+  --admonition-caution-bg: var(--admonition-warning-bg);
+  --admonition-caution-border: var(--admonition-warning-border);
+
+  // Error (Red - alias for danger)
+  --admonition-error-color: var(--admonition-danger-color);
+  --admonition-error-bg: var(--admonition-danger-bg);
+  --admonition-error-border: var(--admonition-danger-border);
+
+  // Bug (Red - alias for danger)
+  --admonition-bug-color: var(--admonition-danger-color);
+  --admonition-bug-bg: var(--admonition-danger-bg);
+  --admonition-bug-border: var(--admonition-danger-border);
+
+  // Hint (Green - alias for tip)
+  --admonition-hint-color: var(--admonition-tip-color);
+  --admonition-hint-bg: var(--admonition-tip-bg);
+  --admonition-hint-border: var(--admonition-tip-border);
+}
+
+// ===========================================
+// Admonition Style Overrides
+// ===========================================
+// These use the plugin tokens for consistent theming
+
+.admonition-note,
+.callout-note {
+  --admonition-color: var(--admonition-note-color);
+  --admonition-bg: var(--admonition-note-bg);
+  border-left-color: var(--admonition-note-border);
+}
+
+.admonition-info,
+.callout-info {
+  --admonition-color: var(--admonition-info-color);
+  --admonition-bg: var(--admonition-info-bg);
+  border-left-color: var(--admonition-info-border);
+}
+
+.admonition-tip,
+.callout-tip {
+  --admonition-color: var(--admonition-tip-color);
+  --admonition-bg: var(--admonition-tip-bg);
+  border-left-color: var(--admonition-tip-border);
+}
+
+.admonition-hint,
+.callout-hint {
+  --admonition-color: var(--admonition-hint-color);
+  --admonition-bg: var(--admonition-hint-bg);
+  border-left-color: var(--admonition-hint-border);
+}
+
+.admonition-success,
+.callout-success {
+  --admonition-color: var(--admonition-success-color);
+  --admonition-bg: var(--admonition-success-bg);
+  border-left-color: var(--admonition-success-border);
+}
+
+.admonition-warning,
+.callout-warning {
+  --admonition-color: var(--admonition-warning-color);
+  --admonition-bg: var(--admonition-warning-bg);
+  border-left-color: var(--admonition-warning-border);
+}
+
+.admonition-caution,
+.callout-caution {
+  --admonition-color: var(--admonition-caution-color);
+  --admonition-bg: var(--admonition-caution-bg);
+  border-left-color: var(--admonition-caution-border);
+}
+
+.admonition-danger,
+.callout-danger {
+  --admonition-color: var(--admonition-danger-color);
+  --admonition-bg: var(--admonition-danger-bg);
+  border-left-color: var(--admonition-danger-border);
+}
+
+.admonition-error,
+.callout-error {
+  --admonition-color: var(--admonition-error-color);
+  --admonition-bg: var(--admonition-error-bg);
+  border-left-color: var(--admonition-error-border);
+}
+
+.admonition-bug,
+.callout-bug {
+  --admonition-color: var(--admonition-bug-color);
+  --admonition-bg: var(--admonition-bug-bg);
+  border-left-color: var(--admonition-bug-border);
+}
+
+.admonition-important,
+.callout-important {
+  --admonition-color: var(--admonition-important-color);
+  --admonition-bg: var(--admonition-important-bg);
+  border-left-color: var(--admonition-important-border);
+}
+
+.admonition-question,
+.callout-question {
+  --admonition-color: var(--admonition-question-color);
+  --admonition-bg: var(--admonition-question-bg);
+  border-left-color: var(--admonition-question-border);
+}
+
+.admonition-quote,
+.callout-quote {
+  --admonition-color: var(--admonition-quote-color);
+  --admonition-bg: var(--admonition-quote-bg);
+  border-left-color: var(--admonition-quote-border);
+}
+
+.admonition-example,
+.callout-example {
+  --admonition-color: var(--admonition-example-color);
+  --admonition-bg: var(--admonition-example-bg);
+  border-left-color: var(--admonition-example-border);
+}
+
+.admonition-abstract,
+.callout-abstract {
+  --admonition-color: var(--admonition-abstract-color);
+  --admonition-bg: var(--admonition-abstract-bg);
+  border-left-color: var(--admonition-abstract-border);
+}

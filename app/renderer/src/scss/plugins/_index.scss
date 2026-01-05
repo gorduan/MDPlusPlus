@@ -1,0 +1,20 @@
+/**
+ * MD++ Plugin Themes Index
+ *
+ * This module contains plugin-specific color tokens and styles.
+ * Each plugin can define its own colors that integrate with the
+ * core theme system (light-dark() compatible).
+ *
+ * Architecture:
+ * - Each plugin has its own theme file
+ * - Plugin tokens extend semantic tokens from _colors.scss
+ * - Plugins can override default colors for customization
+ *
+ * Based on:
+ * - https://milkdown.dev/ (Plugin-driven framework)
+ * - https://github.com/tokiforge/tokiforge (Runtime theming)
+ */
+
+@forward 'mermaid-theme';
+@forward 'admonition-theme';
+@forward 'syntax-theme';

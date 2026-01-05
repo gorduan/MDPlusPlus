@@ -1,0 +1,14 @@
+/**
+ * MD++ Color Utilities (Minimal)
+ *
+ * Essential background and opacity utilities.
+ */
+
+// Background colors
+.bg-primary { background-color: var(--bg-primary) !important; }
+.bg-secondary { background-color: var(--bg-secondary) !important; }
+.bg-transparent { background-color: transparent !important; }
+
+// Opacity
+.opacity-0 { opacity: 0 !important; }
+.opacity-50 { opacity: 0.5 !important; }

@@ -7,10 +7,12 @@ import EditorPane, { EditorPaneRef } from './components/EditorPane';
 import Preview from './components/Preview';
 import Toolbar, { Theme } from './components/Toolbar';
 import StatusBar from './components/StatusBar';
+import Sidebar from './components/Sidebar';
 import SettingsDialog, { ParserSettings, DEFAULT_SETTINGS } from './components/SettingsDialog';
 import SearchReplace from './components/SearchReplace';
 import HelpDialog from './components/HelpDialog';
 import TableEditor from './components/TableEditor';
+import ThemeEditor, { getCustomThemeForExport } from './components/ThemeEditor';
 import type { ViewMode } from '../../electron/preload';
 
 // Welcome content shown when app starts
@@ -538,14 +540,32 @@ export default function App() {
   const [theme, setTheme] = useState<Theme>('dark');
   const editorRef = useRef<EditorPaneRef | null>(null);
 
+  // Refs to track current values for IPC handlers (avoids stale closures)
+  const contentRef = useRef(content);
+  const filePathRef = useRef(filePath);
+  const themeRef = useRef(theme);
+  useEffect(() => {
+    contentRef.current = content;
+  }, [content]);
+  useEffect(() => {
+    filePathRef.current = filePath;
+  }, [filePath]);
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
+
   // New feature states
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchMode, setSearchMode] = useState<'find' | 'replace'>('find');
   const [helpOpen, setHelpOpen] = useState(false);
   const [tableEditorOpen, setTableEditorOpen] = useState(false);
+  const [themeEditorOpen, setThemeEditorOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sidebar state
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Apply theme to document
   useEffect(() => {
@@ -643,13 +663,15 @@ export default function App() {
     }
   }, [isModified]);
 
-  // Set up electron IPC handlers
+  // Set up electron IPC handlers - file operations (no content dependency)
   useEffect(() => {
-    if (!window.electronAPI) return;
+    if (!window.electronAPI) {
+      return;
+    }
 
-    // Handle content requests from main process
+    // Handle content requests from main process - uses ref to avoid stale closure
     const unsubGetContent = window.electronAPI.onGetContent(() => {
-      window.electronAPI.sendContent(content);
+      window.electronAPI.sendContent(contentRef.current);
     });
 
     // Handle new file
@@ -711,45 +733,29 @@ export default function App() {
       // Use the theme selected by user in the dialog
       const isDark = exportTheme === 'dark';
 
+      // Get custom theme colors from Theme Editor
+      const customTheme = getCustomThemeForExport(isDark);
+
       // MD++ Export CSS - Theme-aware
       const exportCSS = `
 /* MD++ Export Styles - ${isDark ? 'Dark' : 'Light'} Theme */
 :root {
-  ${isDark ? `
-  --bg-primary: #0F172A;
-  --bg-secondary: #1E293B;
-  --bg-card: #334155;
-  --text-primary: #F8FAFC;
-  --text-secondary: #94A3B8;
-  --accent: #7C3AED;
-  --accent-hover: #6D28D9;
-  --accent-light: #A78BFA;
-  --success: #10B981;
-  --warning: #F59E0B;
-  --error: #EF4444;
-  --border: #475569;
-  --code-bg: #1E293B;
-  --code-text: #E2E8F0;
-  --inline-code-bg: #334155;
-  --inline-code-text: #A78BFA;
-  ` : `
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #F8FAFC;
-  --bg-card: #F1F5F9;
-  --text-primary: #1E293B;
-  --text-secondary: #64748B;
-  --accent: #7C3AED;
-  --accent-hover: #6D28D9;
-  --accent-light: #6D28D9;
-  --success: #059669;
-  --warning: #D97706;
-  --error: #DC2626;
-  --border: #E2E8F0;
-  --code-bg: #F8FAFC;
-  --code-text: #1E293B;
-  --inline-code-bg: #F1F5F9;
-  --inline-code-text: #6D28D9;
-  `}
+  --bg-primary: ${customTheme['--bg-primary']};
+  --bg-secondary: ${customTheme['--bg-secondary']};
+  --bg-card: ${customTheme['--bg-card']};
+  --text-primary: ${customTheme['--text-primary']};
+  --text-secondary: ${customTheme['--text-secondary']};
+  --accent: ${customTheme['--accent']};
+  --accent-hover: ${customTheme['--accent-hover']};
+  --accent-light: ${customTheme['--accent-light']};
+  --success: ${customTheme['--color-success']};
+  --warning: ${customTheme['--color-warning']};
+  --error: ${customTheme['--color-error']};
+  --border: ${customTheme['--border-color']};
+  --code-bg: ${customTheme['--bg-code']};
+  --code-text: ${customTheme['--text-code']};
+  --inline-code-bg: ${customTheme['--bg-card']};
+  --inline-code-text: ${customTheme['--accent-light']};
 }
 
 * {
@@ -1091,7 +1097,7 @@ del {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${filePath?.split(/[\\/]/).pop() || 'MD++ Export'}</title>
+  <title>${filePathRef.current?.split(/[\\/]/).pop() || 'MD++ Export'}</title>
   <style>${exportCSS}</style>
   <!-- Mermaid for diagrams -->
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
@@ -1158,45 +1164,29 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
       // Use the theme selected by user in the dialog
       const isDark = exportTheme === 'dark';
 
+      // Get custom theme colors from Theme Editor
+      const customTheme = getCustomThemeForExport(isDark);
+
       // PDF Export CSS - Theme-aware (similar to HTML but optimized for print)
       const exportCSS = `
 /* MD++ PDF Export Styles - ${isDark ? 'Dark' : 'Light'} Theme */
 :root {
-  ${isDark ? `
-  --bg-primary: #0F172A;
-  --bg-secondary: #1E293B;
-  --bg-card: #334155;
-  --text-primary: #F8FAFC;
-  --text-secondary: #94A3B8;
-  --accent: #7C3AED;
-  --accent-hover: #6D28D9;
-  --accent-light: #A78BFA;
-  --success: #10B981;
-  --warning: #F59E0B;
-  --error: #EF4444;
-  --border: #475569;
-  --code-bg: #1E293B;
-  --code-text: #E2E8F0;
-  --inline-code-bg: #334155;
-  --inline-code-text: #A78BFA;
-  ` : `
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #F8FAFC;
-  --bg-card: #F1F5F9;
-  --text-primary: #1E293B;
-  --text-secondary: #64748B;
-  --accent: #7C3AED;
-  --accent-hover: #6D28D9;
-  --accent-light: #6D28D9;
-  --success: #059669;
-  --warning: #D97706;
-  --error: #DC2626;
-  --border: #E2E8F0;
-  --code-bg: #F8FAFC;
-  --code-text: #1E293B;
-  --inline-code-bg: #F1F5F9;
-  --inline-code-text: #6D28D9;
-  `}
+  --bg-primary: ${customTheme['--bg-primary']};
+  --bg-secondary: ${customTheme['--bg-secondary']};
+  --bg-card: ${customTheme['--bg-card']};
+  --text-primary: ${customTheme['--text-primary']};
+  --text-secondary: ${customTheme['--text-secondary']};
+  --accent: ${customTheme['--accent']};
+  --accent-hover: ${customTheme['--accent-hover']};
+  --accent-light: ${customTheme['--accent-light']};
+  --success: ${customTheme['--color-success']};
+  --warning: ${customTheme['--color-warning']};
+  --error: ${customTheme['--color-error']};
+  --border: ${customTheme['--border-color']};
+  --code-bg: ${customTheme['--bg-code']};
+  --code-text: ${customTheme['--text-code']};
+  --inline-code-bg: ${customTheme['--bg-card']};
+  --inline-code-text: ${customTheme['--accent-light']};
 }
 
 @media print {
@@ -1519,7 +1509,7 @@ del {
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>${filePath?.split(/[\\/]/).pop() || 'MD++ Export'}</title>
+  <title>${filePathRef.current?.split(/[\\/]/).pop() || 'MD++ Export'}</title>
   <style>${exportCSS}</style>
   <!-- Mermaid for diagrams -->
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
@@ -1615,57 +1605,271 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
       unsubExportHTML();
       unsubExportPDF();
     };
-  }, [content, filePath, theme]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Using refs to avoid stale closures - handlers registered once on mount
 
   // Update modified state reference
   useEffect(() => {
     window.electronAPI?.setModified(isModified);
   }, [isModified]);
 
+  // File action handlers
+  const handleNewFile = useCallback(() => {
+    setContent('');
+    setFilePath(null);
+    setIsModified(false);
+    window.electronAPI?.setModified(false);
+    setSidebarOpen(false);
+  }, []);
+
+  const handleOpenFile = useCallback(async () => {
+    setSidebarOpen(false);
+    // Use direct invoke pattern - more reliable than IPC events
+    const result = await window.electronAPI?.openFileDialog?.();
+    if (result?.success && result.content) {
+      setContent(result.content);
+      setFilePath(result.path);
+      setIsModified(false);
+      window.electronAPI?.setModified(false);
+    }
+  }, []);
+
+  const handleSaveFile = useCallback(() => {
+    window.electronAPI?.saveFile();
+  }, []);
+
+  const handleSaveAs = useCallback(() => {
+    window.electronAPI?.saveFileAs();
+  }, []);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const isCtrl = e.ctrlKey || e.metaKey;
+      const isShift = e.shiftKey;
+      const isAlt = e.altKey;
+
+      // === File Operations ===
+      // New File: Ctrl+N
+      if (isCtrl && !isShift && !isAlt && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        handleNewFile();
+        return;
+      }
+
+      // Open File: Ctrl+O
+      if (isCtrl && !isShift && !isAlt && e.key.toLowerCase() === 'o') {
+        e.preventDefault();
+        handleOpenFile();
+        return;
+      }
+
+      // Save: Ctrl+S
+      if (isCtrl && !isShift && !isAlt && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        handleSaveFile();
+        return;
+      }
+
+      // Save As: Ctrl+Shift+S
+      if (isCtrl && isShift && !isAlt && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        handleSaveAs();
+        return;
+      }
+
+      // Export HTML: Ctrl+E
+      if (isCtrl && !isShift && !isAlt && e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        window.electronAPI?.exportHTML();
+        return;
+      }
+
+      // Export PDF: Ctrl+Shift+E
+      if (isCtrl && isShift && !isAlt && e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        window.electronAPI?.exportPDF();
+        return;
+      }
+
+      // === View Modes ===
+      // Editor Only: Ctrl+1
+      if (isCtrl && !isShift && !isAlt && e.key === '1') {
+        e.preventDefault();
+        setViewMode('editor');
+        return;
+      }
+
+      // Preview Only: Ctrl+2
+      if (isCtrl && !isShift && !isAlt && e.key === '2') {
+        e.preventDefault();
+        setViewMode('preview');
+        return;
+      }
+
+      // Split View: Ctrl+3
+      if (isCtrl && !isShift && !isAlt && e.key === '3') {
+        e.preventDefault();
+        setViewMode('split');
+        return;
+      }
+
+      // === Formatting (only when editor is visible) ===
+      if (viewMode === 'editor' || viewMode === 'split') {
+        // Bold: Ctrl+B
+        if (isCtrl && !isShift && !isAlt && e.key.toLowerCase() === 'b') {
+          e.preventDefault();
+          editorRef.current?.insertWrap('**');
+          return;
+        }
+
+        // Italic: Ctrl+I (but not Ctrl+Shift+I for image)
+        if (isCtrl && !isShift && !isAlt && e.key.toLowerCase() === 'i') {
+          e.preventDefault();
+          editorRef.current?.insertWrap('*');
+          return;
+        }
+
+        // Inline Code: Ctrl+`
+        if (isCtrl && !isShift && !isAlt && (e.key === '`' || e.key === 'Dead')) {
+          e.preventDefault();
+          editorRef.current?.insertWrap('`');
+          return;
+        }
+
+        // Link: Ctrl+K
+        if (isCtrl && !isShift && !isAlt && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          editorRef.current?.insert('[](url)');
+          return;
+        }
+
+        // Image: Ctrl+Shift+I
+        if (isCtrl && isShift && !isAlt && e.key.toLowerCase() === 'i') {
+          e.preventDefault();
+          editorRef.current?.insert('![alt](url)');
+          return;
+        }
+
+        // Heading 1: Ctrl+Alt+1
+        if (isCtrl && !isShift && isAlt && e.key === '1') {
+          e.preventDefault();
+          editorRef.current?.insert('# ');
+          return;
+        }
+
+        // Heading 2: Ctrl+Alt+2
+        if (isCtrl && !isShift && isAlt && e.key === '2') {
+          e.preventDefault();
+          editorRef.current?.insert('## ');
+          return;
+        }
+
+        // Heading 3: Ctrl+Alt+3
+        if (isCtrl && !isShift && isAlt && e.key === '3') {
+          e.preventDefault();
+          editorRef.current?.insert('### ');
+          return;
+        }
+      }
+
+      // === UI Controls ===
       // Settings: Ctrl+,
-      if (e.ctrlKey && e.key === ',') {
+      if (isCtrl && !isShift && !isAlt && e.key === ',') {
         e.preventDefault();
         setSettingsOpen(true);
+        return;
       }
+
+      // Toggle AI Context: Ctrl+Shift+A
+      if (isCtrl && isShift && !isAlt && e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        setShowAIContext(prev => !prev);
+        return;
+      }
+
       // Help: F1
       if (e.key === 'F1') {
         e.preventDefault();
         setHelpOpen(true);
+        return;
       }
+
+      // DevTools: F12
+      if (e.key === 'F12') {
+        e.preventDefault();
+        window.electronAPI?.toggleDevTools();
+        return;
+      }
+
+      // === Search ===
       // Find: Ctrl+F
-      if (e.ctrlKey && e.key === 'f') {
+      if (isCtrl && !isShift && !isAlt && e.key.toLowerCase() === 'f') {
         e.preventDefault();
         setSearchMode('find');
         setSearchOpen(true);
+        return;
       }
+
       // Replace: Ctrl+H
-      if (e.ctrlKey && e.key === 'h') {
+      if (isCtrl && !isShift && !isAlt && e.key.toLowerCase() === 'h') {
         e.preventDefault();
         setSearchMode('replace');
         setSearchOpen(true);
+        return;
       }
-      // Close search: Escape
-      if (e.key === 'Escape' && searchOpen) {
-        setSearchOpen(false);
+
+      // Close dialogs: Escape
+      if (e.key === 'Escape') {
+        if (searchOpen) {
+          setSearchOpen(false);
+        } else if (sidebarOpen) {
+          setSidebarOpen(false);
+        }
+        return;
+      }
+
+      // Toggle Sidebar: Ctrl+B is used for Bold, so use Ctrl+\
+      // Actually, let's keep sidebar toggle for mouse only or add Ctrl+Shift+B
+      if (isCtrl && isShift && !isAlt && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        setSidebarOpen(prev => !prev);
+        return;
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [searchOpen]);
+  }, [searchOpen, sidebarOpen, viewMode, handleNewFile, handleOpenFile, handleSaveFile, handleSaveAs]);
 
   return (
-    <div className="app">
+    <div className={`app ${sidebarOpen ? 'app--sidebar-open' : ''}`}>
+      {/* Sidebar */}
+      <Sidebar
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+        filePath={filePath}
+        isModified={isModified}
+        onNewFile={handleNewFile}
+        onOpenFile={handleOpenFile}
+        onSaveFile={handleSaveFile}
+        onSaveAs={handleSaveAs}
+        onOpenSettings={() => { setSettingsOpen(true); setSidebarOpen(false); }}
+        onOpenHelp={() => { setHelpOpen(true); setSidebarOpen(false); }}
+        onInsertTable={() => { setTableEditorOpen(true); setSidebarOpen(false); }}
+        onInsert={(text) => { editorRef.current?.insert(text); setSidebarOpen(false); }}
+      />
+
       <Toolbar
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         showAIContext={showAIContext}
         onToggleAIContext={() => setShowAIContext(!showAIContext)}
         onOpenSettings={() => setSettingsOpen(true)}
+        onOpenThemeEditor={() => setThemeEditorOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        sidebarOpen={sidebarOpen}
       />
       <div className={`main-content view-${viewMode}`}>
         {(viewMode === 'editor' || viewMode === 'split') && (
@@ -1681,7 +1885,7 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
         )}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className="preview-pane">
-            <Preview content={content} showAIContext={showAIContext} settings={settings} theme={theme} />
+            <Preview content={content} showAIContext={showAIContext} settings={settings} theme={theme} filePath={filePath} />
           </div>
         )}
       </div>
@@ -1691,6 +1895,8 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
         filePath={filePath}
         isModified={isModified}
         viewMode={viewMode}
+        content={content}
+        autoSaveStatus={autoSaveStatus}
       />
       <SettingsDialog
         isOpen={settingsOpen}
@@ -1716,6 +1922,10 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
         onInsert={(markdown) => {
           editorRef.current?.insert('\n' + markdown + '\n');
         }}
+      />
+      <ThemeEditor
+        isOpen={themeEditorOpen}
+        onClose={() => setThemeEditorOpen(false)}
       />
       {isDragging && (
         <div className="drop-overlay">

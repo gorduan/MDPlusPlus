@@ -1,0 +1,313 @@
+/**
+ * MD++ WYSIWYG Editor Styles
+ *
+ * Uses unified CSS variables from _colors.scss
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+.wysiwyg-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--bg-primary);
+}
+
+.wysiwyg-loading {
+  @include flex-center;
+  height: 100%;
+  color: var(--text-secondary);
+  font-size: map.get($font-sizes, sm);
+}
+
+// WYSIWYG Toolbar
+.wysiwyg-toolbar {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 1);
+  padding: map.get($spacing, 2);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.wysiwyg-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.wysiwyg-toolbar-separator {
+  width: 1px;
+  height: 1.5rem;
+  background-color: var(--border-color);
+  margin: 0 map.get($spacing, 2);
+}
+
+.wysiwyg-toolbar-btn {
+  @include flex-center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: map.get($radii, sm);
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover:not(:disabled) {
+    color: var(--text-primary);
+    background-color: var(--bg-card);
+  }
+
+  &.active {
+    color: var(--accent);
+    background-color: var(--alert-primary-bg);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+// WYSIWYG Content Area
+.wysiwyg-content-wrapper {
+  flex: 1;
+  overflow: auto;
+  padding: map.get($spacing, 4);
+}
+
+.wysiwyg-content {
+  min-height: 100%;
+  outline: none;
+  font-size: map.get($font-sizes, base);
+
+  .ProseMirror {
+    outline: none;
+    min-height: 100%;
+
+    > * + * {
+      margin-top: 0.75em;
+    }
+  }
+
+  // Placeholder
+  p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    color: var(--text-secondary);
+    pointer-events: none;
+    height: 0;
+  }
+
+  // Selection - uses CSS variable
+  ::selection {
+    background-color: var(--selection-bg);
+  }
+
+  // Highlight/Mark - uses CSS variables
+  mark {
+    background-color: var(--highlight-bg);
+    color: var(--highlight-color);
+    padding: 0.1em 0.2em;
+    border-radius: 2px;
+  }
+}
+
+// Table editing
+.wysiwyg-content {
+  table .selectedCell {
+    background-color: var(--alert-primary-bg);
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-color: var(--alert-primary-bg);
+      pointer-events: none;
+    }
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+
+  .column-resize-handle {
+    position: absolute;
+    right: -2px;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: var(--accent);
+    cursor: col-resize;
+    z-index: 10;
+  }
+
+  table td,
+  table th {
+    position: relative;
+    min-width: 80px;
+    vertical-align: top;
+
+    > * {
+      margin: 0;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+}
+
+// Task lists
+.wysiwyg-content ul[data-type="taskList"] {
+  list-style: none;
+  padding: 0;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: map.get($spacing, 2);
+
+    > label {
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    > div {
+      flex: 1;
+    }
+  }
+}
+
+// NOTE: Syntax highlighting styles are now unified in _syntax-highlighting.scss
+// Both WYSIWYG (lowlight) and Preview (highlight.js) use the same CSS variables
+
+// Editor Mode Toggle
+.editor-mode-toggle {
+  @include flex-between;
+  padding: map.get($spacing, 2) map.get($spacing, 4);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  min-height: 2.5rem;
+}
+
+.editor-mode-label {
+  font-size: map.get($font-sizes, xs);
+  font-weight: map.get($font-weights, medium);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.editor-mode-buttons {
+  display: flex;
+  background-color: var(--bg-card);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.editor-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 2);
+  padding: map.get($spacing, 2) map.get($spacing, 3);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: map.get($font-sizes, xs);
+  font-weight: map.get($font-weights, medium);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover {
+    color: var(--text-primary);
+    background-color: var(--border-color);
+  }
+
+  &.active {
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+// Table Bubble Menu
+.table-bubble-menu {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 1);
+  padding: map.get($spacing, 2);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: map.get($radii, lg);
+  box-shadow: map.get($shadows, lg);
+}
+
+.table-menu-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.table-menu-label {
+  font-size: 0.625rem;
+  font-weight: map.get($font-weights, semibold);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  padding: 0 map.get($spacing, 1);
+  letter-spacing: 0.05em;
+}
+
+.table-menu-btn {
+  @include flex-center;
+  position: relative;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: map.get($radii, sm);
+  background-color: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover:not(:disabled) {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &.danger:hover:not(:disabled) {
+    background-color: var(--alert-danger-bg);
+    color: var(--color-danger);
+  }
+}
+
+.table-menu-plus {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  background-color: var(--bg-card);
+  border-radius: 50%;
+}
+
+.table-menu-separator {
+  width: 1px;
+  height: 20px;
+  background-color: var(--border-color);
+  margin: 0 map.get($spacing, 1);
+}

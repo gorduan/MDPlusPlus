@@ -47,6 +47,17 @@ const electronAPI = {
   readFileBase64: (filePath: string, basePath?: string): Promise<FileResult & { data?: string }> =>
     ipcRenderer.invoke('read-file-base64', filePath, basePath),
 
+  // Menu-triggered file operations (sent to main process)
+  openFile: () => ipcRenderer.send('menu-open-file'),
+  saveFile: () => ipcRenderer.send('menu-save-file'),
+  saveFileAs: () => ipcRenderer.send('menu-save-file-as'),
+  exportHTML: () => ipcRenderer.send('menu-export-html'),
+  exportPDF: () => ipcRenderer.send('menu-export-pdf'),
+
+  // Direct file open that returns content (workaround for event issues)
+  openFileDialog: (): Promise<{ success: boolean; path?: string; content?: string; error?: string; canceled?: boolean }> =>
+    ipcRenderer.invoke('open-file-dialog'),
+
   // Content management
   onGetContent: (callback: () => void) => {
     ipcRenderer.on('get-content', callback);

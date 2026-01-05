@@ -1,0 +1,135 @@
+/**
+ * MD++ Typography Base Styles
+ *
+ * Base typography styles for the application.
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+body {
+  font-family: $font-family-sans;
+  font-size: map.get($font-sizes, base);
+  font-weight: map.get($font-weights, normal);
+  line-height: map.get($line-heights, normal);
+  color: var(--text-primary);
+}
+
+// Headings
+h1, h2, h3, h4, h5, h6 {
+  font-weight: map.get($font-weights, bold);
+  line-height: map.get($line-heights, tight);
+  color: var(--text-primary);
+}
+
+h1 {
+  font-size: map.get($font-sizes, 3xl);
+  margin-bottom: map.get($spacing, 4);
+}
+
+h2 {
+  font-size: map.get($font-sizes, 2xl);
+  margin-bottom: map.get($spacing, 3);
+}
+
+h3 {
+  font-size: map.get($font-sizes, xl);
+  margin-bottom: map.get($spacing, 3);
+}
+
+h4 {
+  font-size: map.get($font-sizes, lg);
+  margin-bottom: map.get($spacing, 2);
+}
+
+h5 {
+  font-size: map.get($font-sizes, base);
+  margin-bottom: map.get($spacing, 2);
+}
+
+h6 {
+  font-size: map.get($font-sizes, sm);
+  margin-bottom: map.get($spacing, 2);
+}
+
+// Paragraphs
+p {
+  margin-bottom: map.get($spacing, 4);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Links
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+  }
+}
+
+// Text emphasis
+strong, b {
+  font-weight: map.get($font-weights, bold);
+}
+
+em, i {
+  font-style: italic;
+}
+
+// Small text
+small {
+  font-size: map.get($font-sizes, sm);
+}
+
+// Code
+code {
+  @include font-mono;
+  font-size: 0.875em;
+  padding: 0.125em 0.25em;
+  background-color: var(--bg-code);
+  border-radius: map.get($radii, sm);
+  color: var(--text-code);
+}
+
+pre {
+  @include font-mono;
+  font-size: map.get($font-sizes, sm);
+  padding: map.get($spacing, 4);
+  background-color: var(--bg-code);
+  border-radius: map.get($radii, base);
+  overflow-x: auto;
+
+  code {
+    padding: 0;
+    background: none;
+    border-radius: 0;
+  }
+}
+
+// Blockquotes
+blockquote {
+  padding-left: map.get($spacing, 4);
+  border-left: 4px solid var(--border-color);
+  color: var(--text-secondary);
+  font-style: italic;
+  margin: map.get($spacing, 4) 0;
+}
+
+// Horizontal rule
+hr {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: map.get($spacing, 6) 0;
+}
+
+// Selection
+::selection {
+  background-color: var(--accent);
+  color: white;
+}

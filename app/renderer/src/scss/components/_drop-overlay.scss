@@ -1,0 +1,36 @@
+/**
+ * MD++ Drag & Drop Overlay Styles
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+.drop-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(124, 58, 237, 0.3);
+  @include flex-center;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.drop-overlay-content {
+  padding: map.get($spacing, 8) map.get($spacing, 12);
+  background-color: var(--bg-secondary);
+  border: 3px dashed var(--accent);
+  border-radius: map.get($radii, xl);
+  text-align: center;
+
+  svg {
+    width: 48px;
+    height: 48px;
+    color: var(--accent);
+    margin-bottom: map.get($spacing, 4);
+  }
+
+  p {
+    font-size: map.get($font-sizes, xl);
+    font-weight: map.get($font-weights, semibold);
+    color: var(--text-primary);
+  }
+}

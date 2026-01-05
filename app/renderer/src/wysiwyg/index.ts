@@ -30,3 +30,10 @@ export type {
   SettingsSection,
   PluginSettings,
 } from './SettingsRegistry';
+
+// Element Template Registry
+export { templateRegistry, registerDefaultTemplates } from './elementTemplates';
+export type {
+  ElementTemplate,
+  TemplateCategory,
+} from './elementTemplates';

@@ -33,10 +33,8 @@ export default function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
     <BubbleMenu
       editor={editor}
       shouldShow={shouldShow}
-      tippyOptions={{
+      options={{
         placement: 'top',
-        maxWidth: 'none',
-        zIndex: 1000,
       }}
       className="table-bubble-menu"
     >

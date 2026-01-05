@@ -1,0 +1,491 @@
+---
+title: MarkdownScript Complete Demo
+author: MD++ Team
+date: 2025-01-05
+version: 1.0.0
+tags: [demo, mdsc, documentation]
+---
+
+# MarkdownScript (.mdsc) - Die Zukunft von Markdown
+
+> **MarkdownScript** verbindet die Einfachheit von Markdown mit der Macht von JavaScript.
+> Nicht nur statischer Content - sondern **lebendige, dynamische Dokumente**.
+
+:::ai-context{visibility=hidden}
+## Kontext für AI-Assistenten
+
+Dieses Dokument demonstriert das vollständige .mdsc Format.
+Der Benutzer lernt alle Features von MarkdownScript.
+
+### Wichtige Konzepte:
+- Scripts werden in einer Sandbox ausgeführt
+- Variablen persistieren zwischen Script-Blöcken
+- Es gibt eingebaute APIs (document, utils, $, $$)
+- Drei Sicherheitslevel: strict, standard, permissive
+:::
+
+---
+
+## 1. Das Document-API
+
+MarkdownScript hat Zugriff auf Dokument-Metadaten aus dem Frontmatter:
+
+:::script:output{lang="js"}
+return `### Dokument-Informationen
+
+| Eigenschaft | Wert |
+|-------------|------|
+| **Titel** | ${document.title} |
+| **Pfad** | ${document.path || 'Nicht gespeichert'} |
+| **Author** | ${document.frontmatter.author || 'Unbekannt'} |
+| **Version** | ${document.frontmatter.version || '0.0.0'} |
+| **Tags** | ${(document.frontmatter.tags || []).join(', ')} |`;
+:::
+
+---
+
+## 2. Die Utils-API
+
+### Eingebaute Hilfsfunktionen
+
+:::script{lang="js"}
+// Die utils-API bietet praktische Helfer
+const heute = new Date();
+const preis = 1234.56;
+const items = ['Feature A', 'Feature B', 'Feature C'];
+:::
+
+:::script:output{lang="js"}
+return `**Datum formatieren:**
+- Standard: ${utils.formatDate(heute)}
+- Custom: ${utils.formatDate(heute, 'DD.MM.YYYY HH:mm')}
+
+**Zahlen formatieren:**
+- Zahl: ${utils.number(1234567, 2)}
+- Währung: ${utils.currency(preis)}
+- USD: ${utils.currency(preis, 'USD')}
+
+**Listen erstellen:**
+${utils.list(items)}
+
+**Nummerierte Liste:**
+${utils.list(items, true)}`;
+:::
+
+### Tabellen mit utils.table()
+
+:::script{lang="js"}
+const features = [
+  [':::script', 'JavaScript definieren', 'Variablen, Funktionen'],
+  [':::script:output', 'Markdown generieren', 'Dynamischer Content'],
+  ['document.*', 'Frontmatter Zugriff', 'Metadaten lesen'],
+  ['utils.*', 'Hilfsfunktionen', 'Format, Table, List'],
+  ['$() / $$()', 'Variable Store', 'Cross-Block State'],
+];
+:::
+
+:::script:output{lang="js"}
+return utils.table(
+  ['Syntax', 'Funktion', 'Beschreibung'],
+  features
+);
+:::
+
+---
+
+## 3. Variablen zwischen Blöcken teilen
+
+### Mit $() und $$() - Der Variable Store
+
+:::script{lang="js"}
+// Variablen im globalen Store speichern
+$$('counter', 0);
+$$('userName', 'Max Mustermann');
+$$('projectData', {
+  name: 'MeinProjekt',
+  tasks: 15,
+  completed: 8
+});
+:::
+
+:::script:output{lang="js"}
+// Variablen aus dem Store abrufen
+const user = $('userName');
+const project = $('projectData');
+const progress = Math.round((project.completed / project.tasks) * 100);
+
+return `### Gespeicherte Daten
+
+Hallo **${user}**! Hier ist dein Projektfortschritt:
+
+:::card{.border}
+**${project.name}**
+
+- Aufgaben: ${project.completed}/${project.tasks}
+- Fortschritt: ${progress}%
+
+${'█'.repeat(Math.floor(progress/10))}${'░'.repeat(10 - Math.floor(progress/10))} ${progress}%
+:::`;
+:::
+
+### Counter zwischen Blöcken
+
+:::script{lang="js"}
+// Counter erhöhen
+$$('counter', $('counter') + 1);
+console.log('Counter wurde erhöht auf:', $('counter'));
+:::
+
+:::script:output{lang="js"}
+return `Counter-Wert nach Block 1: **${$('counter')}**`;
+:::
+
+:::script{lang="js"}
+$$('counter', $('counter') + 1);
+:::
+
+:::script:output{lang="js"}
+return `Counter-Wert nach Block 2: **${$('counter')}**`;
+:::
+
+---
+
+## 4. Komplexe Datenverarbeitung
+
+### Business-Logik im Dokument
+
+:::script{lang="js"}
+// Verkaufsdaten
+const sales = [
+  { month: 'Januar', revenue: 45000, costs: 32000, region: 'Nord' },
+  { month: 'Februar', revenue: 52000, costs: 35000, region: 'Nord' },
+  { month: 'März', revenue: 48000, costs: 33000, region: 'Süd' },
+  { month: 'April', revenue: 61000, costs: 38000, region: 'Nord' },
+  { month: 'Mai', revenue: 55000, costs: 36000, region: 'Süd' },
+  { month: 'Juni', revenue: 72000, costs: 42000, region: 'West' },
+];
+
+// Berechnungen
+const totalRevenue = sales.reduce((s, r) => s + r.revenue, 0);
+const totalCosts = sales.reduce((s, r) => s + r.costs, 0);
+const totalProfit = totalRevenue - totalCosts;
+const avgMonthlyProfit = totalProfit / sales.length;
+const profitMargin = ((totalProfit / totalRevenue) * 100).toFixed(1);
+
+// Beste Monate
+const bestMonth = sales.reduce((best, cur) =>
+  (cur.revenue - cur.costs) > (best.revenue - best.costs) ? cur : best
+);
+
+// Nach Region gruppieren
+const byRegion = sales.reduce((acc, s) => {
+  if (!acc[s.region]) acc[s.region] = { revenue: 0, count: 0 };
+  acc[s.region].revenue += s.revenue;
+  acc[s.region].count++;
+  return acc;
+}, {});
+:::
+
+:::script:output{lang="js"}
+return `### Finanzübersicht H1
+
+| Metrik | Wert |
+|--------|------|
+| Gesamtumsatz | ${utils.currency(totalRevenue)} |
+| Gesamtkosten | ${utils.currency(totalCosts)} |
+| **Gewinn** | **${utils.currency(totalProfit)}** |
+| Gewinnmarge | ${profitMargin}% |
+| Ø Monatlicher Gewinn | ${utils.currency(avgMonthlyProfit)} |
+
+> **Bester Monat:** ${bestMonth.month} mit ${utils.currency(bestMonth.revenue - bestMonth.costs)} Gewinn`;
+:::
+
+:::script:output{lang="js"}
+// Regionale Aufschlüsselung
+const regionRows = Object.entries(byRegion).map(([region, data]) => [
+  region,
+  utils.currency(data.revenue),
+  String(data.count),
+  utils.currency(data.revenue / data.count)
+]);
+
+return `### Umsatz nach Region
+
+${utils.table(['Region', 'Umsatz', 'Monate', 'Ø/Monat'], regionRows)}`;
+:::
+
+:::script:output{lang="js"}
+// Monatliche Details
+const monthRows = sales.map(s => [
+  s.month,
+  s.region,
+  utils.currency(s.revenue),
+  utils.currency(s.costs),
+  utils.currency(s.revenue - s.costs),
+  ((s.revenue - s.costs) / s.revenue * 100).toFixed(1) + '%'
+]);
+
+return `### Monatliche Übersicht
+
+${utils.table(['Monat', 'Region', 'Umsatz', 'Kosten', 'Gewinn', 'Marge'], monthRows)}`;
+:::
+
+---
+
+## 5. Bedingte Inhalte & Alerts
+
+:::script{lang="js"}
+// Schwellenwerte prüfen
+const threshold = 50000;
+const criticalMonths = sales.filter(s => s.revenue < threshold);
+const healthyMonths = sales.filter(s => (s.revenue - s.costs) / s.revenue > 0.25);
+:::
+
+:::script:output{lang="js"}
+let alerts = [];
+
+if (criticalMonths.length > 0) {
+  alerts.push(`> [!WARNING]
+> **Niedrige Umsätze**
+>
+> ${criticalMonths.length} Monat(e) unter ${utils.currency(threshold)}:
+> ${criticalMonths.map(m => `> - ${m.month}: ${utils.currency(m.revenue)}`).join('\n')}`);
+}
+
+if (healthyMonths.length === sales.length) {
+  alerts.push(`> [!SUCCESS]
+> **Alle Monate profitabel**
+>
+> Jeder Monat hat eine Gewinnmarge über 25%.`);
+} else if (healthyMonths.length > sales.length / 2) {
+  alerts.push(`> [!TIP]
+> **Gute Performance**
+>
+> ${healthyMonths.length} von ${sales.length} Monaten mit >25% Marge.`);
+}
+
+return alerts.length > 0 ? alerts.join('\n\n') : '> [!INFO]\n> Keine besonderen Hinweise.';
+:::
+
+---
+
+## 6. Dynamische Komponenten generieren
+
+### Cards aus Daten erstellen
+
+:::script{lang="js"}
+const team = [
+  { name: 'Anna Schmidt', role: 'Lead Developer', skills: ['React', 'TypeScript', 'Node.js'] },
+  { name: 'Ben Müller', role: 'UX Designer', skills: ['Figma', 'CSS', 'User Research'] },
+  { name: 'Clara Weber', role: 'Backend Dev', skills: ['Python', 'PostgreSQL', 'Docker'] },
+];
+:::
+
+:::script:output{lang="js"}
+return team.map(member => `
+:::card{.shadow .mb-3}
+### ${member.name}
+**${member.role}**
+
+${utils.list(member.skills)}
+:::`).join('\n');
+:::
+
+---
+
+## 7. Async/Await Support
+
+:::script{lang="js" async="true"}
+// Simulierte API-Anfrage
+const fetchData = () => new Promise(resolve => {
+  setTimeout(() => {
+    resolve({
+      status: 'online',
+      users: 1247,
+      lastUpdate: new Date().toISOString()
+    });
+  }, 100);
+});
+
+const apiData = await fetchData();
+$$('apiStatus', apiData);
+console.log('API Data loaded:', apiData);
+:::
+
+:::script:output{lang="js"}
+const status = $('apiStatus');
+const statusEmoji = status.status === 'online' ? '🟢' : '🔴';
+
+return `### System Status
+
+| Service | Status |
+|---------|--------|
+| API | ${statusEmoji} ${status.status.toUpperCase()} |
+| Aktive Nutzer | ${utils.number(status.users)} |
+| Letztes Update | ${new Date(status.lastUpdate).toLocaleString('de-DE')} |`;
+:::
+
+---
+
+## 8. HTML-Escaping für Sicherheit
+
+:::script{lang="js"}
+// Benutzereingabe (potenziell gefährlich)
+const userInput = '<script>alert("XSS")</script>';
+const safeInput = 'Normaler Text mit <tags>';
+:::
+
+:::script:output{lang="js"}
+return `### Sicheres Rendering
+
+**Ohne Escaping (gefährlich):**
+\`${userInput}\`
+
+**Mit utils.html() (sicher):**
+${utils.html(userInput)}
+
+**Sicherer Text:**
+${utils.html(safeInput)}`;
+:::
+
+---
+
+## 9. Berechnungs-Widgets
+
+### Zinsrechner
+
+:::script{lang="js"}
+// Zinseszins-Berechnung
+const calculate = (principal, rate, years) => {
+  const results = [];
+  let current = principal;
+
+  for (let y = 1; y <= years; y++) {
+    const interest = current * rate;
+    current += interest;
+    results.push({
+      year: y,
+      balance: current,
+      interest: interest,
+      total: current - principal
+    });
+  }
+  return results;
+};
+
+const investment = 10000;
+const annualRate = 0.07;
+const duration = 10;
+const projection = calculate(investment, annualRate, duration);
+:::
+
+:::script:output{lang="js"}
+const rows = projection.map(r => [
+  String(r.year),
+  utils.currency(r.balance),
+  utils.currency(r.interest),
+  utils.currency(r.total)
+]);
+
+return `### Investitionsrechner
+
+**Startkapital:** ${utils.currency(investment)}
+**Zinssatz:** ${(annualRate * 100).toFixed(1)}% p.a.
+**Laufzeit:** ${duration} Jahre
+
+${utils.table(['Jahr', 'Kontostand', 'Zinsen', 'Gesamt-Gewinn'], rows)}
+
+> **Endwert nach ${duration} Jahren:** ${utils.currency(projection[projection.length - 1].balance)}
+> **Gesamtgewinn:** ${utils.currency(projection[projection.length - 1].total)} (${((projection[projection.length - 1].total / investment) * 100).toFixed(1)}%)`;
+:::
+
+---
+
+## 10. Caching für Performance
+
+:::script:output{lang="js" cache="true"}
+// Dieser Block wird gecached und nicht bei jedem Render neu ausgeführt
+const now = new Date();
+return `**Gecachter Timestamp:** ${now.toISOString()}
+
+(Dieser Wert ändert sich nicht bei Re-Renders)`;
+:::
+
+---
+
+## 11. Console Logging für Debugging
+
+:::script{lang="js"}
+console.log('Dies ist ein Log');
+console.info('Info-Nachricht');
+console.warn('Warnung!');
+console.error('Fehler aufgetreten');
+
+// Logs werden im Editor-Panel angezeigt
+const debugData = { key: 'value', numbers: [1, 2, 3] };
+console.log('Debug-Daten:', debugData);
+:::
+
+:::script:output{lang="js"}
+return `> [!INFO]
+> Console-Logs werden im Debug-Panel des Editors angezeigt.
+> Nutze \`console.log()\`, \`console.warn()\`, etc. für Debugging.`;
+:::
+
+---
+
+## Zusammenfassung: .mdsc Feature-Matrix
+
+:::script:output{lang="js"}
+const features = [
+  ['`:::script{lang="js"}`', 'Code ausführen', 'Variablen, Logik, Side-Effects'],
+  ['`:::script:output{lang="js"}`', 'Markdown generieren', 'Dynamischer Content'],
+  ['`async="true"`', 'Async/Await', 'API-Calls, Promises'],
+  ['`cache="true"`', 'Caching', 'Performance-Optimierung'],
+  ['`document.*`', 'Frontmatter', 'title, path, frontmatter'],
+  ['`utils.*`', 'Helfer', 'formatDate, table, list, currency, number, html'],
+  ['`$("key")`', 'Variable lesen', 'Cross-Block State'],
+  ['`$$("key", val)`', 'Variable setzen', 'Persistente Daten'],
+  ['`console.*`', 'Debugging', 'log, warn, error, info'],
+];
+
+return `### Alle .mdsc Features
+
+${utils.table(['Syntax', 'Zweck', 'Details'], features)}
+
+### Sicherheitslevel
+
+| Level | Globals | Netzwerk | Use-Case |
+|-------|---------|----------|----------|
+| **strict** | Math, JSON, Date, Array | ❌ | Maximale Sicherheit |
+| **standard** | + Promise, RegExp, Error | ❌ | Empfohlen |
+| **permissive** | + fetch, URL, Blob | ✅ | Vertrauenswürdige Docs |`;
+:::
+
+---
+
+## Warum .mdsc die Zukunft ist
+
+:::script:output{lang="js"}
+const reasons = [
+  '**Lebendige Dokumente** - Content wird generiert, nicht nur geschrieben',
+  '**Datengetrieben** - Eine Quelle, automatisch aktualisiert',
+  '**Programmatische Reports** - Berechnungen direkt im Dokument',
+  '**Wiederverwendbar** - Templates mit Variablen',
+  '**Sicher** - Sandbox-Ausführung mit konfigurierbaren Levels',
+  '**Kombinierbar** - Alle MD++ Features (Callouts, Math, Mermaid, Components) verfügbar'
+];
+
+return `### .mdsc = Markdown + JavaScript
+
+${utils.list(reasons)}
+
+> **Das Beste aus beiden Welten:**
+> Die Lesbarkeit von Markdown + die Macht von JavaScript.`;
+:::
+
+---
+
+:::script:output{lang="js"}
+return `*Generiert am ${utils.formatDate(new Date(), 'DD.MM.YYYY')} um ${utils.formatDate(new Date(), 'HH:mm')} Uhr mit MD++ MarkdownScript*`;
+:::

@@ -1,0 +1,82 @@
+/**
+ * MD++ Base Styles
+ *
+ * Core application styles and HTML element defaults.
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  overflow: hidden; // Electron app - prevent body scroll
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+}
+
+// Focus styles
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+// Scrollbar styling (global)
+* {
+  @include custom-scrollbar;
+}
+
+// Images
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+// Tables base
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: map.get($spacing, 2) map.get($spacing, 3);
+  text-align: left;
+  border: 1px solid var(--border-color);
+}
+
+th {
+  background-color: var(--bg-secondary);
+  font-weight: map.get($font-weights, semibold);
+}
+
+// Lists (when styled)
+ul.styled,
+ol.styled {
+  padding-left: map.get($spacing, 6);
+  margin: map.get($spacing, 4) 0;
+
+  li {
+    margin-bottom: map.get($spacing, 2);
+  }
+}
+
+ul.styled {
+  list-style-type: disc;
+}
+
+ol.styled {
+  list-style-type: decimal;
+}

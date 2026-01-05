@@ -46,10 +46,12 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
       { keys: 'Ctrl+1', description: 'Nur Editor' },
       { keys: 'Ctrl+2', description: 'Nur Vorschau' },
       { keys: 'Ctrl+3', description: 'Split-Ansicht' },
+      { keys: 'Ctrl+Shift+B', description: 'Sidebar ein/ausblenden' },
       { keys: 'Ctrl+,', description: 'Einstellungen' },
       { keys: 'Ctrl+Shift+A', description: 'AI-Kontext anzeigen' },
       { keys: 'F1', description: 'Hilfe (dieses Fenster)' },
       { keys: 'F12', description: 'Entwicklertools' },
+      { keys: 'Escape', description: 'Dialoge/Sidebar schließen' },
     ],
   },
   {
