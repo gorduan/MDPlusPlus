@@ -51,7 +51,12 @@
 | Datei | Verantwortlich für |
 |-------|-------------------|
 | `app/renderer/src/components/Preview.tsx` | HTML-Vorschau |
-| `app/renderer/src/styles/global.css` | Alle CSS-Styles |
+| `app/renderer/src/styles/global.css` | Legacy CSS-Styles (Theme, Math) |
+| `app/renderer/src/scss/` | SCSS-basiertes Styling-System |
+| `app/renderer/src/scss/components/_markdown.scss` | Markdown-Rendering Styles |
+| `app/renderer/src/scss/components/_admonitions.scss` | Admonitions/Callouts |
+| `app/renderer/src/scss/components/_mermaid.scss` | Mermaid-Diagramme |
+| `app/renderer/src/scss/components/_code-blocks.scss` | Code-Blöcke |
 
 ### Electron (app/electron/)
 | Datei | Verantwortlich für |

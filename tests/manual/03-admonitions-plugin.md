@@ -4,7 +4,7 @@
 > **Dateien:**
 > - `plugins/admonitions.json` - Komponenten-Definition
 > - `src/parser.ts` - Directive-Verarbeitung, closeCalloutBlocks
-> - `app/renderer/src/styles/global.css` - CSS-Styles (Zeile ~2284)
+> - `app/renderer/src/scss/components/_admonitions.scss` - SCSS-Styles
 > **Feature:** enableDirectives, enableCallouts
 
 ---

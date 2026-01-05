@@ -134,10 +134,34 @@ function createWindow(): void {
     }, 500);
 
     console.log('Window shown on primary display at:', x, y);
+
+    // Load welcome file on startup
+    loadWelcomeFile();
   });
 
   // Create application menu
   createMenu();
+}
+
+/**
+ * Load welcome file on startup
+ */
+async function loadWelcomeFile(): Promise<void> {
+  // Wait for renderer to be fully loaded
+  await new Promise(resolve => setTimeout(resolve, 500));
+
+  const welcomePath = join(__dirname, '../../examples/welcome.md');
+
+  try {
+    if (existsSync(welcomePath)) {
+      const content = await readFile(welcomePath, 'utf-8');
+      // Don't set currentFilePath - treat as untitled until saved
+      mainWindow?.webContents.send('file-opened', { path: null, content });
+      console.log('Welcome file loaded');
+    }
+  } catch (error) {
+    console.log('Could not load welcome file:', error);
+  }
 }
 
 /**

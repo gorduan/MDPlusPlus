@@ -229,13 +229,14 @@ export default function Preview({ content, showAIContext = false, settings, them
 
     // Render KaTeX math
     const renderKaTeX = () => {
-      const mathElements = previewRef.current!.querySelectorAll('.math');
+      // Match both .math and .language-math (from remark-math)
+      const mathElements = previewRef.current!.querySelectorAll('.math, .language-math');
       mathElements.forEach((el) => {
         const isDisplay = el.classList.contains('math-display');
         const mathContent = el.textContent || '';
 
-        // Skip if already rendered
-        if (el.querySelector('.katex')) return;
+        // Skip if already rendered or empty
+        if (el.querySelector('.katex') || !mathContent.trim()) return;
 
         try {
           katex.render(mathContent, el as HTMLElement, {
@@ -253,9 +254,10 @@ export default function Preview({ content, showAIContext = false, settings, them
     const renderHighlight = () => {
       const codeBlocks = previewRef.current!.querySelectorAll('pre code');
       codeBlocks.forEach((block) => {
-        // Skip if already highlighted or is mermaid
+        // Skip if already highlighted, is mermaid, or is math
         if (block.classList.contains('hljs')) return;
         if (block.closest('.mermaid')) return;
+        if (block.classList.contains('language-math')) return;
 
         hljs.highlightElement(block as HTMLElement);
       });

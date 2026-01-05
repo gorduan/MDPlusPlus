@@ -2,8 +2,8 @@
 
 > **Kategorie:** MD++ Exklusiv - AI Context
 > **Dateien:**
-> - `src/parser.ts` - handleAIContext Funktion (Zeile ~818)
-> - `app/renderer/src/styles/global.css` - .mdpp-ai-context Styles
+> - `src/parser.ts` - handleAIContext Funktion
+> - `app/renderer/src/scss/components/_admonitions.scss` - .mdpp-ai-context Styles
 > - `app/renderer/src/components/App.tsx` - AI Toggle (Ctrl+Shift+A)
 > **Feature:** enableAIContext
 

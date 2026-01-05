@@ -4,7 +4,7 @@
 > **Dateien:**
 > - `src/parser.ts` - createCodeBlockPlugin (mermaid handling)
 > - `app/renderer/src/components/Preview.tsx` - Mermaid Rendering
-> - `app/renderer/src/styles/global.css` - .mermaid Styles
+> - `app/renderer/src/scss/components/_mermaid.scss` - Mermaid SCSS-Styles
 > **Feature:** enableMermaid
 
 ---

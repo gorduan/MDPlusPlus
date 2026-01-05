@@ -4,7 +4,8 @@
 > **Dateien:**
 > - `plugins/bootstrap.json` - Komponenten-Definition
 > - `src/parser.ts` - Directive-Verarbeitung
-> - `app/renderer/src/styles/global.css` - CSS-Styles (Zeile ~577)
+> - `app/renderer/src/scss/components/_cards.scss` - Card SCSS-Styles
+> - `app/renderer/src/scss/components/_buttons.scss` - Button SCSS-Styles
 > **Feature:** enableDirectives
 
 ---

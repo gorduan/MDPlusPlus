@@ -169,16 +169,16 @@ www.example.com
 ### Test: Bild mit Alt-Text
 **Eingabe:**
 ```markdown
-![Alt Text](https://via.placeholder.com/150)
-![Bild mit Titel](https://via.placeholder.com/100 "Titel")
+![Alt Text](https://placehold.co/150)
+![Bild mit Titel](https://placehold.co/100 "Titel")
 ```
 
 **Erwartung:** Bilder werden angezeigt
 **Ergebnis:** [ ] PASS / [ ] FAIL
 
 **Ausgabe:**
-![Alt Text](https://via.placeholder.com/150)
-![Bild mit Titel](https://via.placeholder.com/100 "Titel")
+![Alt Text](https://placehold.co/150)
+![Bild mit Titel](https://placehold.co/100 "Titel")
 
 ---
 

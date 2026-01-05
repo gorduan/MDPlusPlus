@@ -208,11 +208,19 @@
     }
   }
 
-  // Horizontal rule
+  // Horizontal rule - visible separator line
   hr {
     border: none;
-    border-top: 1px solid var(--border-color);
-    margin: 1.5em 0;
+    height: 2px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      var(--accent) 20%,
+      var(--accent) 80%,
+      transparent
+    );
+    margin: 2em 0;
+    opacity: 0.6;
   }
 
   // Tables

@@ -4,7 +4,8 @@
 > **Dateien:**
 > - `src/parser.ts` - Code-Block Verarbeitung
 > - `app/renderer/src/components/Preview.tsx` - Code Rendering
-> - `app/renderer/src/styles/global.css` - pre/code Styles
+> - `app/renderer/src/scss/components/_code-blocks.scss` - pre/code SCSS-Styles
+> - `app/renderer/src/scss/components/_syntax-highlighting.scss` - Syntax Highlighting
 > **Feature:** Basis-Feature (immer aktiv)
 
 ---

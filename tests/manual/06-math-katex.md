@@ -4,7 +4,7 @@
 > **Dateien:**
 > - `src/parser.ts` - remarkMath Plugin, createCodeBlockPlugin
 > - `app/renderer/src/components/Preview.tsx` - KaTeX Rendering
-> - `app/renderer/src/styles/global.css` - .math Styles
+> - `app/renderer/src/styles/global.css` - .math Styles (Zeile ~970)
 > **Feature:** enableMath
 
 ---
