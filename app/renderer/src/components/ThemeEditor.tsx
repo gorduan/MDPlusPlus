@@ -3,6 +3,7 @@
  *
  * A visual editor for customizing the color theme.
  * Features:
+ * - Theme selection dropdown with create/rename/delete
  * - Color group editing (Backgrounds, Text, Accent, etc.)
  * - Individual color detail editing
  * - Live preview
@@ -18,6 +19,11 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { HexColorPicker, HexColorInput } from 'react-colorful';
+import ThemeSelector from './ThemeSelector';
+import ThemeModificationDialog from './ThemeModificationDialog';
+import type { Theme, ThemeColors, ThemeModificationAction } from '../types/themes';
+import { DEFAULT_DARK_COLORS, DEFAULT_LIGHT_COLORS } from '../types/themes';
+import { ThemeService } from '../services/ThemeService';
 
 // ============================================
 // Types
@@ -25,7 +31,7 @@ import { HexColorPicker, HexColorInput } from 'react-colorful';
 
 interface ColorToken {
   name: string;
-  variable: string;
+  variable: keyof ThemeColors;
   value: string;
   description?: string;
 }
@@ -40,75 +46,27 @@ interface ColorGroup {
 interface ThemeEditorProps {
   isOpen: boolean;
   onClose: () => void;
+  /** All available themes */
+  themes: Theme[];
+  /** Currently active theme */
+  activeTheme: Theme;
+  /** Whether "Custom" theme exists */
+  hasCustomTheme: boolean;
+  /** Called when user selects a theme */
+  onSelectTheme: (id: string) => void;
+  /** Called when user creates a new theme */
+  onCreateTheme: (name: string) => void;
+  /** Called when user deletes a theme */
+  onDeleteTheme: (id: string) => void;
+  /** Called when user renames a theme */
+  onRenameTheme: (id: string, newName: string) => void;
+  /** Called when colors are changed (for non-read-only themes) */
+  onColorsChange: (colors: Partial<ThemeColors>) => boolean;
+  /** Called when modification action is selected */
+  onModificationAction: (action: ThemeModificationAction, pendingColors: ThemeColors) => void;
+  /** Check if a name is already taken */
+  isNameTaken: (name: string, excludeId?: string) => boolean;
 }
-
-// ============================================
-// Default Theme Values (from _tokens.scss)
-// ============================================
-
-const DEFAULT_DARK_THEME: Record<string, string> = {
-  // Backgrounds
-  '--bg-primary': '#0F172A',
-  '--bg-secondary': '#1E293B',
-  '--bg-card': '#334155',
-  '--bg-hover': '#475569',
-  '--bg-code': '#1E293B',
-  // Text
-  '--text-primary': '#F8FAFC',
-  '--text-secondary': '#94A3B8',
-  '--text-muted': '#64748B',
-  '--text-code': '#E2E8F0',
-  // Accent
-  '--accent': '#7C3AED',
-  '--accent-hover': '#6D28D9',
-  '--accent-light': '#A78BFA',
-  // Semantic
-  '--color-success': '#10B981',
-  '--color-warning': '#F59E0B',
-  '--color-error': '#EF4444',
-  '--color-info': '#3B82F6',
-  // Border
-  '--border-color': '#475569',
-  // Syntax
-  '--syntax-keyword': '#c678dd',
-  '--syntax-string': '#98c379',
-  '--syntax-function': '#61aeee',
-  '--syntax-variable': '#e06c75',
-  '--syntax-comment': '#5c6370',
-  '--syntax-number': '#d19a66',
-};
-
-const DEFAULT_LIGHT_THEME: Record<string, string> = {
-  // Backgrounds
-  '--bg-primary': '#FFFFFF',
-  '--bg-secondary': '#F8FAFC',
-  '--bg-card': '#F1F5F9',
-  '--bg-hover': '#E2E8F0',
-  '--bg-code': '#F8FAFC',
-  // Text
-  '--text-primary': '#1E293B',
-  '--text-secondary': '#64748B',
-  '--text-muted': '#94A3B8',
-  '--text-code': '#1E293B',
-  // Accent
-  '--accent': '#7C3AED',
-  '--accent-hover': '#6D28D9',
-  '--accent-light': '#6D28D9',
-  // Semantic
-  '--color-success': '#059669',
-  '--color-warning': '#D97706',
-  '--color-error': '#DC2626',
-  '--color-info': '#2563EB',
-  // Border
-  '--border-color': '#E2E8F0',
-  // Syntax
-  '--syntax-keyword': '#a626a4',
-  '--syntax-string': '#50a14f',
-  '--syntax-function': '#4078f2',
-  '--syntax-variable': '#e45649',
-  '--syntax-comment': '#a0a1a7',
-  '--syntax-number': '#986801',
-};
 
 // ============================================
 // Icons
@@ -180,18 +138,18 @@ const ResetIcon = () => (
 // Color Groups Definition
 // ============================================
 
-function getColorGroups(theme: Record<string, string>): ColorGroup[] {
+function getColorGroups(colors: ThemeColors): ColorGroup[] {
   return [
     {
       id: 'backgrounds',
-      name: 'Hintergründe',
+      name: 'Backgrounds',
       icon: <PaletteIcon />,
       tokens: [
-        { name: 'Primär', variable: '--bg-primary', value: theme['--bg-primary'], description: 'Haupthintergrund' },
-        { name: 'Sekundär', variable: '--bg-secondary', value: theme['--bg-secondary'], description: 'Sekundärer Hintergrund' },
-        { name: 'Karte', variable: '--bg-card', value: theme['--bg-card'], description: 'Karten und Panels' },
-        { name: 'Hover', variable: '--bg-hover', value: theme['--bg-hover'], description: 'Hover-Zustand' },
-        { name: 'Code', variable: '--bg-code', value: theme['--bg-code'], description: 'Code-Blöcke' },
+        { name: 'Primary', variable: '--bg-primary', value: colors['--bg-primary'], description: 'Main background' },
+        { name: 'Secondary', variable: '--bg-secondary', value: colors['--bg-secondary'], description: 'Secondary background' },
+        { name: 'Card', variable: '--bg-card', value: colors['--bg-card'], description: 'Cards and panels' },
+        { name: 'Hover', variable: '--bg-hover', value: colors['--bg-hover'], description: 'Hover state' },
+        { name: 'Code', variable: '--bg-code', value: colors['--bg-code'], description: 'Code blocks' },
       ],
     },
     {
@@ -199,32 +157,32 @@ function getColorGroups(theme: Record<string, string>): ColorGroup[] {
       name: 'Text',
       icon: <TypeIcon />,
       tokens: [
-        { name: 'Primär', variable: '--text-primary', value: theme['--text-primary'], description: 'Haupttext' },
-        { name: 'Sekundär', variable: '--text-secondary', value: theme['--text-secondary'], description: 'Sekundärer Text' },
-        { name: 'Gedämpft', variable: '--text-muted', value: theme['--text-muted'], description: 'Gedämpfter Text' },
-        { name: 'Code', variable: '--text-code', value: theme['--text-code'], description: 'Code-Text' },
+        { name: 'Primary', variable: '--text-primary', value: colors['--text-primary'], description: 'Main text' },
+        { name: 'Secondary', variable: '--text-secondary', value: colors['--text-secondary'], description: 'Secondary text' },
+        { name: 'Muted', variable: '--text-muted', value: colors['--text-muted'], description: 'Muted text' },
+        { name: 'Code', variable: '--text-code', value: colors['--text-code'], description: 'Code text' },
       ],
     },
     {
       id: 'accent',
-      name: 'Akzent',
+      name: 'Accent',
       icon: <SparklesIcon />,
       tokens: [
-        { name: 'Primär', variable: '--accent', value: theme['--accent'], description: 'Hauptakzentfarbe' },
-        { name: 'Hover', variable: '--accent-hover', value: theme['--accent-hover'], description: 'Akzent bei Hover' },
-        { name: 'Hell', variable: '--accent-light', value: theme['--accent-light'], description: 'Helle Akzentfarbe' },
+        { name: 'Primary', variable: '--accent', value: colors['--accent'], description: 'Main accent color' },
+        { name: 'Hover', variable: '--accent-hover', value: colors['--accent-hover'], description: 'Accent on hover' },
+        { name: 'Light', variable: '--accent-light', value: colors['--accent-light'], description: 'Light accent color' },
       ],
     },
     {
       id: 'semantic',
-      name: 'Semantisch',
+      name: 'Semantic',
       icon: <AlertIcon />,
       tokens: [
-        { name: 'Erfolg', variable: '--color-success', value: theme['--color-success'], description: 'Erfolgsmeldungen' },
-        { name: 'Warnung', variable: '--color-warning', value: theme['--color-warning'], description: 'Warnungen' },
-        { name: 'Fehler', variable: '--color-error', value: theme['--color-error'], description: 'Fehlermeldungen' },
-        { name: 'Info', variable: '--color-info', value: theme['--color-info'], description: 'Informationen' },
-        { name: 'Rahmen', variable: '--border-color', value: theme['--border-color'], description: 'Rahmenfarbe' },
+        { name: 'Success', variable: '--color-success', value: colors['--color-success'], description: 'Success messages' },
+        { name: 'Warning', variable: '--color-warning', value: colors['--color-warning'], description: 'Warnings' },
+        { name: 'Error', variable: '--color-error', value: colors['--color-error'], description: 'Error messages' },
+        { name: 'Info', variable: '--color-info', value: colors['--color-info'], description: 'Information' },
+        { name: 'Border', variable: '--border-color', value: colors['--border-color'], description: 'Border color' },
       ],
     },
     {
@@ -232,65 +190,26 @@ function getColorGroups(theme: Record<string, string>): ColorGroup[] {
       name: 'Syntax',
       icon: <CodeIcon />,
       tokens: [
-        { name: 'Schlüsselwort', variable: '--syntax-keyword', value: theme['--syntax-keyword'], description: 'if, const, function' },
-        { name: 'String', variable: '--syntax-string', value: theme['--syntax-string'], description: 'Zeichenketten' },
-        { name: 'Funktion', variable: '--syntax-function', value: theme['--syntax-function'], description: 'Funktionsnamen' },
-        { name: 'Variable', variable: '--syntax-variable', value: theme['--syntax-variable'], description: 'Variablennamen' },
-        { name: 'Kommentar', variable: '--syntax-comment', value: theme['--syntax-comment'], description: 'Kommentare' },
-        { name: 'Zahl', variable: '--syntax-number', value: theme['--syntax-number'], description: 'Zahlen' },
+        { name: 'Keyword', variable: '--syntax-keyword', value: colors['--syntax-keyword'], description: 'if, const, function' },
+        { name: 'String', variable: '--syntax-string', value: colors['--syntax-string'], description: 'String literals' },
+        { name: 'Function', variable: '--syntax-function', value: colors['--syntax-function'], description: 'Function names' },
+        { name: 'Variable', variable: '--syntax-variable', value: colors['--syntax-variable'], description: 'Variable names' },
+        { name: 'Comment', variable: '--syntax-comment', value: colors['--syntax-comment'], description: 'Comments' },
+        { name: 'Number', variable: '--syntax-number', value: colors['--syntax-number'], description: 'Numbers' },
       ],
     },
   ];
 }
 
 // ============================================
-// Storage Keys
-// ============================================
-
-const STORAGE_KEY_DARK = 'mdpp-custom-theme-dark';
-const STORAGE_KEY_LIGHT = 'mdpp-custom-theme-light';
-
-// ============================================
 // Helper Functions
 // ============================================
 
-function loadCustomTheme(isDark: boolean): Record<string, string> {
-  const key = isDark ? STORAGE_KEY_DARK : STORAGE_KEY_LIGHT;
-  const defaults = isDark ? DEFAULT_DARK_THEME : DEFAULT_LIGHT_THEME;
-
-  try {
-    const saved = localStorage.getItem(key);
-    if (saved) {
-      return { ...defaults, ...JSON.parse(saved) };
-    }
-  } catch (e) {
-    console.warn('Failed to load custom theme:', e);
-  }
-  return { ...defaults };
-}
-
-function saveCustomTheme(isDark: boolean, theme: Record<string, string>): void {
-  const key = isDark ? STORAGE_KEY_DARK : STORAGE_KEY_LIGHT;
-  try {
-    localStorage.setItem(key, JSON.stringify(theme));
-  } catch (e) {
-    console.warn('Failed to save custom theme:', e);
-  }
-}
-
-function applyThemeToDocument(theme: Record<string, string>): void {
+function applyThemeToDocument(colors: ThemeColors): void {
   const root = document.documentElement;
-  Object.entries(theme).forEach(([variable, value]) => {
+  Object.entries(colors).forEach(([variable, value]) => {
     root.style.setProperty(variable, value);
   });
-}
-
-function exportThemeAsCSS(theme: Record<string, string>, name: string): string {
-  const lines = Object.entries(theme)
-    .map(([variable, value]) => `  ${variable}: ${value};`)
-    .join('\n');
-
-  return `/* MD++ Custom Theme: ${name} */\n:root {\n${lines}\n}\n`;
 }
 
 // ============================================
@@ -324,7 +243,7 @@ function ColorSwatch({ color, name, isSelected, onClick }: ColorSwatchProps) {
 
 interface ColorEditorProps {
   token: ColorToken;
-  onChange: (variable: string, value: string) => void;
+  onChange: (variable: keyof ThemeColors, value: string) => void;
 }
 
 function ColorEditor({ token, onChange }: ColorEditorProps) {
@@ -371,50 +290,107 @@ function ColorEditor({ token, onChange }: ColorEditorProps) {
 // Main Component: ThemeEditor
 // ============================================
 
-export default function ThemeEditor({ isOpen, onClose }: ThemeEditorProps) {
-  const [editingDark, setEditingDark] = useState(true);
-  const [theme, setTheme] = useState<Record<string, string>>(() => loadCustomTheme(true));
+export default function ThemeEditor({
+  isOpen,
+  onClose,
+  themes,
+  activeTheme,
+  hasCustomTheme,
+  onSelectTheme,
+  onCreateTheme,
+  onDeleteTheme,
+  onRenameTheme,
+  onColorsChange,
+  onModificationAction,
+  isNameTaken,
+}: ThemeEditorProps) {
   const [selectedGroup, setSelectedGroup] = useState<string>('backgrounds');
   const [selectedToken, setSelectedToken] = useState<ColorToken | null>(null);
+  const [localColors, setLocalColors] = useState<ThemeColors>(activeTheme.colors);
+  const [showModificationDialog, setShowModificationDialog] = useState(false);
+  const [pendingColors, setPendingColors] = useState<ThemeColors | null>(null);
 
-  // Load theme when switching between dark/light
+  // Sync local colors when active theme changes
   useEffect(() => {
-    setTheme(loadCustomTheme(editingDark));
-  }, [editingDark]);
+    setLocalColors(activeTheme.colors);
+    setSelectedToken(null);
+  }, [activeTheme.id, activeTheme.colors]);
 
-  // Apply theme live
+  // Apply colors live for preview
   useEffect(() => {
     if (isOpen) {
-      applyThemeToDocument(theme);
+      applyThemeToDocument(localColors);
     }
-  }, [theme, isOpen]);
+  }, [localColors, isOpen]);
 
-  const handleColorChange = useCallback((variable: string, value: string) => {
-    setTheme(prev => {
-      const updated = { ...prev, [variable]: value };
-      saveCustomTheme(editingDark, updated);
-      return updated;
-    });
-  }, [editingDark]);
+  const handleColorChange = useCallback((variable: keyof ThemeColors, value: string) => {
+    const newColors = { ...localColors, [variable]: value };
+    setLocalColors(newColors);
+
+    // If theme is read-only, we'll show dialog when they try to save/close
+    if (!activeTheme.isReadOnly) {
+      onColorsChange({ [variable]: value });
+    }
+  }, [localColors, activeTheme.isReadOnly, onColorsChange]);
+
+  const handleClose = useCallback(() => {
+    // Check if there are unsaved changes for a read-only theme
+    if (activeTheme.isReadOnly) {
+      const hasChanges = Object.keys(localColors).some(
+        (key) => localColors[key as keyof ThemeColors] !== activeTheme.colors[key as keyof ThemeColors]
+      );
+
+      if (hasChanges) {
+        setPendingColors(localColors);
+        setShowModificationDialog(true);
+        return;
+      }
+    }
+
+    onClose();
+  }, [activeTheme, localColors, onClose]);
+
+  const handleModificationAction = useCallback((action: ThemeModificationAction) => {
+    setShowModificationDialog(false);
+    if (pendingColors) {
+      onModificationAction(action, pendingColors);
+    }
+    setPendingColors(null);
+    if (action.type !== 'cancel') {
+      onClose();
+    } else {
+      // Reset to original colors
+      setLocalColors(activeTheme.colors);
+      applyThemeToDocument(activeTheme.colors);
+    }
+  }, [pendingColors, onModificationAction, onClose, activeTheme.colors]);
 
   const handleReset = useCallback(() => {
-    const defaults = editingDark ? DEFAULT_DARK_THEME : DEFAULT_LIGHT_THEME;
-    setTheme({ ...defaults });
-    saveCustomTheme(editingDark, defaults);
-    applyThemeToDocument(defaults);
-  }, [editingDark]);
+    const defaults = activeTheme.baseType === 'dark' ? DEFAULT_DARK_COLORS : DEFAULT_LIGHT_COLORS;
+
+    if (activeTheme.isReadOnly) {
+      // Just reset local preview
+      setLocalColors(defaults);
+      applyThemeToDocument(defaults);
+    } else {
+      // Actually update the theme
+      setLocalColors(defaults);
+      onColorsChange(defaults);
+    }
+  }, [activeTheme, onColorsChange]);
 
   const handleExport = useCallback(() => {
-    const name = editingDark ? 'Dark' : 'Light';
-    const css = exportThemeAsCSS(theme, name);
+    const css = ThemeService.exportThemeAsCSS(activeTheme.id);
+    if (!css) return;
+
     const blob = new Blob([css], { type: 'text/css' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `mdpp-theme-${name.toLowerCase()}.css`;
+    a.download = `mdpp-theme-${activeTheme.name.toLowerCase().replace(/\s+/g, '-')}.css`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [theme, editingDark]);
+  }, [activeTheme]);
 
   const handleImport = useCallback(() => {
     const input = document.createElement('input');
@@ -425,61 +401,47 @@ export default function ThemeEditor({ isOpen, onClose }: ThemeEditorProps) {
       if (!file) return;
 
       const text = await file.text();
+      const name = file.name.replace(/\.(css|json)$/, '');
 
-      // Try to parse as JSON first
-      try {
-        const parsed = JSON.parse(text);
-        if (typeof parsed === 'object') {
-          setTheme(prev => ({ ...prev, ...parsed }));
-          saveCustomTheme(editingDark, { ...theme, ...parsed });
-          return;
-        }
-      } catch {
-        // Not JSON, try CSS
-      }
-
-      // Parse CSS variables
-      const varRegex = /(--[\w-]+):\s*([^;]+);/g;
-      const imported: Record<string, string> = {};
-      let match;
-      while ((match = varRegex.exec(text)) !== null) {
-        imported[match[1]] = match[2].trim();
-      }
-
-      if (Object.keys(imported).length > 0) {
-        setTheme(prev => ({ ...prev, ...imported }));
-        saveCustomTheme(editingDark, { ...theme, ...imported });
+      const importedTheme = ThemeService.importTheme(text, name);
+      if (importedTheme) {
+        onSelectTheme(importedTheme.id);
       }
     };
     input.click();
-  }, [theme, editingDark]);
+  }, [onSelectTheme]);
+
+  const handleCreateTheme = useCallback((name: string) => {
+    // Create new theme based on current colors
+    const newTheme = ThemeService.createTheme(name, localColors, activeTheme.baseType);
+    onSelectTheme(newTheme.id);
+  }, [localColors, activeTheme.baseType, onSelectTheme]);
 
   if (!isOpen) return null;
 
-  const colorGroups = getColorGroups(theme);
+  const colorGroups = getColorGroups(localColors);
   const activeGroup = colorGroups.find(g => g.id === selectedGroup);
 
   return (
-    <div className="theme-editor-overlay" onClick={onClose}>
+    <div className="theme-editor-overlay" onClick={handleClose}>
       <div className="theme-editor-dialog" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="theme-editor-header">
           <h2>Theme Editor</h2>
-          <div className="theme-editor-mode-toggle">
-            <button
-              className={editingDark ? 'active' : ''}
-              onClick={() => setEditingDark(true)}
-            >
-              Dark
-            </button>
-            <button
-              className={!editingDark ? 'active' : ''}
-              onClick={() => setEditingDark(false)}
-            >
-              Light
-            </button>
+          <div className="theme-editor-selector">
+            <ThemeSelector
+              themes={themes}
+              activeTheme={activeTheme}
+              hasCustomTheme={hasCustomTheme}
+              onSelectTheme={onSelectTheme}
+              onCreateTheme={handleCreateTheme}
+              onDeleteTheme={onDeleteTheme}
+              onRenameTheme={onRenameTheme}
+              isNameTaken={isNameTaken}
+              label=""
+            />
           </div>
-          <button className="theme-editor-close" onClick={onClose}>
+          <button className="theme-editor-close" onClick={handleClose}>
             ×
           </button>
         </div>
@@ -506,15 +468,15 @@ export default function ThemeEditor({ isOpen, onClose }: ThemeEditorProps) {
 
             {/* Actions */}
             <div className="theme-editor-actions">
-              <button onClick={handleExport} title="Theme exportieren">
+              <button onClick={handleExport} title="Export theme">
                 <DownloadIcon />
                 <span>Export</span>
               </button>
-              <button onClick={handleImport} title="Theme importieren">
+              <button onClick={handleImport} title="Import theme">
                 <UploadIcon />
                 <span>Import</span>
               </button>
-              <button onClick={handleReset} title="Zurücksetzen">
+              <button onClick={handleReset} title="Reset to defaults">
                 <ResetIcon />
                 <span>Reset</span>
               </button>
@@ -530,7 +492,7 @@ export default function ThemeEditor({ isOpen, onClose }: ThemeEditorProps) {
                   {activeGroup.tokens.map(token => (
                     <ColorSwatch
                       key={token.variable}
-                      color={token.value}
+                      color={localColors[token.variable]}
                       name={token.name}
                       isSelected={selectedToken?.variable === token.variable}
                       onClick={() => setSelectedToken(token)}
@@ -545,13 +507,13 @@ export default function ThemeEditor({ isOpen, onClose }: ThemeEditorProps) {
           <div className="theme-editor-detail">
             {selectedToken ? (
               <ColorEditor
-                token={{ ...selectedToken, value: theme[selectedToken.variable] }}
+                token={{ ...selectedToken, value: localColors[selectedToken.variable] }}
                 onChange={handleColorChange}
               />
             ) : (
               <div className="theme-editor-detail-placeholder">
                 <PaletteIcon />
-                <p>Wähle eine Farbe aus, um sie zu bearbeiten</p>
+                <p>Select a color to edit</p>
               </div>
             )}
           </div>
@@ -560,10 +522,21 @@ export default function ThemeEditor({ isOpen, onClose }: ThemeEditorProps) {
         {/* Footer */}
         <div className="theme-editor-footer">
           <p>
-            Änderungen werden automatisch gespeichert und für PDF-Export verwendet.
+            {activeTheme.isReadOnly
+              ? 'Editing a built-in theme. Changes will be saved to a new theme.'
+              : 'Changes are saved automatically.'}
           </p>
         </div>
       </div>
+
+      {/* Modification Dialog */}
+      <ThemeModificationDialog
+        isOpen={showModificationDialog}
+        hasCustomTheme={hasCustomTheme}
+        sourceThemeName={activeTheme.name}
+        onAction={handleModificationAction}
+        isNameTaken={isNameTaken}
+      />
     </div>
   );
 }
@@ -573,10 +546,10 @@ export default function ThemeEditor({ isOpen, onClose }: ThemeEditorProps) {
 // ============================================
 
 export function getCustomThemeForExport(isDark: boolean): Record<string, string> {
-  return loadCustomTheme(isDark);
+  const theme = ThemeService.getThemeById(isDark ? 'dark' : 'light');
+  return theme ? { ...theme.colors } : (isDark ? DEFAULT_DARK_COLORS : DEFAULT_LIGHT_COLORS);
 }
 
 export function getThemeCSS(isDark: boolean): string {
-  const theme = loadCustomTheme(isDark);
-  return exportThemeAsCSS(theme, isDark ? 'Dark' : 'Light');
+  return ThemeService.exportThemeAsCSS(isDark ? 'dark' : 'light') || '';
 }

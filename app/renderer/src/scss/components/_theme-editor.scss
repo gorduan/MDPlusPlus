@@ -108,6 +108,24 @@
   }
 }
 
+// Theme Selector in Header
+.theme-editor-selector {
+  flex: 1;
+  max-width: 250px;
+
+  .profile-selector {
+    gap: map.get($spacing, 2);
+  }
+
+  .profile-label {
+    display: none;
+  }
+
+  .profile-dropdown-container {
+    max-width: none;
+  }
+}
+
 .theme-editor-close {
   width: 32px;
   height: 32px;

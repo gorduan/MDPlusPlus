@@ -17,7 +17,10 @@ import PluginManager, { PluginInfo, ComponentInfo } from './components/PluginMan
 import TabBar, { TabData } from './components/TabBar/TabBar';
 import { useScrollSync } from './hooks/useScrollSync';
 import { useProfiles } from './hooks/useProfiles';
+import { useThemes } from './hooks/useThemes';
 import type { ProfileModificationAction } from './types/profiles';
+import type { ThemeModificationAction, ThemeColors } from './types/themes';
+import { THEME_IDS } from './types/themes';
 import type { ViewMode, PluginData, SessionState, TabState as IpcTabState } from '../../electron/preload';
 
 // Empty content for new files
@@ -66,12 +69,28 @@ export default function App() {
     isNameTaken,
   } = useProfiles();
 
+  // Theme management hook
+  const {
+    themes,
+    activeTheme,
+    hasCustomTheme: hasCustomThemeInThemes,
+    selectTheme,
+    createTheme,
+    deleteTheme,
+    renameTheme,
+    updateColors,
+    handleModificationAction: handleThemeModificationAction,
+    isNameTaken: isThemeNameTaken,
+    applyThemeTemporarily,
+  } = useThemes();
+
   // UI state
   const [viewMode, setViewMode] = useState<ViewMode>('split');
   const [showAIContext, setShowAIContext] = useState(false);
   const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [theme, setTheme] = useState<Theme>('dark');
+  // theme for toolbar is derived from activeTheme.baseType
+  const theme: Theme = activeTheme.baseType;
   const editorRef = useRef<EditorPaneRef | null>(null);
 
   // Refs to track current values for IPC handlers (avoids stale closures)
@@ -134,10 +153,27 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Toggle theme
+  // Toggle theme - only switches between built-in Light/Dark
+  // This is a temporary override and doesn't change the profile's default theme
   const toggleTheme = useCallback(() => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-  }, []);
+    const newThemeId = theme === 'dark' ? THEME_IDS.LIGHT : THEME_IDS.DARK;
+    applyThemeTemporarily(newThemeId);
+  }, [theme, applyThemeTemporarily]);
+
+  // Sync theme with profile's default theme when profile changes
+  useEffect(() => {
+    if (settings.defaultThemeId) {
+      selectTheme(settings.defaultThemeId);
+    }
+  }, [settings.defaultThemeId, selectTheme]);
+
+  // Handle default theme change in settings
+  const handleDefaultThemeChange = useCallback((themeId: string) => {
+    // Update the profile's defaultThemeId
+    updateSettings({ ...settings, defaultThemeId: themeId });
+    // Also apply the theme immediately
+    selectTheme(themeId);
+  }, [settings, updateSettings, selectTheme]);
 
   // === TAB MANAGEMENT ===
 
@@ -1870,6 +1906,9 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
         onRenameProfile={renameProfile}
         onModificationAction={handleModificationAction}
         isNameTaken={isNameTaken}
+        themes={themes}
+        activeTheme={activeTheme}
+        onSelectDefaultTheme={handleDefaultThemeChange}
       />
       <SearchReplace
         isOpen={searchOpen}
@@ -1899,6 +1938,16 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
       <ThemeEditor
         isOpen={themeEditorOpen}
         onClose={() => setThemeEditorOpen(false)}
+        themes={themes}
+        activeTheme={activeTheme}
+        hasCustomTheme={hasCustomThemeInThemes}
+        onSelectTheme={selectTheme}
+        onCreateTheme={createTheme}
+        onDeleteTheme={deleteTheme}
+        onRenameTheme={renameTheme}
+        onColorsChange={updateColors}
+        onModificationAction={handleThemeModificationAction}
+        isNameTaken={isThemeNameTaken}
       />
       {isDragging && (
         <div className="drop-overlay">

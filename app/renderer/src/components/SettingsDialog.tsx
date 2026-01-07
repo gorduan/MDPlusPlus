@@ -5,7 +5,9 @@
 import React, { useState, useCallback } from 'react';
 import ProfileSelector from './ProfileSelector';
 import ProfileModificationDialog from './ProfileModificationDialog';
+import ThemeSelector from './ThemeSelector';
 import type { Profile, ProfileModificationAction } from '../types/profiles';
+import type { Theme } from '../types/themes';
 
 export type ScriptSecurityLevel = 'strict' | 'standard' | 'permissive';
 
@@ -31,6 +33,9 @@ export interface ParserSettings {
 
   // Plugins (replaces enableMath, enableMermaid, enableCallouts)
   enabledPlugins: string[];
+
+  // Theme (reference to theme ID, stored in profiles)
+  defaultThemeId: string;
 }
 
 export const DEFAULT_SETTINGS: ParserSettings = {
@@ -47,6 +52,8 @@ export const DEFAULT_SETTINGS: ParserSettings = {
   scriptSecurityLevel: 'standard',
   // Default plugins: math (katex), diagrams (mermaid), callouts (admonitions), UI (bootstrap)
   enabledPlugins: ['katex', 'mermaid', 'admonitions', 'bootstrap'],
+  // Default theme
+  defaultThemeId: 'dark',
 };
 
 interface SettingsDialogProps {
@@ -65,6 +72,10 @@ interface SettingsDialogProps {
   onRenameProfile?: (id: string, newName: string) => void;
   onModificationAction?: (action: ProfileModificationAction, pendingSettings: ParserSettings) => void;
   isNameTaken?: (name: string, excludeId?: string) => boolean;
+  /** Theme props (simple mode - selection only) */
+  themes?: Theme[];
+  activeTheme?: Theme;
+  onSelectDefaultTheme?: (themeId: string) => void;
 }
 
 export default function SettingsDialog({
@@ -82,6 +93,9 @@ export default function SettingsDialog({
   onRenameProfile,
   onModificationAction,
   isNameTaken,
+  themes,
+  activeTheme,
+  onSelectDefaultTheme,
 }: SettingsDialogProps) {
   // State for profile modification dialog
   const [showModificationDialog, setShowModificationDialog] = useState(false);
@@ -148,6 +162,23 @@ export default function SettingsDialog({
                 onRenameProfile={onRenameProfile!}
                 isNameTaken={isNameTaken!}
               />
+            </section>
+          )}
+
+          {/* Default Theme Selector (simple mode - selection only) */}
+          {themes && activeTheme && onSelectDefaultTheme && (
+            <section className="settings-section">
+              <h3>Appearance</h3>
+              <ThemeSelector
+                themes={themes}
+                activeTheme={activeTheme}
+                onSelectTheme={onSelectDefaultTheme}
+                label="Default Theme:"
+                simpleMode
+              />
+              <p className="settings-hint">
+                The default theme for this profile. Open Theme Editor for customization.
+              </p>
             </section>
           )}
 

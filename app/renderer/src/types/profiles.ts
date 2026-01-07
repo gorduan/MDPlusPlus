@@ -65,6 +65,7 @@ export const MDPP_STANDARD_SETTINGS: ParserSettings = {
   enableScripts: true,
   scriptSecurityLevel: 'standard',
   enabledPlugins: ['katex', 'mermaid', 'admonitions', 'bootstrap'],
+  defaultThemeId: 'dark',
 };
 
 /**
@@ -84,6 +85,7 @@ export const MD_CLASSIC_SETTINGS: ParserSettings = {
   enableScripts: false,
   scriptSecurityLevel: 'strict',
   enabledPlugins: [],
+  defaultThemeId: 'dark',
 };
 
 /**
