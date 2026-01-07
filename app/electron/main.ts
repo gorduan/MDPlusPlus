@@ -328,31 +328,18 @@ function createWindow(): void {
 }
 
 /**
- * Initialize app on startup - setup welcome file, load session
+ * Initialize app on startup - setup welcome file
+ * Note: Session restore is handled entirely by the renderer (App.tsx initializeApp)
+ * to avoid race conditions and duplicate tab creation
  */
 async function initializeApp(): Promise<void> {
-  // Wait for renderer to be fully loaded
-  await new Promise(resolve => setTimeout(resolve, 500));
-
-  // Setup welcome file
+  // Setup welcome file (makes it available for renderer to load if needed)
   await setupWelcomeFile();
-
-  // Load previous session
-  const session = await loadSession();
-
-  if (session && session.tabs && session.tabs.length > 0) {
-    // Restore previous session
-    mainWindow?.webContents.send('session-restore', session);
-    console.log('Session restored with', session.tabs.length, 'tabs');
-  } else {
-    // No session - load welcome file
-    const content = await getWelcomeContent();
-    mainWindow?.webContents.send('file-opened', { path: APP_WELCOME_FILE, content, isWelcome: true });
-    console.log('Welcome file loaded');
-  }
 
   // Rebuild menu with loaded recent files
   createMenu();
+
+  console.log('Main process initialization complete');
 }
 
 /**

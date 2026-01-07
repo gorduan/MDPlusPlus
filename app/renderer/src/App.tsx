@@ -559,33 +559,13 @@ export default function App() {
       window.electronAPI.setModified(false);
     });
 
-    // Handle welcome menu action
-    const unsubSessionRestore = window.electronAPI.onSessionRestore?.(async () => {
-      // Reload welcome file
-      try {
-        const welcomeContent = await window.electronAPI.getWelcomeContent();
-        const welcomePath = await window.electronAPI.getWelcomePath();
-        const newTab: TabData = {
-          id: generateTabId(),
-          filePath: welcomePath,
-          title: getFileName(welcomePath),
-          isModified: false,
-          content: welcomeContent,
-        };
-        setTabs((prev) => [...prev, newTab]);
-        setActiveTabId(newTab.id);
-      } catch (e) {
-        console.error('Failed to open welcome file:', e);
-      }
-    });
-
     // Handle view mode changes
     const unsubViewMode = window.electronAPI.onViewMode((mode) => {
       setViewMode(mode);
     });
 
     // Handle menu actions
-    const unsubMenuAction = window.electronAPI.onMenuAction((action) => {
+    const unsubMenuAction = window.electronAPI.onMenuAction(async (action) => {
       if (action === 'toggle-ai-context') {
         setShowAIContext((prev) => !prev);
       } else if (action === 'find') {
@@ -598,6 +578,23 @@ export default function App() {
         setTableEditorOpen(true);
       } else if (action === 'show-help') {
         setHelpOpen(true);
+      } else if (action === 'open-welcome') {
+        // Open welcome file in a new tab
+        try {
+          const welcomeContent = await window.electronAPI.getWelcomeContent();
+          const welcomePath = await window.electronAPI.getWelcomePath();
+          const newTab: TabData = {
+            id: generateTabId(),
+            filePath: welcomePath,
+            title: getFileName(welcomePath),
+            isModified: false,
+            content: welcomeContent,
+          };
+          setTabs((prev) => [...prev, newTab]);
+          setActiveTabId(newTab.id);
+        } catch (e) {
+          console.error('Failed to open welcome file:', e);
+        }
       }
     });
 
@@ -1480,7 +1477,6 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
       unsubNew();
       unsubOpened();
       unsubSaved();
-      unsubSessionRestore?.();
       unsubViewMode();
       unsubMenuAction();
       unsubInsert();
