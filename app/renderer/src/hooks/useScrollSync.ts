@@ -1,10 +1,19 @@
 /**
  * Scroll Sync Hook for MD++ Editor
- * Synchronizes scroll position between Monaco Editor and Preview pane
+ * Synchronizes scroll position between Monaco Editor / WYSIWYG Editor and Preview pane
  */
 
 import { useCallback, useRef, useEffect } from 'react';
 import type { editor } from 'monaco-editor';
+
+/**
+ * Generic scroll info for any scrollable element
+ */
+export interface ScrollInfo {
+  scrollTop: number;
+  scrollHeight: number;
+  clientHeight: number;
+}
 
 interface ScrollSyncOptions {
   /** Enable scroll sync */
@@ -18,12 +27,16 @@ interface ScrollSyncOptions {
 interface ScrollSyncReturn {
   /** Ref to attach to preview container */
   previewRef: React.RefObject<HTMLDivElement | null>;
-  /** Handler for editor scroll events */
+  /** Handler for editor scroll events (Monaco) */
   handleEditorScroll: (editor: editor.IStandaloneCodeEditor) => void;
+  /** Handler for WYSIWYG editor scroll events */
+  handleWysiwygScroll: (scrollInfo: ScrollInfo) => void;
   /** Handler for preview scroll events */
   handlePreviewScroll: () => void;
-  /** Register the editor instance */
+  /** Register the editor instance (Monaco) */
   registerEditor: (editor: editor.IStandaloneCodeEditor) => void;
+  /** Register WYSIWYG scrollable element */
+  registerWysiwygElement: (element: HTMLElement | null) => void;
   /** Whether sync is currently active */
   isSyncing: boolean;
 }
@@ -36,6 +49,7 @@ export function useScrollSync(options: ScrollSyncOptions): ScrollSyncReturn {
 
   const previewRef = useRef<HTMLDivElement | null>(null);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const wysiwygElementRef = useRef<HTMLElement | null>(null);
   const isSyncingRef = useRef(false);
   const debounceTimeoutRef = useRef<number | null>(null);  // For debouncing scroll events
   const syncResetTimeoutRef = useRef<number | null>(null); // For resetting sync flag
@@ -50,6 +64,11 @@ export function useScrollSync(options: ScrollSyncOptions): ScrollSyncReturn {
   // Register the Monaco editor instance
   const registerEditor = useCallback((editorInstance: editor.IStandaloneCodeEditor) => {
     editorRef.current = editorInstance;
+  }, []);
+
+  // Register the WYSIWYG scrollable element
+  const registerWysiwygElement = useCallback((element: HTMLElement | null) => {
+    wysiwygElementRef.current = element;
   }, []);
 
   // Calculate scroll percentage for editor
@@ -115,37 +134,62 @@ export function useScrollSync(options: ScrollSyncOptions): ScrollSyncReturn {
     }, 150);
   }, []);
 
-  // Scroll editor to match preview percentage
+  // Scroll editor to match preview percentage (works for both Monaco and WYSIWYG)
   const syncEditorToPreview = useCallback((percentage: number) => {
+    // Try Monaco editor first
     const editorInstance = editorRef.current;
-    if (!editorInstance) {
-      return;
+    if (editorInstance) {
+      const scrollHeight = editorInstance.getScrollHeight();
+      const clientHeight = editorInstance.getLayoutInfo().height;
+      const maxScroll = scrollHeight - clientHeight;
+
+      if (maxScroll > 0) {
+        isSyncingRef.current = true;
+        lastSyncSourceRef.current = 'preview';
+
+        const targetScroll = percentage * maxScroll;
+        editorInstance.setScrollTop(targetScroll);
+
+        // Reset syncing flag after a short delay
+        if (syncResetTimeoutRef.current) {
+          clearTimeout(syncResetTimeoutRef.current);
+        }
+        syncResetTimeoutRef.current = window.setTimeout(() => {
+          isSyncingRef.current = false;
+        }, 150);
+        return;
+      }
     }
 
-    const scrollHeight = editorInstance.getScrollHeight();
-    const clientHeight = editorInstance.getLayoutInfo().height;
-    const maxScroll = scrollHeight - clientHeight;
+    // Try WYSIWYG element
+    const wysiwygEl = wysiwygElementRef.current;
+    if (wysiwygEl) {
+      const scrollHeight = wysiwygEl.scrollHeight;
+      const clientHeight = wysiwygEl.clientHeight;
+      const maxScroll = scrollHeight - clientHeight;
 
-    if (maxScroll <= 0) {
-      return;
+      if (maxScroll > 0) {
+        isSyncingRef.current = true;
+        lastSyncSourceRef.current = 'preview';
+
+        const targetScroll = percentage * maxScroll;
+        wysiwygEl.scrollTo({
+          top: targetScroll,
+          behavior: 'auto',
+        });
+
+        // Reset syncing flag after a short delay
+        if (syncResetTimeoutRef.current) {
+          clearTimeout(syncResetTimeoutRef.current);
+        }
+        syncResetTimeoutRef.current = window.setTimeout(() => {
+          isSyncingRef.current = false;
+        }, 150);
+      }
     }
-
-    isSyncingRef.current = true;
-    lastSyncSourceRef.current = 'preview';
-
-    const targetScroll = percentage * maxScroll;
-    editorInstance.setScrollTop(targetScroll);
-
-    // Reset syncing flag after a short delay - use separate timeout
-    if (syncResetTimeoutRef.current) {
-      clearTimeout(syncResetTimeoutRef.current);
-    }
-    syncResetTimeoutRef.current = window.setTimeout(() => {
-      isSyncingRef.current = false;
-    }, 150);
   }, []);
 
-  // Debounced editor scroll handler
+  // Debounced editor scroll handler (Monaco)
   const handleEditorScroll = useCallback(() => {
     if (!enabledRef.current) return;
     if (direction === 'preview-to-editor') return;
@@ -162,6 +206,28 @@ export function useScrollSync(options: ScrollSyncOptions): ScrollSyncReturn {
       syncPreviewToEditor(percentage);
     }, debounceMs);
   }, [direction, debounceMs, getEditorScrollPercentage, syncPreviewToEditor]);
+
+  // Debounced WYSIWYG scroll handler
+  const handleWysiwygScroll = useCallback((scrollInfo: ScrollInfo) => {
+    if (!enabledRef.current) return;
+    if (direction === 'preview-to-editor') return;
+    // Skip if we're currently syncing FROM the preview (to prevent loops)
+    if (isSyncingRef.current && lastSyncSourceRef.current === 'preview') return;
+
+    // Debounce the sync
+    if (debounceTimeoutRef.current) {
+      window.clearTimeout(debounceTimeoutRef.current);
+    }
+
+    debounceTimeoutRef.current = window.setTimeout(() => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollInfo;
+      const maxScroll = scrollHeight - clientHeight;
+      if (maxScroll <= 0) return;
+
+      const percentage = scrollTop / maxScroll;
+      syncPreviewToEditor(percentage);
+    }, debounceMs);
+  }, [direction, debounceMs, syncPreviewToEditor]);
 
   // Debounced preview scroll handler
   const handlePreviewScroll = useCallback(() => {
@@ -196,8 +262,10 @@ export function useScrollSync(options: ScrollSyncOptions): ScrollSyncReturn {
   return {
     previewRef,
     handleEditorScroll,
+    handleWysiwygScroll,
     handlePreviewScroll,
     registerEditor,
+    registerWysiwygElement,
     isSyncing: isSyncingRef.current,
   };
 }

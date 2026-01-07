@@ -52,12 +52,25 @@ if (!toolbarInitialized) {
 
 type Theme = 'dark' | 'light';
 
+/**
+ * Scroll info for sync
+ */
+export interface WysiwygScrollInfo {
+  scrollTop: number;
+  scrollHeight: number;
+  clientHeight: number;
+}
+
 interface WysiwygEditorProps {
   content: string;
   onChange: (content: string) => void;
   theme?: Theme;
   /** List of enabled plugin IDs - controls which extensions are loaded */
   enabledPlugins?: string[];
+  /** Called when editor is scrolled */
+  onScroll?: (scrollInfo: WysiwygScrollInfo) => void;
+  /** Called when editor content wrapper is mounted (for scroll sync registration) */
+  onContentMount?: (element: HTMLElement | null) => void;
 }
 
 export default function WysiwygEditor({
@@ -65,9 +78,12 @@ export default function WysiwygEditor({
   onChange,
   theme = 'dark',
   enabledPlugins = [],
+  onScroll,
+  onContentMount,
 }: WysiwygEditorProps) {
   const lastContentRef = useRef(content);
   const isUpdatingRef = useRef(false);
+  const contentWrapperRef = useRef<HTMLDivElement | null>(null);
 
   // Get plugin extensions based on enabled plugins
   const { extensionInstances: pluginExtensions, availableNodeTypes } = usePluginExtensions(enabledPlugins);
@@ -213,6 +229,25 @@ export default function WysiwygEditor({
     }
   }, [editor, theme]);
 
+  // Handle scroll events for scroll sync
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    if (!onScroll) return;
+    const target = e.currentTarget;
+    onScroll({
+      scrollTop: target.scrollTop,
+      scrollHeight: target.scrollHeight,
+      clientHeight: target.clientHeight,
+    });
+  }, [onScroll]);
+
+  // Register content wrapper ref for scroll sync
+  const contentWrapperRefCallback = useCallback((element: HTMLDivElement | null) => {
+    contentWrapperRef.current = element;
+    if (onContentMount) {
+      onContentMount(element);
+    }
+  }, [onContentMount]);
+
   if (!editor) {
     return <div className="wysiwyg-loading">Loading editor...</div>;
   }
@@ -226,7 +261,11 @@ export default function WysiwygEditor({
       <TableBubbleMenu editor={editor} />
 
       {/* Editor Content */}
-      <div className="wysiwyg-content-wrapper">
+      <div
+        className="wysiwyg-content-wrapper"
+        ref={contentWrapperRefCallback}
+        onScroll={handleScroll}
+      >
         <EditorContent editor={editor} />
       </div>
     </div>

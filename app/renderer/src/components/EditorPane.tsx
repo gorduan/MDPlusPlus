@@ -3,9 +3,9 @@
  * Wraps both Monaco Editor and TipTap WYSIWYG editor
  */
 
-import React, { useState, forwardRef, useImperativeHandle, useRef, useCallback } from 'react';
+import React, { useState, forwardRef, useImperativeHandle, useRef, useCallback, useEffect } from 'react';
 import Editor, { EditorRef } from './Editor';
-import WysiwygEditor from './WysiwygEditor';
+import WysiwygEditor, { WysiwygScrollInfo } from './WysiwygEditor';
 import EditorModeToggle, { EditorMode } from './EditorModeToggle';
 import type { editor } from 'monaco-editor';
 
@@ -16,10 +16,14 @@ interface EditorPaneProps {
   onChange: (content: string) => void;
   onCursorChange: (position: { line: number; column: number }) => void;
   theme?: Theme;
-  /** Called when editor is scrolled */
+  /** Called when Monaco editor is scrolled */
   onScroll?: (editor: editor.IStandaloneCodeEditor) => void;
-  /** Called when editor is mounted */
+  /** Called when WYSIWYG editor is scrolled */
+  onWysiwygScroll?: (scrollInfo: WysiwygScrollInfo) => void;
+  /** Called when Monaco editor is mounted */
   onEditorMount?: (editor: editor.IStandaloneCodeEditor) => void;
+  /** Called when WYSIWYG editor content wrapper is mounted */
+  onWysiwygMount?: (element: HTMLElement | null) => void;
   /** List of enabled plugin IDs for WYSIWYG extensions */
   enabledPlugins?: string[];
 }
@@ -32,9 +36,15 @@ export interface EditorPaneRef {
 }
 
 const EditorPane = forwardRef<EditorPaneRef, EditorPaneProps>(
-  ({ content, onChange, onCursorChange, theme = 'dark', onScroll, onEditorMount, enabledPlugins = [] }, ref) => {
+  ({ content, onChange, onCursorChange, theme = 'dark', onScroll, onWysiwygScroll, onEditorMount, onWysiwygMount, enabledPlugins = [] }, ref) => {
     const [mode, setMode] = useState<EditorMode>('source');
     const monacoEditorRef = useRef<EditorRef | null>(null);
+    const wysiwygWrapperRef = useRef<HTMLElement | null>(null);
+    const monacoInstanceRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+
+    // Store scroll percentage to restore on mode switch
+    const scrollPercentageRef = useRef<number>(0);
+    const pendingScrollRestoreRef = useRef<boolean>(false);
 
     // Expose methods to parent
     useImperativeHandle(ref, () => ({
@@ -56,13 +66,103 @@ const EditorPane = forwardRef<EditorPaneRef, EditorPaneProps>(
       setMode: (newMode: EditorMode) => setMode(newMode),
     }), [mode, content, onChange]);
 
+    // Save current scroll position before mode change
+    const saveScrollPosition = useCallback(() => {
+      if (mode === 'source' && monacoInstanceRef.current) {
+        const editor = monacoInstanceRef.current;
+        const scrollTop = editor.getScrollTop();
+        const scrollHeight = editor.getScrollHeight();
+        const clientHeight = editor.getLayoutInfo().height;
+        const maxScroll = scrollHeight - clientHeight;
+        scrollPercentageRef.current = maxScroll > 0 ? scrollTop / maxScroll : 0;
+      } else if (mode === 'wysiwyg' && wysiwygWrapperRef.current) {
+        const el = wysiwygWrapperRef.current;
+        const maxScroll = el.scrollHeight - el.clientHeight;
+        scrollPercentageRef.current = maxScroll > 0 ? el.scrollTop / maxScroll : 0;
+      }
+    }, [mode]);
+
     const handleModeChange = useCallback((newMode: EditorMode) => {
+      // Save scroll position before switching
+      saveScrollPosition();
+      pendingScrollRestoreRef.current = true;
       setMode(newMode);
-    }, []);
+    }, [saveScrollPosition]);
 
     const handleContentChange = useCallback((newContent: string) => {
       onChange(newContent);
     }, [onChange]);
+
+    // Handle Monaco editor mount - store reference and restore scroll
+    const handleMonacoMount = useCallback((editorInstance: editor.IStandaloneCodeEditor) => {
+      monacoInstanceRef.current = editorInstance;
+
+      // Restore scroll position after mount
+      if (pendingScrollRestoreRef.current) {
+        // Small delay to ensure editor is fully rendered
+        requestAnimationFrame(() => {
+          const scrollHeight = editorInstance.getScrollHeight();
+          const clientHeight = editorInstance.getLayoutInfo().height;
+          const maxScroll = scrollHeight - clientHeight;
+          if (maxScroll > 0) {
+            editorInstance.setScrollTop(scrollPercentageRef.current * maxScroll);
+          }
+          pendingScrollRestoreRef.current = false;
+        });
+      }
+
+      // Call parent handler
+      if (onEditorMount) {
+        onEditorMount(editorInstance);
+      }
+    }, [onEditorMount]);
+
+    // Handle WYSIWYG content mount - store reference and restore scroll
+    const handleWysiwygContentMount = useCallback((element: HTMLElement | null) => {
+      wysiwygWrapperRef.current = element;
+
+      // Restore scroll position after mount
+      if (element && pendingScrollRestoreRef.current) {
+        // Small delay to ensure content is fully rendered
+        requestAnimationFrame(() => {
+          const maxScroll = element.scrollHeight - element.clientHeight;
+          if (maxScroll > 0) {
+            element.scrollTop = scrollPercentageRef.current * maxScroll;
+          }
+          pendingScrollRestoreRef.current = false;
+        });
+      }
+
+      // Call parent handler
+      if (onWysiwygMount) {
+        onWysiwygMount(element);
+      }
+    }, [onWysiwygMount]);
+
+    // Track scroll position continuously for Monaco
+    const handleMonacoScroll = useCallback((editorInstance: editor.IStandaloneCodeEditor) => {
+      const scrollTop = editorInstance.getScrollTop();
+      const scrollHeight = editorInstance.getScrollHeight();
+      const clientHeight = editorInstance.getLayoutInfo().height;
+      const maxScroll = scrollHeight - clientHeight;
+      scrollPercentageRef.current = maxScroll > 0 ? scrollTop / maxScroll : 0;
+
+      // Call parent handler
+      if (onScroll) {
+        onScroll(editorInstance);
+      }
+    }, [onScroll]);
+
+    // Track scroll position continuously for WYSIWYG
+    const handleWysiwygScrollInternal = useCallback((scrollInfo: WysiwygScrollInfo) => {
+      const maxScroll = scrollInfo.scrollHeight - scrollInfo.clientHeight;
+      scrollPercentageRef.current = maxScroll > 0 ? scrollInfo.scrollTop / maxScroll : 0;
+
+      // Call parent handler
+      if (onWysiwygScroll) {
+        onWysiwygScroll(scrollInfo);
+      }
+    }, [onWysiwygScroll]);
 
     return (
       <div className="editor-pane-container">
@@ -76,8 +176,8 @@ const EditorPane = forwardRef<EditorPaneRef, EditorPaneProps>(
               onChange={handleContentChange}
               onCursorChange={onCursorChange}
               theme={theme}
-              onScroll={onScroll}
-              onEditorMount={onEditorMount}
+              onScroll={handleMonacoScroll}
+              onEditorMount={handleMonacoMount}
             />
           ) : (
             <WysiwygEditor
@@ -85,6 +185,8 @@ const EditorPane = forwardRef<EditorPaneRef, EditorPaneProps>(
               onChange={handleContentChange}
               theme={theme}
               enabledPlugins={enabledPlugins}
+              onScroll={handleWysiwygScrollInternal}
+              onContentMount={handleWysiwygContentMount}
             />
           )}
         </div>

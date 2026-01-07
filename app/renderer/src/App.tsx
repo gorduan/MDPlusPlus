@@ -102,8 +102,10 @@ export default function App() {
   const {
     previewRef: scrollSyncPreviewRef,
     handleEditorScroll,
+    handleWysiwygScroll,
     handlePreviewScroll,
     registerEditor,
+    registerWysiwygElement,
   } = useScrollSync({
     enabled: scrollSyncEnabled && viewMode === 'split',
     debounceMs: 50,
@@ -1806,7 +1808,9 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
               onCursorChange={setCursorPosition}
               theme={theme}
               onScroll={handleEditorScroll}
+              onWysiwygScroll={handleWysiwygScroll}
               onEditorMount={registerEditor}
+              onWysiwygMount={registerWysiwygElement}
               enabledPlugins={settings.enabledPlugins}
             />
           </div>
