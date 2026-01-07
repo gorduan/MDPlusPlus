@@ -1,0 +1,687 @@
+/**
+ * MD++ Plugin Manager Styles
+ *
+ * Modern plugin management UI with:
+ * - Plugin cards with smooth toggle switches
+ * - Search and filter controls
+ * - Responsive design
+ * - Accessibility support
+ *
+ * @see https://freefrontend.com/css-toggle-switches/
+ * @see https://headlessui.com/react/switch
+ */
+
+// =======================
+// Plugin Manager Overlay
+// =======================
+.plugin-manager-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+// =======================
+// Plugin Manager Dialog
+// =======================
+.plugin-manager {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  width: min(900px, 95vw);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  animation: slideUp 0.3s ease-out;
+
+  // Header
+  &__header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    border-radius: 12px 12px 0 0;
+  }
+
+  &__title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+
+      svg {
+        color: var(--accent);
+      }
+    }
+  }
+
+  &__close {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+  }
+
+  // Stats Bar
+  &__stats {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-primary);
+    border-radius: 8px;
+  }
+
+  &__stat {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+
+    strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    svg {
+      opacity: 0.7;
+    }
+
+    &--enabled {
+      color: var(--color-success);
+
+      strong {
+        color: var(--color-success);
+      }
+
+      svg {
+        opacity: 1;
+      }
+    }
+  }
+
+  // Controls (Search + Filter)
+  &__controls {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  &__search {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    transition: border-color 0.15s ease;
+
+    &:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    }
+
+    svg {
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    input {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 0.875rem;
+      outline: none;
+
+      &::placeholder {
+        color: var(--text-muted);
+      }
+    }
+  }
+
+  &__search-clear {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+  }
+
+  &__filters {
+    display: flex;
+    gap: 0.25rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.25rem;
+  }
+
+  &__filter {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    &.active {
+      background: var(--accent);
+      color: white;
+    }
+  }
+
+  &__refresh {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: var(--bg-hover);
+      color: var(--accent);
+      border-color: var(--accent);
+
+      svg {
+        animation: spin 0.5s ease;
+      }
+    }
+  }
+
+  // Content (Plugin List)
+  &__content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 3px;
+    }
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: var(--text-muted);
+
+    svg {
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    p {
+      text-align: center;
+    }
+  }
+
+  &__list {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  // Footer
+  &__footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    border-radius: 0 0 12px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  &__footer-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+
+    code {
+      background: var(--bg-code);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+  }
+
+  &__docs-link {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--accent-light);
+    text-decoration: none;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+  }
+}
+
+// =======================
+// Plugin Card
+// =======================
+.plugin-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 1rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--border-color-hover, var(--border-color));
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  &--enabled {
+    border-color: rgba(16, 185, 129, 0.3);
+    background: linear-gradient(
+      135deg,
+      var(--bg-secondary),
+      rgba(16, 185, 129, 0.05)
+    );
+
+    .plugin-card__icon {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--color-success);
+    }
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  &__icon {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-primary);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-transform: capitalize;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.125rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  &__version {
+    background: var(--bg-primary);
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+  }
+
+  &__author {
+    opacity: 0.8;
+  }
+
+  &__actions {
+    flex-shrink: 0;
+  }
+
+  &__description {
+    margin: 0.5rem 0;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  &__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+  }
+
+  &__stat {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: var(--bg-primary);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+
+    svg {
+      opacity: 0.7;
+    }
+
+    &--badge {
+      background: var(--accent);
+      color: white;
+      font-weight: 500;
+      padding: 0.125rem 0.375rem;
+    }
+  }
+
+  &__expand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.5rem;
+    background: transparent;
+    border: 1px dashed var(--border-color);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+  }
+
+  &__components {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+    animation: slideDown 0.2s ease-out;
+
+    h5 {
+      margin: 0 0 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  }
+
+  &__component-list {
+    display: grid;
+    gap: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+  }
+}
+
+// =======================
+// Plugin Component Item
+// =======================
+.plugin-component {
+  background: var(--bg-primary);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+
+  &__syntax {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--accent-light);
+    margin-bottom: 0.25rem;
+  }
+
+  &__variants {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+  }
+}
+
+// =======================
+// Toggle Switch
+// Pure CSS toggle with smooth animations
+// @see https://freefrontend.com/css-toggle-switches/
+// =======================
+.toggle-switch {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  &__slider {
+    width: 48px;
+    height: 26px;
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 13px;
+    position: relative;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  &__thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    background: var(--text-secondary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    svg {
+      color: var(--bg-secondary);
+    }
+  }
+
+  // Hover state
+  &:hover .toggle-switch__slider {
+    border-color: var(--accent);
+  }
+
+  // Focus state (accessibility)
+  input:focus-visible + .toggle-switch__slider {
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.25);
+  }
+
+  // Checked state
+  input:checked + .toggle-switch__slider {
+    background: var(--color-success);
+    border-color: var(--color-success);
+
+    .toggle-switch__thumb {
+      transform: translateX(22px);
+      background: white;
+
+      svg {
+        color: var(--color-success);
+      }
+    }
+  }
+
+  // Disabled state
+  input:disabled + .toggle-switch__slider {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// =======================
+// Animations
+// =======================
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 300px;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// =======================
+// Responsive
+// =======================
+@media (max-width: 600px) {
+  .plugin-manager {
+    max-height: 95vh;
+    border-radius: 12px 12px 0 0;
+    margin-top: auto;
+
+    &__controls {
+      flex-direction: column;
+    }
+
+    &__search {
+      width: 100%;
+    }
+
+    &__filters {
+      width: 100%;
+      justify-content: center;
+    }
+
+    &__stats {
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    &__footer {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+
+  .plugin-card {
+    &__header {
+      flex-wrap: wrap;
+    }
+
+    &__actions {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 0.5rem;
+    }
+  }
+}

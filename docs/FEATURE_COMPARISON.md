@@ -158,7 +158,7 @@ Das ursprüngliche md++ Projekt war ein **Planungsdokument** mit umfangreichen S
 | Live-Vorschau | ✅ | ✅ | **FERTIG** | Split-View |
 | WYSIWYG-Modus | ✅ | ✅ | **FERTIG** | TipTap Integration |
 | Scroll-Sync | ✅ | ✅ | **FERTIG** | Bidirektional mit useScrollSync Hook |
-| Plugin-Management UI | ✅ | ❌ | **OFFEN** | Nicht implementiert |
+| Plugin-Management UI | ✅ | ✅ | **FERTIG** | PluginManager Component mit Toggle-Switches |
 | Export als HTML | ✅ | ✅ | **FERTIG** | Mit Theme-Auswahl (Hell/Dunkel) |
 | Export als PDF | ✅ | ✅ | **FERTIG** | PDF-Export verfügbar |
 | Export als DOCX | ✅ | ❌ | **OFFEN** | Nicht implementiert |
@@ -194,8 +194,8 @@ Diese Features wurden zusätzlich implementiert, obwohl sie im ursprünglichen P
 | **Sicherheit** | 8 | 7 | 88% |
 | **Phase 3: MCP** | 5 | 0 | 0% |
 | **Phase 3.5: Web** | 5 | 0 | 0% |
-| **Phase 4: Editor** | 10 | 8 | 80% |
-| **GESAMT** | ~80 | ~61 | **~76%** |
+| **Phase 4: Editor** | 10 | 9 | 90% |
+| **GESAMT** | ~80 | ~62 | **~78%** |
 
 > **Update 2025-01-05**: Mehrere Features wurden neu implementiert:
 > - Material Icons Plugin (`![icon](google:name)` Syntax)
@@ -229,6 +229,14 @@ Diese Features wurden zusätzlich implementiert, obwohl sie im ursprünglichen P
 > - `parseSlides()` und `generateRevealHtml()` Funktionen
 > - Unterstützt horizontale und vertikale Slides
 > - Speaker Notes und Slide-Attribute
+>
+> **Update 2025-01-07**: Plugin-Management UI:
+> - PluginManager React Component mit Such- und Filterfunktion
+> - Plugin-Aktivierung/Deaktivierung via Toggle-Switches
+> - CSS-only Toggle-Switch Animation (keine JS-Bibliothek nötig)
+> - Plugin-Details mit Version, Autor, Komponenten-Liste
+> - IPC-Brücke zum Laden von Plugin-Definitionen aus JSON-Dateien
+> - Vollständig barrierefrei (ARIA-Labels, Keyboard-Navigation)
 
 ### Prioritäten für zukünftige Entwicklung
 

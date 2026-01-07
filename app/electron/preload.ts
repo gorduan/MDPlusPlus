@@ -147,7 +147,26 @@ const electronAPI = {
     ipcRenderer.on('devtools-state', handler);
     return () => ipcRenderer.removeListener('devtools-state', handler);
   },
+
+  // Plugin management
+  loadPlugins: (): Promise<PluginData[]> =>
+    ipcRenderer.invoke('load-plugins'),
+
+  getPluginPath: (): Promise<string> =>
+    ipcRenderer.invoke('get-plugin-path'),
 };
+
+// Plugin data type
+export interface PluginData {
+  id: string;
+  framework: string;
+  version: string;
+  author?: string;
+  description?: string;
+  css?: string[];
+  js?: string[];
+  components: Record<string, unknown>;
+}
 
 // Expose to renderer
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);

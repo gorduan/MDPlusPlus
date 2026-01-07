@@ -4,8 +4,8 @@
  */
 
 import { app, BrowserWindow, ipcMain, dialog, Menu, shell, screen } from 'electron';
-import { join, dirname, resolve } from 'path';
-import { readFile, writeFile, stat } from 'fs/promises';
+import { join, dirname, resolve, basename } from 'path';
+import { readFile, writeFile, stat, readdir } from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
 
 // Force software rendering to fix GPU crashes on Windows
@@ -854,6 +854,88 @@ ipcMain.handle('toggle-devtools', () => {
   }
   return false;
 });
+
+/**
+ * Load all plugins from the plugins directory
+ * @see https://beyondco.de/blog/plugin-system-for-electron-apps-part-1
+ */
+ipcMain.handle('load-plugins', async () => {
+  const pluginsPath = getPluginsPath();
+  const plugins: Array<{
+    id: string;
+    framework: string;
+    version: string;
+    author?: string;
+    description?: string;
+    css?: string[];
+    js?: string[];
+    components: Record<string, unknown>;
+  }> = [];
+
+  try {
+    if (!existsSync(pluginsPath)) {
+      console.log('Plugins directory does not exist:', pluginsPath);
+      return plugins;
+    }
+
+    const files = await readdir(pluginsPath);
+
+    for (const file of files) {
+      if (file.endsWith('.json')) {
+        try {
+          const filePath = join(pluginsPath, file);
+          const content = await readFile(filePath, 'utf-8');
+          const pluginData = JSON.parse(content);
+
+          // Validate plugin structure
+          if (pluginData.framework && pluginData.components) {
+            plugins.push({
+              id: basename(file, '.json'),
+              framework: pluginData.framework,
+              version: pluginData.version || '1.0.0',
+              author: pluginData.author,
+              description: pluginData.description,
+              css: pluginData.css,
+              js: pluginData.js,
+              components: pluginData.components,
+            });
+          }
+        } catch (error) {
+          console.error(`Failed to load plugin ${file}:`, error);
+        }
+      }
+    }
+
+    console.log(`Loaded ${plugins.length} plugins`);
+    return plugins;
+  } catch (error) {
+    console.error('Failed to load plugins:', error);
+    return plugins;
+  }
+});
+
+ipcMain.handle('get-plugin-path', () => {
+  return getPluginsPath();
+});
+
+/**
+ * Get the path to the plugins directory
+ */
+function getPluginsPath(): string {
+  // In development, use the project's plugins directory
+  // In production, use the app's resources directory
+  const devPath = join(__dirname, '../../plugins');
+  const prodPath = join(process.resourcesPath || '', 'plugins');
+
+  if (existsSync(devPath)) {
+    return devPath;
+  } else if (existsSync(prodPath)) {
+    return prodPath;
+  }
+
+  // Fallback to development path (will be created if needed)
+  return devPath;
+}
 
 // App lifecycle
 app.whenReady().then(() => {

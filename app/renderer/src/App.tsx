@@ -13,8 +13,9 @@ import SearchReplace from './components/SearchReplace';
 import HelpDialog from './components/HelpDialog';
 import TableEditor from './components/TableEditor';
 import ThemeEditor, { getCustomThemeForExport } from './components/ThemeEditor';
+import PluginManager, { PluginInfo, ComponentInfo } from './components/PluginManager';
 import { useScrollSync } from './hooks/useScrollSync';
-import type { ViewMode } from '../../electron/preload';
+import type { ViewMode, PluginData } from '../../electron/preload';
 
 // Welcome content shown when app starts
 const WELCOME_CONTENT = `# Willkommen bei MD++
@@ -561,6 +562,8 @@ export default function App() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [tableEditorOpen, setTableEditorOpen] = useState(false);
   const [themeEditorOpen, setThemeEditorOpen] = useState(false);
+  const [pluginManagerOpen, setPluginManagerOpen] = useState(false);
+  const [plugins, setPlugins] = useState<PluginInfo[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -591,6 +594,54 @@ export default function App() {
   // Toggle theme
   const toggleTheme = useCallback(() => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  }, []);
+
+  // Load plugins on startup
+  const loadPlugins = useCallback(async () => {
+    if (!window.electronAPI?.loadPlugins) return;
+
+    try {
+      const loadedPlugins = await window.electronAPI.loadPlugins();
+
+      // Convert PluginData to PluginInfo with enabled state
+      const pluginInfos: PluginInfo[] = loadedPlugins.map((p: PluginData) => ({
+        id: p.id,
+        framework: p.framework,
+        version: p.version,
+        author: p.author,
+        description: p.description,
+        css: p.css,
+        js: p.js,
+        components: p.components as Record<string, ComponentInfo>,
+        enabled: settings.enabledPlugins.includes(p.id),
+      }));
+
+      setPlugins(pluginInfos);
+      console.log(`Loaded ${pluginInfos.length} plugins`);
+    } catch (error) {
+      console.error('Failed to load plugins:', error);
+    }
+  }, [settings.enabledPlugins]);
+
+  useEffect(() => {
+    loadPlugins();
+  }, [loadPlugins]);
+
+  // Handle plugin toggle
+  const handlePluginToggle = useCallback((pluginId: string) => {
+    setSettings((prev) => {
+      const enabledPlugins = prev.enabledPlugins.includes(pluginId)
+        ? prev.enabledPlugins.filter((id) => id !== pluginId)
+        : [...prev.enabledPlugins, pluginId];
+      return { ...prev, enabledPlugins };
+    });
+
+    // Update plugin enabled state
+    setPlugins((prev) =>
+      prev.map((p) =>
+        p.id === pluginId ? { ...p, enabled: !p.enabled } : p
+      )
+    );
   }, []);
 
   // Auto-save functionality
@@ -1882,6 +1933,7 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
         onToggleAIContext={() => setShowAIContext(!showAIContext)}
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenThemeEditor={() => setThemeEditorOpen(true)}
+        onOpenPluginManager={() => setPluginManagerOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
@@ -1948,6 +2000,13 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
         onInsert={(markdown) => {
           editorRef.current?.insert('\n' + markdown + '\n');
         }}
+      />
+      <PluginManager
+        isOpen={pluginManagerOpen}
+        onClose={() => setPluginManagerOpen(false)}
+        plugins={plugins}
+        onPluginToggle={handlePluginToggle}
+        onRefreshPlugins={loadPlugins}
       />
       <ThemeEditor
         isOpen={themeEditorOpen}
