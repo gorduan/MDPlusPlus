@@ -8,7 +8,7 @@ import Preview from './components/Preview';
 import Toolbar, { Theme } from './components/Toolbar';
 import StatusBar from './components/StatusBar';
 import Sidebar from './components/Sidebar';
-import SettingsDialog, { ParserSettings, DEFAULT_SETTINGS } from './components/SettingsDialog';
+import SettingsDialog, { ParserSettings } from './components/SettingsDialog';
 import SearchReplace from './components/SearchReplace';
 import HelpDialog from './components/HelpDialog';
 import TableEditor from './components/TableEditor';
@@ -16,6 +16,8 @@ import ThemeEditor, { getCustomThemeForExport } from './components/ThemeEditor';
 import PluginManager, { PluginInfo, ComponentInfo } from './components/PluginManager';
 import TabBar, { TabData } from './components/TabBar/TabBar';
 import { useScrollSync } from './hooks/useScrollSync';
+import { useProfiles } from './hooks/useProfiles';
+import type { ProfileModificationAction } from './types/profiles';
 import type { ViewMode, PluginData, SessionState, TabState as IpcTabState } from '../../electron/preload';
 
 // Empty content for new files
@@ -48,12 +50,27 @@ export default function App() {
   const filePath = activeTab?.filePath ?? null;
   const isModified = activeTab?.isModified ?? false;
 
+  // Profile management hook (replaces useState for settings)
+  const {
+    profiles,
+    activeProfile,
+    activeSettings: settings,
+    isActiveReadOnly,
+    hasCustomProfile,
+    selectProfile,
+    createProfile,
+    deleteProfile,
+    renameProfile,
+    updateSettings,
+    handleModificationAction,
+    isNameTaken,
+  } = useProfiles();
+
   // UI state
   const [viewMode, setViewMode] = useState<ViewMode>('split');
   const [showAIContext, setShowAIContext] = useState(false);
   const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [settings, setSettings] = useState<ParserSettings>(DEFAULT_SETTINGS);
   const [theme, setTheme] = useState<Theme>('dark');
   const editorRef = useRef<EditorPaneRef | null>(null);
 
@@ -387,12 +404,13 @@ export default function App() {
 
   // Handle plugin toggle
   const handlePluginToggle = useCallback((pluginId: string) => {
-    setSettings((prev) => {
-      const enabledPlugins = prev.enabledPlugins.includes(pluginId)
-        ? prev.enabledPlugins.filter((id) => id !== pluginId)
-        : [...prev.enabledPlugins, pluginId];
-      return { ...prev, enabledPlugins };
-    });
+    const enabledPlugins = settings.enabledPlugins.includes(pluginId)
+      ? settings.enabledPlugins.filter((id) => id !== pluginId)
+      : [...settings.enabledPlugins, pluginId];
+
+    // Use profile system to update settings
+    // This may trigger a dialog if active profile is read-only
+    updateSettings({ ...settings, enabledPlugins });
 
     // Update plugin enabled state
     setPlugins((prev) =>
@@ -400,7 +418,7 @@ export default function App() {
         p.id === pluginId ? { ...p, enabled: !p.enabled } : p
       )
     );
-  }, []);
+  }, [settings, updateSettings]);
 
   // Auto-recovery functionality (saves to recovery folder, not original file)
   useEffect(() => {
@@ -1838,8 +1856,20 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         settings={settings}
-        onSettingsChange={setSettings}
+        onSettingsChange={(newSettings) => updateSettings(newSettings)}
         onOpenPluginManager={() => setPluginManagerOpen(true)}
+        profiles={profiles}
+        activeProfile={activeProfile}
+        hasCustomProfile={hasCustomProfile}
+        onSelectProfile={selectProfile}
+        onCreateProfile={(name) => {
+          const newProfile = createProfile(name, settings);
+          selectProfile(newProfile.id);
+        }}
+        onDeleteProfile={deleteProfile}
+        onRenameProfile={renameProfile}
+        onModificationAction={handleModificationAction}
+        isNameTaken={isNameTaken}
       />
       <SearchReplace
         isOpen={searchOpen}

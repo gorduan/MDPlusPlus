@@ -1,0 +1,357 @@
+/**
+ * MD++ Profile Selector Styles
+ *
+ * Dropdown for selecting and managing settings profiles.
+ */
+
+@use 'sass:map';
+@use '../abstracts' as *;
+
+// Profile Section in Settings
+.settings-section.profile-section {
+  padding-bottom: map.get($spacing, 4);
+  margin-bottom: map.get($spacing, 4);
+  border-bottom: 1px solid var(--border-color);
+}
+
+// Profile Selector Container
+.profile-selector {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 3);
+}
+
+.profile-label {
+  font-weight: map.get($font-weights, medium);
+  color: var(--text-primary);
+  font-size: map.get($font-sizes, sm);
+}
+
+.profile-dropdown-container {
+  position: relative;
+  flex: 1;
+  max-width: 300px;
+}
+
+// Dropdown Button
+.profile-dropdown-button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: map.get($spacing, 2) map.get($spacing, 3);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: map.get($radii, md);
+  color: var(--text-primary);
+  font-size: map.get($font-sizes, sm);
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover {
+    border-color: var(--accent);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+  }
+}
+
+.profile-name {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-dropdown-arrow {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-left: map.get($spacing, 2);
+}
+
+// Dropdown Menu (fixed position for overlay behavior)
+.profile-dropdown-menu {
+  // Position is set via inline styles (fixed positioning)
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: map.get($radii, md);
+  box-shadow: map.get($shadows, lg);
+  // Must be higher than modal (1000) since dropdown is inside modal
+  z-index: 10000;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: map.get($spacing, 1) 0;
+  min-width: 200px;
+}
+
+// Dropdown Item
+.profile-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  margin: 0;
+  background: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background $transition-fast;
+  width: 100%;
+  min-height: 36px;
+
+  &.active {
+    background: rgba(124, 58, 237, 0.15);
+  }
+
+  &:hover {
+    background: var(--bg-card);
+  }
+
+  // Create New Profile Button
+  &.create-new {
+    color: var(--accent-light);
+    padding: map.get($spacing, 2) map.get($spacing, 3);
+    gap: map.get($spacing, 2);
+    justify-content: flex-start;
+
+    &:hover {
+      background: var(--bg-card);
+    }
+  }
+}
+
+// Profile Item Select Button
+.profile-item-select {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 2);
+  padding: map.get($spacing, 2) map.get($spacing, 3);
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: map.get($font-sizes, sm);
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.profile-item-name {
+  white-space: nowrap;
+}
+
+// Built-in Badge
+.profile-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: map.get($font-sizes, xs);
+  padding: 2px 6px;
+  background: rgba(124, 58, 237, 0.2);
+  color: var(--accent-light);
+  border-radius: map.get($radii, sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+// Item Actions (Rename/Delete)
+.profile-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-right: map.get($spacing, 2);
+  flex-shrink: 0;
+}
+
+.profile-action-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: map.get($radii, sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover {
+    background: var(--bg-card);
+    color: var(--text-primary);
+  }
+
+  &.delete:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+  }
+}
+
+.profile-icon {
+  font-size: 14px;
+}
+
+// Dropdown Divider
+.profile-dropdown-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: map.get($spacing, 1) 0;
+}
+
+// Profile Dialog Overlay
+.profile-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.85);
+  @include flex-center;
+  z-index: map.get($z-index, modal);
+  animation: fadeIn $transition-base;
+}
+
+// Profile Dialog
+.profile-dialog {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: map.get($radii, lg);
+  padding: map.get($spacing, 5);
+  min-width: 320px;
+  max-width: 450px;
+  box-shadow: map.get($shadows, xl);
+  animation: slideIn 0.2s ease;
+
+  h3 {
+    font-size: map.get($font-sizes, lg);
+    font-weight: map.get($font-weights, semibold);
+    color: var(--text-primary);
+    margin: 0 0 map.get($spacing, 3);
+  }
+
+  p {
+    font-size: map.get($font-sizes, sm);
+    color: var(--text-secondary);
+    margin: 0 0 map.get($spacing, 4);
+    line-height: 1.5;
+  }
+
+  input {
+    width: 100%;
+    padding: map.get($spacing, 2) map.get($spacing, 3);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: map.get($radii, md);
+    color: var(--text-primary);
+    font-size: map.get($font-sizes, sm);
+    margin-bottom: map.get($spacing, 3);
+
+    &:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+    }
+
+    &.error {
+      border-color: #ef4444;
+    }
+  }
+}
+
+.profile-dialog-error {
+  color: #ef4444;
+  font-size: map.get($font-sizes, sm);
+  margin: -#{map.get($spacing, 2)} 0 map.get($spacing, 3);
+}
+
+.profile-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: map.get($spacing, 2);
+  margin-top: map.get($spacing, 4);
+}
+
+// Dialog Buttons
+.profile-dialog .btn {
+  padding: map.get($spacing, 2) map.get($spacing, 4);
+  border-radius: map.get($radii, md);
+  font-size: map.get($font-sizes, sm);
+  font-weight: map.get($font-weights, medium);
+  cursor: pointer;
+  transition: all $transition-fast;
+  border: none;
+
+  &.primary {
+    background: var(--accent);
+    color: white;
+
+    &:hover {
+      background: var(--accent-hover);
+    }
+  }
+
+  &.secondary {
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+
+    &:hover {
+      background: var(--border-color);
+      color: var(--text-primary);
+    }
+  }
+
+  &.danger {
+    background: #ef4444;
+    color: white;
+
+    &:hover {
+      background: #dc2626;
+    }
+  }
+}
+
+// Modification Dialog Options
+.modification-dialog {
+  min-width: 380px;
+}
+
+.modification-options {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 2);
+  margin-bottom: map.get($spacing, 4);
+}
+
+.modification-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: map.get($spacing, 1);
+  padding: map.get($spacing, 3);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: map.get($radii, md);
+  cursor: pointer;
+  transition: all $transition-fast;
+  text-align: left;
+  width: 100%;
+
+  &:hover {
+    border-color: var(--accent);
+    background: rgba(124, 58, 237, 0.05);
+  }
+
+  .option-title {
+    font-weight: map.get($font-weights, medium);
+    color: var(--text-primary);
+    font-size: map.get($font-sizes, sm);
+  }
+
+  .option-description {
+    font-size: map.get($font-sizes, xs);
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+}

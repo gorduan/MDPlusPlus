@@ -2,7 +2,10 @@
  * MD++ Settings Dialog Component
  */
 
-import React from 'react';
+import React, { useState, useCallback } from 'react';
+import ProfileSelector from './ProfileSelector';
+import ProfileModificationDialog from './ProfileModificationDialog';
+import type { Profile, ProfileModificationAction } from '../types/profiles';
 
 export type ScriptSecurityLevel = 'strict' | 'standard' | 'permissive';
 
@@ -52,6 +55,16 @@ interface SettingsDialogProps {
   settings: ParserSettings;
   onSettingsChange: (settings: ParserSettings) => void;
   onOpenPluginManager?: () => void;
+  /** Profile management props */
+  profiles?: Profile[];
+  activeProfile?: Profile;
+  hasCustomProfile?: boolean;
+  onSelectProfile?: (id: string) => void;
+  onCreateProfile?: (name: string) => void;
+  onDeleteProfile?: (id: string) => void;
+  onRenameProfile?: (id: string, newName: string) => void;
+  onModificationAction?: (action: ProfileModificationAction, pendingSettings: ParserSettings) => void;
+  isNameTaken?: (name: string, excludeId?: string) => boolean;
 }
 
 export default function SettingsDialog({
@@ -60,12 +73,55 @@ export default function SettingsDialog({
   settings,
   onSettingsChange,
   onOpenPluginManager,
+  profiles,
+  activeProfile,
+  hasCustomProfile = false,
+  onSelectProfile,
+  onCreateProfile,
+  onDeleteProfile,
+  onRenameProfile,
+  onModificationAction,
+  isNameTaken,
 }: SettingsDialogProps) {
+  // State for profile modification dialog
+  const [showModificationDialog, setShowModificationDialog] = useState(false);
+  const [pendingSettings, setPendingSettings] = useState<ParserSettings | null>(null);
+
+  // Check if profile management is enabled
+  const hasProfileSupport = !!(
+    profiles &&
+    activeProfile &&
+    onSelectProfile &&
+    onCreateProfile &&
+    onDeleteProfile &&
+    onRenameProfile &&
+    onModificationAction &&
+    isNameTaken
+  );
+
   if (!isOpen) return null;
+
+  const handleSettingsChange = (newSettings: ParserSettings) => {
+    // If active profile is read-only, show modification dialog
+    if (hasProfileSupport && activeProfile?.isReadOnly) {
+      setPendingSettings(newSettings);
+      setShowModificationDialog(true);
+    } else {
+      onSettingsChange(newSettings);
+    }
+  };
+
+  const handleModificationAction = (action: ProfileModificationAction) => {
+    setShowModificationDialog(false);
+    if (pendingSettings && onModificationAction) {
+      onModificationAction(action, pendingSettings);
+    }
+    setPendingSettings(null);
+  };
 
   const handleToggle = (key: keyof ParserSettings) => {
     if (typeof settings[key] === 'boolean') {
-      onSettingsChange({ ...settings, [key]: !settings[key] });
+      handleSettingsChange({ ...settings, [key]: !settings[key] });
     }
   };
 
@@ -79,6 +135,22 @@ export default function SettingsDialog({
         </div>
 
         <div className="settings-content">
+          {/* Profile Selector */}
+          {hasProfileSupport && (
+            <section className="settings-section profile-section">
+              <ProfileSelector
+                profiles={profiles!}
+                activeProfile={activeProfile!}
+                hasCustomProfile={hasCustomProfile}
+                onSelectProfile={onSelectProfile!}
+                onCreateProfile={onCreateProfile!}
+                onDeleteProfile={onDeleteProfile!}
+                onRenameProfile={onRenameProfile!}
+                isNameTaken={isNameTaken!}
+              />
+            </section>
+          )}
+
           {/* GFM Section */}
           <section className="settings-section">
             <h3>GitHub Flavored Markdown</h3>
@@ -192,7 +264,7 @@ export default function SettingsDialog({
                 <span>Security Level</span>
                 <select
                   value={settings.scriptSecurityLevel}
-                  onChange={(e) => onSettingsChange({
+                  onChange={(e) => handleSettingsChange({
                     ...settings,
                     scriptSecurityLevel: e.target.value as ScriptSecurityLevel
                   })}
@@ -231,7 +303,7 @@ export default function SettingsDialog({
         </div>
 
         <div className="settings-footer">
-          <button className="settings-btn secondary" onClick={() => onSettingsChange(DEFAULT_SETTINGS)}>
+          <button className="settings-btn secondary" onClick={() => handleSettingsChange(DEFAULT_SETTINGS)}>
             Reset to Defaults
           </button>
           <button className="settings-btn primary" onClick={onClose}>
@@ -239,6 +311,17 @@ export default function SettingsDialog({
           </button>
         </div>
       </div>
+
+      {/* Profile Modification Dialog */}
+      {hasProfileSupport && (
+        <ProfileModificationDialog
+          isOpen={showModificationDialog}
+          hasCustomProfile={hasCustomProfile}
+          sourceProfileName={activeProfile?.name || ''}
+          onAction={handleModificationAction}
+          isNameTaken={(name) => isNameTaken!(name)}
+        />
+      )}
     </div>
   );
 }
