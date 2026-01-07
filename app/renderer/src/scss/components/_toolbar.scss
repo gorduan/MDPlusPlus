@@ -40,12 +40,17 @@
     -webkit-app-region: no-drag;
 
     &--left {
-      flex: 1;
+      flex: 0 0 auto;
       min-width: 0;
     }
 
     &--center {
-      flex-shrink: 0;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: map.get($spacing, 3);
     }
 
     &--right {
@@ -92,20 +97,42 @@
     gap: map.get($spacing, 1);
   }
 
-  // View Mode Buttons
+  // View Mode Buttons (Editor/Split/Preview) - accent color for active
   &__viewmodes {
     background: var(--bg-card);
     border-radius: map.get($radii, md);
     padding: map.get($spacing, 1);
     border: 1px solid var(--border-color);
+
+    .toolbar__viewmode-btn--active {
+      background: var(--accent);
+      color: white;
+      box-shadow: none;
+
+      &:hover {
+        background: var(--accent);
+        color: white;
+      }
+    }
   }
 
-  // Editor Mode Buttons (Source/WYSIWYG)
+  // Editor Mode Buttons (Source/WYSIWYG) - dark background for active
   &__editormodes {
     background: var(--bg-card);
     border-radius: map.get($radii, md);
     padding: map.get($spacing, 1);
     border: 1px solid var(--border-color);
+
+    .toolbar__viewmode-btn--active {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+
+      &:hover {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+      }
+    }
   }
 
   &__viewmode-btn {
@@ -133,6 +160,7 @@
       color: var(--text-primary);
     }
 
+    // Default active state (overridden by parent containers)
     &--active {
       background: var(--bg-primary);
       color: var(--text-primary);

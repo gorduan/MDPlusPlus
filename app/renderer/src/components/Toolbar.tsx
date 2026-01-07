@@ -64,7 +64,7 @@ export default function Toolbar({
 
   return (
     <header className="toolbar">
-      {/* Left Section - Menu & Logo */}
+      {/* Left Section - Menu, Logo & Editor Mode Toggle */}
       <div className="toolbar__section toolbar__section--left">
         {onToggleSidebar && (
           <button
@@ -80,41 +80,38 @@ export default function Toolbar({
         <div className="toolbar__brand">
           <span className="toolbar__title">MD++</span>
         </div>
+
+        {/* Editor Mode Toggle (Source/WYSIWYG) - between logo and center */}
+        {(viewMode === 'editor' || viewMode === 'split') && (
+          <div className="toolbar__group toolbar__editormodes">
+            <button
+              className={`toolbar__viewmode-btn ${editorMode === 'source' ? 'toolbar__viewmode-btn--active' : ''}`}
+              onClick={() => onEditorModeChange('source')}
+              title={t('toolbar.sourceMode')}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="16 18 22 12 16 6" />
+                <polyline points="8 6 2 12 8 18" />
+              </svg>
+              <span>{t('toolbar.source')}</span>
+            </button>
+            <button
+              className={`toolbar__viewmode-btn ${editorMode === 'wysiwyg' ? 'toolbar__viewmode-btn--active' : ''}`}
+              onClick={() => onEditorModeChange('wysiwyg')}
+              title={t('toolbar.wysiwygMode')}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+              </svg>
+              <span>WYSIWYG</span>
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Center Section - Editor Modes and View Modes */}
+      {/* Center Section - View Modes (absolutely centered) */}
       <div className="toolbar__section toolbar__section--center">
-        {/* Editor Mode Toggle (Source/WYSIWYG) - only visible when editor is shown */}
-        {(viewMode === 'editor' || viewMode === 'split') && (
-          <>
-            <div className="toolbar__group toolbar__editormodes">
-              <button
-                className={`toolbar__viewmode-btn ${editorMode === 'source' ? 'toolbar__viewmode-btn--active' : ''}`}
-                onClick={() => onEditorModeChange('source')}
-                title={t('toolbar.sourceMode')}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="16 18 22 12 16 6" />
-                  <polyline points="8 6 2 12 8 18" />
-                </svg>
-                <span>{t('toolbar.source')}</span>
-              </button>
-              <button
-                className={`toolbar__viewmode-btn ${editorMode === 'wysiwyg' ? 'toolbar__viewmode-btn--active' : ''}`}
-                onClick={() => onEditorModeChange('wysiwyg')}
-                title={t('toolbar.wysiwygMode')}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 20h9" />
-                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                </svg>
-                <span>WYSIWYG</span>
-              </button>
-            </div>
-            <div className="toolbar__divider toolbar__divider--vertical" />
-          </>
-        )}
-
         {/* View Mode Toggle (Editor/Split/Preview) */}
         <div className="toolbar__group toolbar__viewmodes">
           <button
