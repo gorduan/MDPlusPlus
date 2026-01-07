@@ -9,18 +9,31 @@
     "editorOnly": "Nur Editor",
     "splitView": "Geteilte Ansicht",
     "previewOnly": "Nur Vorschau",
+    "source": "Quelltext",
+    "sourceMode": "Quelltext-Modus - Rohes Markdown bearbeiten",
+    "wysiwygMode": "WYSIWYG-Modus - Visuelle Bearbeitung",
     "toggleAiContext": "AI-Kontext ein-/ausblenden",
     "lightMode": "Zum hellen Modus wechseln",
     "darkMode": "Zum dunklen Modus wechseln",
     "themeEditor": "Theme-Editor",
     "pluginManager": "Plugin-Manager",
     "settings": "Einstellungen",
-    "newTab": "Neuer Tab"
+    "newTab": "Neuer Tab",
+    "devTools": "Entwicklertools"
   },
   "sidebar": {
     "file": "Datei",
     "newFile": "Neue Datei",
     "open": "Öffnen...",
+    "saveAs": "Speichern unter...",
+    "insert": "Einfügen",
+    "table": "Tabelle",
+    "mermaidDiagram": "Mermaid-Diagramm",
+    "mathBlock": "Mathe-Block",
+    "codeBlock": "Code-Block",
+    "aiContext": "AI-Kontext",
+    "recent": "Zuletzt verwendet",
+    "help": "Hilfe (F1)",
     "markdownScript": "MarkdownScript",
     "mdppEnhanced": "MD++ Erweitert",
     "markdown": "Markdown"
@@ -32,6 +45,13 @@
     "editor": "Editor",
     "preview": "Vorschau",
     "split": "Geteilt"
+  },
+  "statusBar": {
+    "noFileOpen": "Keine Datei geöffnet",
+    "words": "Wörter",
+    "line": "Zl",
+    "column": "Sp",
+    "statsTooltip": "{{words}} Wörter, {{chars}} Zeichen, {{lines}} Zeilen"
   },
   "search": {
     "find": "Suchen",

@@ -9,18 +9,31 @@
     "editorOnly": "Editor Only",
     "splitView": "Split View",
     "previewOnly": "Preview Only",
+    "source": "Source",
+    "sourceMode": "Source Mode - Edit raw Markdown",
+    "wysiwygMode": "WYSIWYG Mode - Visual editing",
     "toggleAiContext": "Toggle AI Context Visibility",
     "lightMode": "Switch to Light Mode",
     "darkMode": "Switch to Dark Mode",
     "themeEditor": "Theme Editor",
     "pluginManager": "Plugin Manager",
     "settings": "Settings",
-    "newTab": "New Tab"
+    "newTab": "New Tab",
+    "devTools": "Developer Tools"
   },
   "sidebar": {
     "file": "File",
     "newFile": "New File",
     "open": "Open...",
+    "saveAs": "Save As...",
+    "insert": "Insert",
+    "table": "Table",
+    "mermaidDiagram": "Mermaid Diagram",
+    "mathBlock": "Math Block",
+    "codeBlock": "Code Block",
+    "aiContext": "AI Context",
+    "recent": "Recent",
+    "help": "Help (F1)",
     "markdownScript": "MarkdownScript",
     "mdppEnhanced": "MD++ Enhanced",
     "markdown": "Markdown"
@@ -32,6 +45,13 @@
     "editor": "Editor",
     "preview": "Preview",
     "split": "Split"
+  },
+  "statusBar": {
+    "noFileOpen": "No file open",
+    "words": "words",
+    "line": "Ln",
+    "column": "Col",
+    "statsTooltip": "{{words}} words, {{chars}} characters, {{lines}} lines"
   },
   "search": {
     "find": "Find",

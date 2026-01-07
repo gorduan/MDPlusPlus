@@ -8,7 +8,16 @@ import { join, dirname, resolve, basename } from 'path';
 import { readFile, writeFile, stat, readdir, rm, rename } from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
 import { homedir } from 'os';
-import { initMainI18n, t, changeMainLanguage, normalizeLanguageCode, SUPPORTED_LANGUAGES } from '../i18n/main';
+import {
+  initMainI18n,
+  t,
+  changeMainLanguage,
+  normalizeLanguageCode,
+  setI18nPaths,
+  getSupportedLanguagesList,
+  getAvailableLanguages,
+  discoverAvailableLanguages,
+} from '../i18n/main';
 
 // ============================================
 // Session & Recovery Types
@@ -193,13 +202,16 @@ function ensureAppDataDirs(): void {
 
 /**
  * Load saved language or detect from system
+ * Note: Available languages are determined dynamically after setI18nPaths is called
  */
 function loadLanguageSetting(): string {
   try {
     if (existsSync(LANGUAGE_FILE)) {
       const content = require('fs').readFileSync(LANGUAGE_FILE, 'utf-8');
       const data = JSON.parse(content);
-      if (data.language && SUPPORTED_LANGUAGES.includes(data.language)) {
+      // Check if saved language is available (after discovery)
+      const availableLanguages = getAvailableLanguages();
+      if (data.language && availableLanguages.includes(data.language)) {
         console.log(`[i18n] Loaded language from settings: ${data.language}`);
         return data.language;
       }
@@ -2214,7 +2226,8 @@ ipcMain.handle('get-language', () => {
 });
 
 ipcMain.handle('get-supported-languages', () => {
-  return SUPPORTED_LANGUAGES;
+  // Return dynamically discovered languages
+  return getSupportedLanguagesList();
 });
 
 ipcMain.handle('set-language', async (_, language: string) => {
@@ -2248,7 +2261,24 @@ function getPluginsPath(): string {
 
 // App lifecycle
 app.whenReady().then(() => {
-  // Initialize i18n with saved or detected language
+  // Set i18n paths for dynamic language discovery
+  // In development: out/main/index.js -> ../../app/i18n/locales
+  // In production: resources/app/i18n/locales
+  const devLocalesPath = join(__dirname, '../../app/i18n/locales');
+  const prodLocalesPath = join(process.resourcesPath || '', 'app/i18n/locales');
+  const localesPath = existsSync(devLocalesPath) ? devLocalesPath : prodLocalesPath;
+  const pluginsPath = getPluginsPath();
+
+  console.log(`[i18n] __dirname: ${__dirname}`);
+  console.log(`[i18n] Trying locales path: ${devLocalesPath} (exists: ${existsSync(devLocalesPath)})`);
+  console.log(`[i18n] Using locales path: ${localesPath}`);
+
+  // Set paths and discover languages BEFORE loading settings
+  // This ensures normalizeLanguageCode knows about all available languages
+  setI18nPaths(localesPath, pluginsPath);
+  discoverAvailableLanguages();
+
+  // Now load settings (which uses normalizeLanguageCode that needs available languages)
   const initialLanguage = loadLanguageSetting();
   initMainI18n(initialLanguage);
   console.log(`[i18n] Initialized with language: ${initialLanguage}`);

@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -38,25 +39,26 @@ export default function Sidebar({
   recentFiles = [],
   onOpenRecentFile,
 }: SidebarProps) {
+  const { t } = useTranslation('common');
   const [expandedSection, setExpandedSection] = useState<string | null>('file');
 
   const toggleSection = (section: string) => {
     setExpandedSection(prev => prev === section ? null : section);
   };
 
-  const fileName = filePath ? filePath.split(/[\\/]/).pop() : 'Untitled';
+  const fileName = filePath ? filePath.split(/[\\/]/).pop() : t('app.untitled');
   const fileExt = fileName?.split('.').pop()?.toLowerCase() || 'md';
 
   // Detect file format
   const getFileFormatBadge = () => {
     switch (fileExt) {
       case 'mdsc':
-        return { label: 'MDSC', color: 'var(--accent)', desc: 'MarkdownScript' };
+        return { label: 'MDSC', color: 'var(--accent)', desc: t('sidebar.markdownScript') };
       case 'mdplus':
       case 'mdpp':
-        return { label: 'MD++', color: 'var(--color-info)', desc: 'MD++ Enhanced' };
+        return { label: 'MD++', color: 'var(--color-info)', desc: t('sidebar.mdppEnhanced') };
       default:
-        return { label: 'MD', color: 'var(--text-secondary)', desc: 'Markdown' };
+        return { label: 'MD', color: 'var(--text-secondary)', desc: t('sidebar.markdown') };
     }
   };
 
@@ -66,7 +68,7 @@ export default function Sidebar({
     <>
       {/* Sidebar Toggle Button (visible when collapsed) */}
       {!isOpen && (
-        <button className="sidebar-toggle sidebar-toggle--collapsed" onClick={onToggle} title="Open Sidebar">
+        <button className="sidebar-toggle sidebar-toggle--collapsed" onClick={onToggle} title={t('toolbar.openSidebar')}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M4 6h16M4 12h16M4 18h16" />
           </svg>
@@ -77,11 +79,8 @@ export default function Sidebar({
       <aside className={`sidebar ${isOpen ? 'sidebar--open' : 'sidebar--closed'}`}>
         {/* Sidebar Header */}
         <div className="sidebar__header">
-          <div className="sidebar__logo">
-            <span className="sidebar__logo-icon">M++</span>
-            <span className="sidebar__logo-text">MD++</span>
-          </div>
-          <button className="sidebar__close" onClick={onToggle} title="Close Sidebar">
+          <span className="sidebar__header-title">{t('sidebar.file')}</span>
+          <button className="sidebar__close" onClick={onToggle} title={t('toolbar.closeSidebar')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M15 18l-6-6 6-6" />
             </svg>
@@ -125,7 +124,7 @@ export default function Sidebar({
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
               </svg>
-              <span>File</span>
+              <span>{t('sidebar.file')}</span>
               <svg className="sidebar__section-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="6 9 12 15 18 9" />
               </svg>
@@ -139,14 +138,14 @@ export default function Sidebar({
                     <line x1="12" y1="18" x2="12" y2="12" />
                     <line x1="9" y1="15" x2="15" y2="15" />
                   </svg>
-                  <span>New File</span>
+                  <span>{t('sidebar.newFile')}</span>
                   <kbd>Ctrl+N</kbd>
                 </button>
                 <button className="sidebar__action" onClick={onOpenFile}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
                   </svg>
-                  <span>Open...</span>
+                  <span>{t('sidebar.open')}</span>
                   <kbd>Ctrl+O</kbd>
                 </button>
                 <button className="sidebar__action" onClick={onSaveFile}>
@@ -155,7 +154,7 @@ export default function Sidebar({
                     <polyline points="17 21 17 13 7 13 7 21" />
                     <polyline points="7 3 7 8 15 8" />
                   </svg>
-                  <span>Save</span>
+                  <span>{t('common.save')}</span>
                   <kbd>Ctrl+S</kbd>
                 </button>
                 <button className="sidebar__action" onClick={onSaveAs}>
@@ -166,7 +165,7 @@ export default function Sidebar({
                     <path d="M12 11v6" />
                     <path d="M9 14l3 3 3-3" />
                   </svg>
-                  <span>Save As...</span>
+                  <span>{t('sidebar.saveAs')}</span>
                   <kbd>Ctrl+Shift+S</kbd>
                 </button>
               </div>
@@ -184,7 +183,7 @@ export default function Sidebar({
                 <line x1="12" y1="8" x2="12" y2="16" />
                 <line x1="8" y1="12" x2="16" y2="12" />
               </svg>
-              <span>Insert</span>
+              <span>{t('sidebar.insert')}</span>
               <svg className="sidebar__section-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="6 9 12 15 18 9" />
               </svg>
@@ -199,7 +198,7 @@ export default function Sidebar({
                     <line x1="9" y1="3" x2="9" y2="21" />
                     <line x1="15" y1="3" x2="15" y2="21" />
                   </svg>
-                  <span>Table</span>
+                  <span>{t('sidebar.table')}</span>
                 </button>
                 <button className="sidebar__action" onClick={() => onInsert?.('```mermaid\ngraph TD\n    A[Start] --> B[End]\n```\n')}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -207,21 +206,21 @@ export default function Sidebar({
                     <path d="M2 17l10 5 10-5" />
                     <path d="M2 12l10 5 10-5" />
                   </svg>
-                  <span>Mermaid Diagram</span>
+                  <span>{t('sidebar.mermaidDiagram')}</span>
                 </button>
                 <button className="sidebar__action" onClick={() => onInsert?.('$$\n\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}\n$$\n')}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4z" />
                     <path d="M17 14v8M14 17h6" />
                   </svg>
-                  <span>Math Block</span>
+                  <span>{t('sidebar.mathBlock')}</span>
                 </button>
                 <button className="sidebar__action" onClick={() => onInsert?.('```javascript\n// Your code here\n```\n')}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polyline points="16 18 22 12 16 6" />
                     <polyline points="8 6 2 12 8 18" />
                   </svg>
-                  <span>Code Block</span>
+                  <span>{t('sidebar.codeBlock')}</span>
                 </button>
                 <button className="sidebar__action" onClick={() => onInsert?.(':::ai-context{visibility=visible}\nContext for AI here.\n:::\n')}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -229,7 +228,7 @@ export default function Sidebar({
                     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
                     <line x1="12" y1="17" x2="12.01" y2="17" />
                   </svg>
-                  <span>AI Context</span>
+                  <span>{t('sidebar.aiContext')}</span>
                 </button>
               </div>
             )}
@@ -246,7 +245,7 @@ export default function Sidebar({
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
-                <span>Recent</span>
+                <span>{t('sidebar.recent')}</span>
                 <svg className="sidebar__section-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
@@ -274,13 +273,13 @@ export default function Sidebar({
 
         {/* Sidebar Footer */}
         <div className="sidebar__footer">
-          <button className="sidebar__footer-action" onClick={onOpenSettings} title="Settings">
+          <button className="sidebar__footer-action" onClick={onOpenSettings} title={t('toolbar.settings')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="3" />
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
             </svg>
           </button>
-          <button className="sidebar__footer-action" onClick={onOpenHelp} title="Help (F1)">
+          <button className="sidebar__footer-action" onClick={onOpenHelp} title={t('sidebar.help')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
               <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />

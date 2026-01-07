@@ -9,7 +9,7 @@ import ProfileModificationDialog from './ProfileModificationDialog';
 import ThemeSelector from './ThemeSelector';
 import type { Profile, ProfileModificationAction } from '../types/profiles';
 import type { Theme } from '../types/themes';
-import { SUPPORTED_LANGUAGES } from '../../../i18n';
+import { getSupportedLanguages } from '../../../i18n';
 
 export type ScriptSecurityLevel = 'strict' | 'standard' | 'permissive';
 
@@ -192,7 +192,7 @@ export default function SettingsDialog({
                 value={currentLanguage}
                 onChange={(e) => handleLanguageChange(e.target.value)}
               >
-                {SUPPORTED_LANGUAGES.map((lang) => (
+                {getSupportedLanguages().map((lang) => (
                   <option key={lang.code} value={lang.code}>
                     {lang.nativeName} ({lang.name})
                   </option>

@@ -4,13 +4,17 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ViewMode } from '../../../electron/preload';
 
 export type Theme = 'dark' | 'light';
+export type EditorMode = 'source' | 'wysiwyg';
 
 interface ToolbarProps {
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
+  editorMode: EditorMode;
+  onEditorModeChange: (mode: EditorMode) => void;
   showAIContext: boolean;
   onToggleAIContext: () => void;
   onOpenSettings: () => void;
@@ -25,6 +29,8 @@ interface ToolbarProps {
 export default function Toolbar({
   viewMode,
   onViewModeChange,
+  editorMode,
+  onEditorModeChange,
   showAIContext,
   onToggleAIContext,
   onOpenSettings,
@@ -35,6 +41,7 @@ export default function Toolbar({
   onToggleSidebar,
   sidebarOpen = false,
 }: ToolbarProps) {
+  const { t } = useTranslation('common');
   const [devToolsOpen, setDevToolsOpen] = useState(false);
 
   // Listen for DevTools state changes (e.g., manual close)
@@ -57,13 +64,13 @@ export default function Toolbar({
 
   return (
     <header className="toolbar">
-      {/* Left Section - Logo & Menu */}
+      {/* Left Section - Menu & Logo */}
       <div className="toolbar__section toolbar__section--left">
         {onToggleSidebar && (
           <button
             className={`toolbar__btn toolbar__btn--icon ${sidebarOpen ? 'toolbar__btn--active' : ''}`}
             onClick={onToggleSidebar}
-            title={sidebarOpen ? 'Close Sidebar' : 'Open Sidebar'}
+            title={sidebarOpen ? t('toolbar.closeSidebar') : t('toolbar.openSidebar')}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M4 6h16M4 12h16M4 18h16" />
@@ -71,18 +78,49 @@ export default function Toolbar({
           </button>
         )}
         <div className="toolbar__brand">
-          <span className="toolbar__logo">M++</span>
           <span className="toolbar__title">MD++</span>
         </div>
       </div>
 
-      {/* Center Section - View Modes */}
+      {/* Center Section - Editor Modes and View Modes */}
       <div className="toolbar__section toolbar__section--center">
+        {/* Editor Mode Toggle (Source/WYSIWYG) - only visible when editor is shown */}
+        {(viewMode === 'editor' || viewMode === 'split') && (
+          <>
+            <div className="toolbar__group toolbar__editormodes">
+              <button
+                className={`toolbar__viewmode-btn ${editorMode === 'source' ? 'toolbar__viewmode-btn--active' : ''}`}
+                onClick={() => onEditorModeChange('source')}
+                title={t('toolbar.sourceMode')}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="16 18 22 12 16 6" />
+                  <polyline points="8 6 2 12 8 18" />
+                </svg>
+                <span>{t('toolbar.source')}</span>
+              </button>
+              <button
+                className={`toolbar__viewmode-btn ${editorMode === 'wysiwyg' ? 'toolbar__viewmode-btn--active' : ''}`}
+                onClick={() => onEditorModeChange('wysiwyg')}
+                title={t('toolbar.wysiwygMode')}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+                <span>WYSIWYG</span>
+              </button>
+            </div>
+            <div className="toolbar__divider toolbar__divider--vertical" />
+          </>
+        )}
+
+        {/* View Mode Toggle (Editor/Split/Preview) */}
         <div className="toolbar__group toolbar__viewmodes">
           <button
             className={`toolbar__viewmode-btn ${viewMode === 'editor' ? 'toolbar__viewmode-btn--active' : ''}`}
             onClick={() => onViewModeChange('editor')}
-            title="Editor Only (Ctrl+1)"
+            title={`${t('toolbar.editorOnly')} (Ctrl+1)`}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -90,29 +128,29 @@ export default function Toolbar({
               <line x1="7" y1="12" x2="15" y2="12" />
               <line x1="7" y1="16" x2="13" y2="16" />
             </svg>
-            <span>Editor</span>
+            <span>{t('status.editor')}</span>
           </button>
           <button
             className={`toolbar__viewmode-btn ${viewMode === 'split' ? 'toolbar__viewmode-btn--active' : ''}`}
             onClick={() => onViewModeChange('split')}
-            title="Split View (Ctrl+3)"
+            title={`${t('toolbar.splitView')} (Ctrl+3)`}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="3" width="18" height="18" rx="2" />
               <line x1="12" y1="3" x2="12" y2="21" />
             </svg>
-            <span>Split</span>
+            <span>{t('status.split')}</span>
           </button>
           <button
             className={`toolbar__viewmode-btn ${viewMode === 'preview' ? 'toolbar__viewmode-btn--active' : ''}`}
             onClick={() => onViewModeChange('preview')}
-            title="Preview Only (Ctrl+2)"
+            title={`${t('toolbar.previewOnly')} (Ctrl+2)`}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
               <circle cx="12" cy="12" r="3" />
             </svg>
-            <span>Preview</span>
+            <span>{t('status.preview')}</span>
           </button>
         </div>
       </div>
@@ -123,7 +161,7 @@ export default function Toolbar({
         <button
           className={`toolbar__btn toolbar__btn--feature ${showAIContext ? 'toolbar__btn--active' : ''}`}
           onClick={onToggleAIContext}
-          title="Toggle AI Context Visibility (Ctrl+Shift+A)"
+          title={`${t('toolbar.toggleAiContext')} (Ctrl+Shift+A)`}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
@@ -140,7 +178,7 @@ export default function Toolbar({
         <button
           className="toolbar__btn toolbar__btn--icon"
           onClick={onToggleTheme}
-          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          title={theme === 'dark' ? t('toolbar.lightMode') : t('toolbar.darkMode')}
         >
           {theme === 'dark' ? (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -165,7 +203,7 @@ export default function Toolbar({
         <button
           className="toolbar__btn toolbar__btn--icon"
           onClick={onOpenThemeEditor}
-          title="Theme Editor"
+          title={t('toolbar.themeEditor')}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.555C21.965 6.012 17.461 2 12 2z" />
@@ -179,7 +217,7 @@ export default function Toolbar({
         <button
           className="toolbar__btn toolbar__btn--icon"
           onClick={onOpenPluginManager}
-          title="Plugin Manager"
+          title={t('toolbar.pluginManager')}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
@@ -192,7 +230,7 @@ export default function Toolbar({
         <button
           className="toolbar__btn toolbar__btn--icon"
           onClick={onOpenSettings}
-          title="Settings (Ctrl+,)"
+          title={`${t('toolbar.settings')} (Ctrl+,)`}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="3" />
@@ -204,7 +242,7 @@ export default function Toolbar({
         <button
           className={`toolbar__btn toolbar__btn--icon ${devToolsOpen ? 'toolbar__btn--active' : ''}`}
           onClick={handleToggleDevTools}
-          title="Toggle Developer Tools (F12)"
+          title={`${t('toolbar.devTools')} (F12)`}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="16 18 22 12 16 6" />

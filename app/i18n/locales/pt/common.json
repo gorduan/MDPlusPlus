@@ -9,18 +9,31 @@
     "editorOnly": "Apenas editor",
     "splitView": "Vista dividida",
     "previewOnly": "Apenas pré-visualização",
+    "source": "Fonte",
+    "sourceMode": "Modo fonte - Editar Markdown em bruto",
+    "wysiwygMode": "Modo WYSIWYG - Edição visual",
     "toggleAiContext": "Mostrar/ocultar contexto IA",
     "lightMode": "Mudar para modo claro",
     "darkMode": "Mudar para modo escuro",
     "themeEditor": "Editor de temas",
     "pluginManager": "Gestor de plugins",
     "settings": "Definições",
-    "newTab": "Novo separador"
+    "newTab": "Novo separador",
+    "devTools": "Ferramentas de desenvolvimento"
   },
   "sidebar": {
     "file": "Ficheiro",
     "newFile": "Novo ficheiro",
     "open": "Abrir...",
+    "saveAs": "Guardar como...",
+    "insert": "Inserir",
+    "table": "Tabela",
+    "mermaidDiagram": "Diagrama Mermaid",
+    "mathBlock": "Bloco matemático",
+    "codeBlock": "Bloco de código",
+    "aiContext": "Contexto IA",
+    "recent": "Recente",
+    "help": "Ajuda (F1)",
     "markdownScript": "MarkdownScript",
     "mdppEnhanced": "MD++ Melhorado",
     "markdown": "Markdown"
@@ -32,6 +45,13 @@
     "editor": "Editor",
     "preview": "Pré-visualização",
     "split": "Dividido"
+  },
+  "statusBar": {
+    "noFileOpen": "Nenhum ficheiro aberto",
+    "words": "palavras",
+    "line": "Lin",
+    "column": "Col",
+    "statsTooltip": "{{words}} palavras, {{chars}} caracteres, {{lines}} linhas"
   },
   "search": {
     "find": "Procurar",

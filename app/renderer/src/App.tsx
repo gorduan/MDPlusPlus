@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import EditorPane, { EditorPaneRef } from './components/EditorPane';
+import EditorPane, { EditorPaneRef, EditorMode } from './components/EditorPane';
 import Preview from './components/Preview';
 import Toolbar, { Theme } from './components/Toolbar';
 import StatusBar from './components/StatusBar';
@@ -86,6 +86,7 @@ export default function App() {
 
   // UI state
   const [viewMode, setViewMode] = useState<ViewMode>('split');
+  const [editorMode, setEditorMode] = useState<EditorMode>('source');
   const [showAIContext, setShowAIContext] = useState(false);
   const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -1838,6 +1839,8 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
       <Toolbar
         viewMode={viewMode}
         onViewModeChange={setViewMode}
+        editorMode={editorMode}
+        onEditorModeChange={setEditorMode}
         showAIContext={showAIContext}
         onToggleAIContext={() => setShowAIContext(!showAIContext)}
         onOpenSettings={() => setSettingsOpen(true)}
@@ -1867,6 +1870,7 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
               onChange={handleContentChange}
               onCursorChange={setCursorPosition}
               theme={theme}
+              editorMode={editorMode}
               onScroll={handleEditorScroll}
               onWysiwygScroll={handleWysiwygScroll}
               onEditorMount={registerEditor}

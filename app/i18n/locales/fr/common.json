@@ -9,18 +9,31 @@
     "editorOnly": "Éditeur uniquement",
     "splitView": "Vue partagée",
     "previewOnly": "Aperçu uniquement",
+    "source": "Source",
+    "sourceMode": "Mode source - Éditer le Markdown brut",
+    "wysiwygMode": "Mode WYSIWYG - Édition visuelle",
     "toggleAiContext": "Afficher/masquer le contexte IA",
     "lightMode": "Passer au mode clair",
     "darkMode": "Passer au mode sombre",
     "themeEditor": "Éditeur de thème",
     "pluginManager": "Gestionnaire de plugins",
     "settings": "Paramètres",
-    "newTab": "Nouvel onglet"
+    "newTab": "Nouvel onglet",
+    "devTools": "Outils de développement"
   },
   "sidebar": {
     "file": "Fichier",
     "newFile": "Nouveau fichier",
     "open": "Ouvrir...",
+    "saveAs": "Enregistrer sous...",
+    "insert": "Insérer",
+    "table": "Tableau",
+    "mermaidDiagram": "Diagramme Mermaid",
+    "mathBlock": "Bloc mathématique",
+    "codeBlock": "Bloc de code",
+    "aiContext": "Contexte IA",
+    "recent": "Récent",
+    "help": "Aide (F1)",
     "markdownScript": "MarkdownScript",
     "mdppEnhanced": "MD++ Amélioré",
     "markdown": "Markdown"
@@ -32,6 +45,13 @@
     "editor": "Éditeur",
     "preview": "Aperçu",
     "split": "Partagé"
+  },
+  "statusBar": {
+    "noFileOpen": "Aucun fichier ouvert",
+    "words": "mots",
+    "line": "Lig",
+    "column": "Col",
+    "statsTooltip": "{{words}} mots, {{chars}} caractères, {{lines}} lignes"
   },
   "search": {
     "find": "Rechercher",

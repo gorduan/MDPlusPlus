@@ -9,18 +9,31 @@
     "editorOnly": "Alleen editor",
     "splitView": "Gesplitste weergave",
     "previewOnly": "Alleen voorbeeld",
+    "source": "Bron",
+    "sourceMode": "Bronmodus - Ruwe Markdown bewerken",
+    "wysiwygMode": "WYSIWYG-modus - Visueel bewerken",
     "toggleAiContext": "AI-context in-/uitschakelen",
     "lightMode": "Schakel naar lichte modus",
     "darkMode": "Schakel naar donkere modus",
     "themeEditor": "Thema-editor",
     "pluginManager": "Plugin-beheer",
     "settings": "Instellingen",
-    "newTab": "Nieuw tabblad"
+    "newTab": "Nieuw tabblad",
+    "devTools": "Ontwikkelaarshulpmiddelen"
   },
   "sidebar": {
     "file": "Bestand",
     "newFile": "Nieuw bestand",
     "open": "Openen...",
+    "saveAs": "Opslaan als...",
+    "insert": "Invoegen",
+    "table": "Tabel",
+    "mermaidDiagram": "Mermaid-diagram",
+    "mathBlock": "Wiskundeblok",
+    "codeBlock": "Codeblok",
+    "aiContext": "AI-context",
+    "recent": "Recent",
+    "help": "Help (F1)",
     "markdownScript": "MarkdownScript",
     "mdppEnhanced": "MD++ Uitgebreid",
     "markdown": "Markdown"
@@ -32,6 +45,13 @@
     "editor": "Editor",
     "preview": "Voorbeeld",
     "split": "Gesplitst"
+  },
+  "statusBar": {
+    "noFileOpen": "Geen bestand geopend",
+    "words": "woorden",
+    "line": "Rij",
+    "column": "Kol",
+    "statsTooltip": "{{words}} woorden, {{chars}} tekens, {{lines}} regels"
   },
   "search": {
     "find": "Zoeken",

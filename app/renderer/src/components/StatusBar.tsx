@@ -4,6 +4,7 @@
  */
 
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ViewMode } from '../../../electron/preload';
 
 type AutoSaveStatus = 'idle' | 'saving' | 'saved';
@@ -27,21 +28,22 @@ export default function StatusBar({
   content = '',
   autoSaveStatus = 'idle',
 }: StatusBarProps) {
-  const fileName = filePath ? filePath.split(/[\\/]/).pop() : 'Untitled';
+  const { t } = useTranslation('common');
+  const fileName = filePath ? filePath.split(/[\\/]/).pop() : t('app.untitled');
   const fileExt = fileName?.split('.').pop()?.toLowerCase() || 'md';
 
   // Detect file format
   const fileFormat = useMemo(() => {
     switch (fileExt) {
       case 'mdsc':
-        return { label: 'MarkdownScript', short: 'MDSC', color: 'accent' };
+        return { label: t('sidebar.markdownScript'), short: 'MDSC', color: 'accent' };
       case 'mdplus':
       case 'mdpp':
-        return { label: 'MD++ Enhanced', short: 'MD++', color: 'info' };
+        return { label: t('sidebar.mdppEnhanced'), short: 'MD++', color: 'info' };
       default:
-        return { label: 'Markdown', short: 'MD', color: 'default' };
+        return { label: t('sidebar.markdown'), short: 'MD', color: 'default' };
     }
-  }, [fileExt]);
+  }, [fileExt, t]);
 
   // Calculate word and character count
   const stats = useMemo(() => {
@@ -67,9 +69,9 @@ export default function StatusBar({
         {/* File Name with Modified Indicator */}
         <div className={`status-bar__item status-bar__file ${isModified ? 'status-bar__file--modified' : ''}`}>
           {isModified && (
-            <span className="status-bar__modified-dot" title="Unsaved changes" />
+            <span className="status-bar__modified-dot" title={t('status.unsaved')} />
           )}
-          <span className="status-bar__filename" title={filePath || 'No file open'}>
+          <span className="status-bar__filename" title={filePath || t('statusBar.noFileOpen')}>
             {fileName}
           </span>
         </div>
@@ -82,7 +84,7 @@ export default function StatusBar({
                 <svg className="status-bar__spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 12a9 9 0 11-6.219-8.56" />
                 </svg>
-                <span>Saving...</span>
+                <span>{t('status.saving')}</span>
               </>
             )}
             {autoSaveStatus === 'saved' && (
@@ -90,7 +92,7 @@ export default function StatusBar({
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                <span>Saved</span>
+                <span>{t('status.saved')}</span>
               </>
             )}
           </div>
@@ -106,27 +108,27 @@ export default function StatusBar({
             {viewMode === 'split' && <><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="12" y1="3" x2="12" y2="21" /></>}
           </svg>
           <span>
-            {viewMode === 'editor' && 'Editor'}
-            {viewMode === 'preview' && 'Preview'}
-            {viewMode === 'split' && 'Split'}
+            {viewMode === 'editor' && t('status.editor')}
+            {viewMode === 'preview' && t('status.preview')}
+            {viewMode === 'split' && t('status.split')}
           </span>
         </div>
       </div>
 
       <div className="status-bar__right">
         {/* Word Count */}
-        <div className="status-bar__item status-bar__stats" title={`${stats.words} words, ${stats.chars} characters, ${stats.lines} lines`}>
+        <div className="status-bar__item status-bar__stats" title={t('statusBar.statsTooltip', { words: stats.words, chars: stats.chars, lines: stats.lines })}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M4 7h16M4 12h10M4 17h16" />
           </svg>
-          <span>{formatNumber(stats.words)} words</span>
+          <span>{formatNumber(stats.words)} {t('statusBar.words')}</span>
         </div>
 
         {/* Cursor Position */}
         <div className="status-bar__item status-bar__cursor">
-          <span>Ln {line}</span>
+          <span>{t('statusBar.line')} {line}</span>
           <span className="status-bar__separator">:</span>
-          <span>Col {column}</span>
+          <span>{t('statusBar.column')} {column}</span>
         </div>
 
         {/* File Format */}
