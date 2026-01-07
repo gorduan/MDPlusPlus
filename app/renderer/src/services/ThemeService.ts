@@ -2,7 +2,7 @@
  * Theme Service for MD++
  *
  * Handles persistence and business logic for themes.
- * Themes are stored globally in localStorage and can be referenced by profiles.
+ * Themes are stored as JSON files in the app data directory and shared between instances.
  */
 
 import {
@@ -14,7 +14,7 @@ import {
   DEFAULT_DARK_COLORS,
 } from '../types/themes';
 
-const STORAGE_KEY = 'mdpp-themes';
+const STORAGE_KEY = 'themes';
 
 /**
  * Generate a unique ID for user-created themes
@@ -60,25 +60,39 @@ function applyThemeToDocument(colors: ThemeColors): void {
  * ThemeService - Static service for theme management
  *
  * All methods are static for easy access from any component.
- * State changes trigger localStorage updates automatically.
+ * State changes trigger file saves via Electron IPC automatically.
+ * State is cached in memory and synced to disk asynchronously.
  */
 export class ThemeService {
   private static state: ThemesState | null = null;
   private static listeners: Set<(state: ThemesState) => void> = new Set();
+  private static initialized = false;
+  private static initPromise: Promise<void> | null = null;
 
   /**
-   * Load themes from localStorage
-   * Returns cached state if already loaded
+   * Initialize the service - loads themes from file storage
+   * Must be called before using other methods
    */
-  static loadThemes(): ThemesState {
-    if (this.state) {
-      return this.state;
-    }
+  static async initialize(): Promise<void> {
+    if (this.initialized) return;
+    if (this.initPromise) return this.initPromise;
 
+    this.initPromise = this.loadFromFile();
+    await this.initPromise;
+    this.initialized = true;
+  }
+
+  /**
+   * Load themes from file storage via Electron IPC
+   */
+  private static async loadFromFile(): Promise<void> {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = await window.electronAPI.loadSettings(STORAGE_KEY);
+      console.log('[ThemeService] Loading themes from file, found:', stored ? 'data' : 'nothing');
+
       if (stored) {
-        const parsed = JSON.parse(stored) as ThemesState;
+        const parsed = stored as ThemesState;
+        console.log('[ThemeService] Parsed themes:', Object.keys(parsed.themes));
 
         // Ensure built-in themes exist and are up-to-date
         for (const builtin of BUILTIN_THEMES) {
@@ -101,29 +115,56 @@ export class ThemeService {
         this.state = parsed;
       } else {
         this.state = createInitialState();
-        this.saveThemes(this.state);
+        await this.saveToFile();
       }
     } catch (error) {
-      console.error('Failed to load themes, using defaults:', error);
+      console.error('[ThemeService] Failed to load themes, using defaults:', error);
       this.state = createInitialState();
-      this.saveThemes(this.state);
+      await this.saveToFile();
     }
+  }
 
+  /**
+   * Save themes to file storage via Electron IPC
+   */
+  private static async saveToFile(): Promise<void> {
+    if (!this.state) return;
+
+    try {
+      const success = await window.electronAPI.saveSettings(STORAGE_KEY, this.state);
+      if (success) {
+        console.log('[ThemeService] Saved themes to file:', Object.keys(this.state.themes));
+      } else {
+        console.error('[ThemeService] Failed to save themes to file');
+      }
+    } catch (error) {
+      console.error('[ThemeService] Failed to save themes:', error);
+    }
+  }
+
+  /**
+   * Load themes - returns cached state, initializing if needed
+   * For synchronous access after initialization
+   */
+  static loadThemes(): ThemesState {
+    if (!this.state) {
+      // Return initial state if not initialized yet
+      // The async initialize() should be called first in App.tsx
+      console.warn('[ThemeService] loadThemes called before initialization, using defaults');
+      this.state = createInitialState();
+    }
     return this.state;
   }
 
   /**
-   * Save themes to localStorage
+   * Save themes - updates cache and persists to file
    */
   static saveThemes(state: ThemesState): void {
     // Create a deep copy to ensure React detects state changes
     this.state = JSON.parse(JSON.stringify(state));
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
-      this.notifyListeners();
-    } catch (error) {
-      console.error('Failed to save themes:', error);
-    }
+    this.notifyListeners();
+    // Save to file asynchronously
+    this.saveToFile();
   }
 
   /**
@@ -436,7 +477,16 @@ export class ThemeService {
    */
   static reset(): void {
     this.state = null;
-    localStorage.removeItem(STORAGE_KEY);
+    this.initialized = false;
+    this.initPromise = null;
+    // Note: File deletion would need a separate IPC call if needed
+  }
+
+  /**
+   * Check if service is initialized
+   */
+  static isInitialized(): boolean {
+    return this.initialized;
   }
 }
 

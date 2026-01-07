@@ -2,15 +2,18 @@
  * useProfiles Hook - React integration for ProfileService
  *
  * Provides reactive state management for settings profiles.
- * Automatically syncs with localStorage and notifies on changes.
+ * Automatically syncs with file storage via Electron IPC and notifies on changes.
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ParserSettings } from '../components/SettingsDialog';
 import type { Profile, ProfilesState, ProfileModificationAction } from '../types/profiles';
+import { BUILTIN_PROFILES, PROFILE_IDS } from '../types/profiles';
 import { ProfileService } from '../services/ProfileService';
 
 export interface UseProfilesReturn {
+  /** Whether the service is still loading */
+  isLoading: boolean;
   /** All available profiles */
   profiles: Profile[];
   /** The currently active profile */
@@ -52,10 +55,49 @@ export interface UseProfilesReturn {
 }
 
 /**
+ * Create a default state for use before initialization
+ */
+function createDefaultState(): ProfilesState {
+  const profiles: Record<string, Profile> = {};
+  for (const profile of BUILTIN_PROFILES) {
+    profiles[profile.id] = { ...profile };
+  }
+  return {
+    version: 1,
+    activeProfileId: PROFILE_IDS.MDPP_STANDARD,
+    profiles,
+  };
+}
+
+/**
  * Hook for managing settings profiles
  */
 export function useProfiles(): UseProfilesReturn {
-  const [state, setState] = useState<ProfilesState>(() => ProfileService.loadProfiles());
+  const [isLoading, setIsLoading] = useState(!ProfileService.isInitialized());
+  const [state, setState] = useState<ProfilesState>(() =>
+    ProfileService.isInitialized() ? ProfileService.loadProfiles() : createDefaultState()
+  );
+
+  // Initialize ProfileService on mount
+  useEffect(() => {
+    let mounted = true;
+
+    async function init() {
+      if (!ProfileService.isInitialized()) {
+        await ProfileService.initialize();
+        if (mounted) {
+          setState(ProfileService.loadProfiles());
+          setIsLoading(false);
+        }
+      }
+    }
+
+    init();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Subscribe to ProfileService changes
   useEffect(() => {
@@ -143,6 +185,7 @@ export function useProfiles(): UseProfilesReturn {
   }, [state.profiles]);
 
   return {
+    isLoading,
     profiles,
     activeProfile,
     activeSettings,

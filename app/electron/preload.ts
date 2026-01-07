@@ -222,6 +222,13 @@ const electronAPI = {
     ipcRenderer.on('session-restore', handler);
     return () => ipcRenderer.removeListener('session-restore', handler);
   },
+
+  // Settings storage (profiles and themes as JSON files)
+  loadSettings: (key: string): Promise<unknown | null> =>
+    ipcRenderer.invoke('load-settings', key),
+
+  saveSettings: (key: string, data: unknown): Promise<boolean> =>
+    ipcRenderer.invoke('save-settings', key, data),
 };
 
 // Plugin data type

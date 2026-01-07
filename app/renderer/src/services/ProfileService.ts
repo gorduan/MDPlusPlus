@@ -2,7 +2,7 @@
  * Profile Service for MD++ Settings
  *
  * Handles persistence and business logic for settings profiles.
- * Profiles are stored in localStorage and persist across app restarts.
+ * Profiles are stored as JSON files in the app data directory and shared between instances.
  */
 
 import type { ParserSettings } from '../components/SettingsDialog';
@@ -14,7 +14,7 @@ import {
   MDPP_STANDARD_SETTINGS,
 } from '../types/profiles';
 
-const STORAGE_KEY = 'mdpp-profiles';
+const STORAGE_KEY = 'profiles';
 
 /**
  * Generate a unique ID for user-created profiles
@@ -50,32 +50,46 @@ function createInitialState(): ProfilesState {
  * ProfileService - Static service for profile management
  *
  * All methods are static for easy access from any component.
- * State changes trigger localStorage updates automatically.
+ * State changes trigger file saves via Electron IPC automatically.
+ * State is cached in memory and synced to disk asynchronously.
  */
 export class ProfileService {
   private static state: ProfilesState | null = null;
   private static listeners: Set<(state: ProfilesState) => void> = new Set();
+  private static initialized = false;
+  private static initPromise: Promise<void> | null = null;
 
   /**
-   * Load profiles from localStorage
-   * Returns cached state if already loaded
+   * Initialize the service - loads profiles from file storage
+   * Must be called before using other methods
    */
-  static loadProfiles(): ProfilesState {
-    if (this.state) {
-      return this.state;
-    }
+  static async initialize(): Promise<void> {
+    if (this.initialized) return;
+    if (this.initPromise) return this.initPromise;
 
+    this.initPromise = this.loadFromFile();
+    await this.initPromise;
+    this.initialized = true;
+  }
+
+  /**
+   * Load profiles from file storage via Electron IPC
+   */
+  private static async loadFromFile(): Promise<void> {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = await window.electronAPI.loadSettings(STORAGE_KEY);
+      console.log('[ProfileService] Loading profiles from file, found:', stored ? 'data' : 'nothing');
+
       if (stored) {
-        const parsed = JSON.parse(stored) as ProfilesState;
+        const parsed = stored as ProfilesState;
+        console.log('[ProfileService] Parsed profiles:', Object.keys(parsed.profiles));
 
         // Ensure built-in profiles exist and are up-to-date
         for (const builtin of BUILTIN_PROFILES) {
           if (!parsed.profiles[builtin.id]) {
             parsed.profiles[builtin.id] = { ...builtin };
           } else {
-            // Update built-in profile properties (but keep settings from stored if user wants to compare)
+            // Update built-in profile properties
             parsed.profiles[builtin.id].isBuiltin = true;
             parsed.profiles[builtin.id].isReadOnly = true;
             // Always update settings for built-in profiles to latest defaults
@@ -91,29 +105,62 @@ export class ProfileService {
         this.state = parsed;
       } else {
         this.state = createInitialState();
-        this.saveProfiles(this.state);
+        await this.saveToFile();
       }
     } catch (error) {
-      console.error('Failed to load profiles, using defaults:', error);
+      console.error('[ProfileService] Failed to load profiles, using defaults:', error);
       this.state = createInitialState();
-      this.saveProfiles(this.state);
+      await this.saveToFile();
     }
+  }
 
+  /**
+   * Save profiles to file storage via Electron IPC
+   */
+  private static async saveToFile(): Promise<void> {
+    if (!this.state) return;
+
+    try {
+      const success = await window.electronAPI.saveSettings(STORAGE_KEY, this.state);
+      if (success) {
+        console.log('[ProfileService] Saved profiles to file:', Object.keys(this.state.profiles));
+      } else {
+        console.error('[ProfileService] Failed to save profiles to file');
+      }
+    } catch (error) {
+      console.error('[ProfileService] Failed to save profiles:', error);
+    }
+  }
+
+  /**
+   * Load profiles - returns cached state, initializing if needed
+   * For synchronous access after initialization
+   */
+  static loadProfiles(): ProfilesState {
+    if (!this.state) {
+      // Return initial state if not initialized yet
+      console.warn('[ProfileService] loadProfiles called before initialization, using defaults');
+      this.state = createInitialState();
+    }
     return this.state;
   }
 
   /**
-   * Save profiles to localStorage
+   * Save profiles - updates cache and persists to file
    */
   static saveProfiles(state: ProfilesState): void {
     // Create a deep copy to ensure React detects state changes
     this.state = JSON.parse(JSON.stringify(state));
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
-      this.notifyListeners();
-    } catch (error) {
-      console.error('Failed to save profiles:', error);
-    }
+    this.notifyListeners();
+    // Save to file asynchronously
+    this.saveToFile();
+  }
+
+  /**
+   * Check if service is initialized
+   */
+  static isInitialized(): boolean {
+    return this.initialized;
   }
 
   /**
@@ -315,7 +362,9 @@ export class ProfileService {
    */
   static reset(): void {
     this.state = null;
-    localStorage.removeItem(STORAGE_KEY);
+    this.initialized = false;
+    this.initPromise = null;
+    // Note: File deletion would need a separate IPC call if needed
   }
 }
 

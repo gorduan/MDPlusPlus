@@ -2,14 +2,17 @@
  * useThemes Hook - React integration for ThemeService
  *
  * Provides reactive state management for themes.
- * Automatically syncs with localStorage and notifies on changes.
+ * Automatically syncs with file storage via Electron IPC and notifies on changes.
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Theme, ThemesState, ThemeColors, ThemeModificationAction } from '../types/themes';
+import { BUILTIN_THEMES, THEME_IDS } from '../types/themes';
 import { ThemeService } from '../services/ThemeService';
 
 export interface UseThemesReturn {
+  /** Whether the service is still loading */
+  isLoading: boolean;
   /** All available themes */
   themes: Theme[];
   /** The currently active theme */
@@ -68,10 +71,51 @@ export interface UseThemesReturn {
 }
 
 /**
+ * Create a default state for use before initialization
+ */
+function createDefaultState(): ThemesState {
+  const themes: Record<string, Theme> = {};
+  for (const theme of BUILTIN_THEMES) {
+    themes[theme.id] = { ...theme };
+  }
+  return {
+    version: 1,
+    activeThemeId: THEME_IDS.DARK,
+    themes,
+  };
+}
+
+/**
  * Hook for managing themes
  */
 export function useThemes(): UseThemesReturn {
-  const [state, setState] = useState<ThemesState>(() => ThemeService.loadThemes());
+  const [isLoading, setIsLoading] = useState(!ThemeService.isInitialized());
+  const [state, setState] = useState<ThemesState>(() =>
+    ThemeService.isInitialized() ? ThemeService.loadThemes() : createDefaultState()
+  );
+
+  // Initialize ThemeService on mount
+  useEffect(() => {
+    let mounted = true;
+
+    async function init() {
+      if (!ThemeService.isInitialized()) {
+        await ThemeService.initialize();
+        if (mounted) {
+          setState(ThemeService.loadThemes());
+          setIsLoading(false);
+          // Apply theme after initialization
+          ThemeService.applyActiveTheme();
+        }
+      }
+    }
+
+    init();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Subscribe to ThemeService changes
   useEffect(() => {
@@ -83,9 +127,11 @@ export function useThemes(): UseThemesReturn {
     return unsubscribe;
   }, []);
 
-  // Apply active theme on mount
+  // Apply active theme on mount (if already initialized)
   useEffect(() => {
-    ThemeService.applyActiveTheme();
+    if (ThemeService.isInitialized()) {
+      ThemeService.applyActiveTheme();
+    }
   }, []);
 
   // Memoized derived values
@@ -194,6 +240,7 @@ export function useThemes(): UseThemesReturn {
   }, []);
 
   return {
+    isLoading,
     themes,
     activeTheme,
     activeColors,

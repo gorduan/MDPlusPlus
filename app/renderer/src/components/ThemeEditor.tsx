@@ -310,11 +310,11 @@ export default function ThemeEditor({
   const [showModificationDialog, setShowModificationDialog] = useState(false);
   const [pendingColors, setPendingColors] = useState<ThemeColors | null>(null);
 
-  // Sync local colors when active theme changes
+  // Sync local colors when active theme changes (only on theme switch, not color updates)
   useEffect(() => {
     setLocalColors(activeTheme.colors);
     setSelectedToken(null);
-  }, [activeTheme.id, activeTheme.colors]);
+  }, [activeTheme.id]); // Only react to theme ID changes, not color changes
 
   // Apply colors live for preview
   useEffect(() => {

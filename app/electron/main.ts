@@ -5,7 +5,7 @@
 
 import { app, BrowserWindow, ipcMain, dialog, Menu, shell, screen } from 'electron';
 import { join, dirname, resolve, basename } from 'path';
-import { readFile, writeFile, stat, readdir, rm } from 'fs/promises';
+import { readFile, writeFile, stat, readdir, rm, rename } from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
 import { homedir } from 'os';
 
@@ -1148,6 +1148,95 @@ ipcMain.handle('get-welcome-content', async () => {
 
 ipcMain.handle('get-welcome-path', () => {
   return APP_WELCOME_FILE;
+});
+
+// ============================================
+// Settings Storage IPC Handlers (JSON files)
+// ============================================
+
+const SETTINGS_DIR = join(APP_DATA_PATH, 'settings');
+
+/**
+ * Ensure settings directory exists
+ */
+function ensureSettingsDir(): void {
+  if (!existsSync(SETTINGS_DIR)) {
+    mkdirSync(SETTINGS_DIR, { recursive: true });
+  }
+}
+
+/**
+ * Get the path for a settings file
+ */
+function getSettingsFilePath(key: string): string {
+  // Sanitize key to prevent directory traversal
+  const safeKey = key.replace(/[^a-zA-Z0-9_-]/g, '_');
+  return join(SETTINGS_DIR, `${safeKey}.json`);
+}
+
+ipcMain.handle('load-settings', async (_, key: string) => {
+  try {
+    const filePath = getSettingsFilePath(key);
+    const backupPath = `${filePath}.backup`;
+
+    if (existsSync(filePath)) {
+      const content = await readFile(filePath, 'utf-8');
+
+      // Try to parse the content
+      try {
+        const parsed = JSON.parse(content);
+        console.log(`[Settings] Loaded ${key} from:`, filePath);
+
+        // Create a backup of the successfully loaded file
+        await writeFile(backupPath, content, 'utf-8');
+
+        return parsed;
+      } catch (parseError) {
+        console.error(`[Settings] JSON parse error for ${key}, trying backup:`, parseError);
+
+        // Try loading from backup if main file is corrupted
+        if (existsSync(backupPath)) {
+          const backupContent = await readFile(backupPath, 'utf-8');
+          const backupParsed = JSON.parse(backupContent);
+          console.log(`[Settings] Restored ${key} from backup`);
+          return backupParsed;
+        }
+
+        throw parseError;
+      }
+    }
+    console.log(`[Settings] No file found for ${key} at:`, filePath);
+    return null;
+  } catch (error) {
+    console.error(`[Settings] Failed to load ${key}:`, error);
+    return null;
+  }
+});
+
+ipcMain.handle('save-settings', async (_, key: string, data: unknown) => {
+  try {
+    ensureSettingsDir();
+    const filePath = getSettingsFilePath(key);
+    const tempPath = `${filePath}.tmp`;
+    const jsonContent = JSON.stringify(data, null, 2);
+
+    // Write to temp file first, then rename (atomic operation)
+    await writeFile(tempPath, jsonContent, 'utf-8');
+
+    // On Windows, we need to remove the target file first if it exists
+    if (existsSync(filePath)) {
+      await rm(filePath);
+    }
+
+    // Rename temp file to final file (atomic operation)
+    await rename(tempPath, filePath);
+
+    console.log(`[Settings] Saved ${key} to:`, filePath);
+    return true;
+  } catch (error) {
+    console.error(`[Settings] Failed to save ${key}:`, error);
+    return false;
+  }
 });
 
 /**
