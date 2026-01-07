@@ -13,6 +13,7 @@ import SearchReplace from './components/SearchReplace';
 import HelpDialog from './components/HelpDialog';
 import TableEditor from './components/TableEditor';
 import ThemeEditor, { getCustomThemeForExport } from './components/ThemeEditor';
+import { useScrollSync } from './hooks/useScrollSync';
 import type { ViewMode } from '../../electron/preload';
 
 // Welcome content shown when app starts
@@ -566,6 +567,21 @@ export default function App() {
 
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Scroll sync state
+  const [scrollSyncEnabled, setScrollSyncEnabled] = useState(true);
+
+  // Scroll sync hook - only active in split view
+  const {
+    previewRef: scrollSyncPreviewRef,
+    handleEditorScroll,
+    handlePreviewScroll,
+    registerEditor,
+  } = useScrollSync({
+    enabled: scrollSyncEnabled && viewMode === 'split',
+    debounceMs: 50,
+    direction: 'bidirectional',
+  });
 
   // Apply theme to document
   useEffect(() => {
@@ -1628,7 +1644,7 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
     const result = await window.electronAPI?.openFileDialog?.();
     if (result?.success && result.content) {
       setContent(result.content);
-      setFilePath(result.path);
+      setFilePath(result.path ?? null);
       setIsModified(false);
       window.electronAPI?.setModified(false);
     }
@@ -1880,12 +1896,22 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
               onChange={handleContentChange}
               onCursorChange={setCursorPosition}
               theme={theme}
+              onScroll={handleEditorScroll}
+              onEditorMount={registerEditor}
             />
           </div>
         )}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className="preview-pane">
-            <Preview content={content} showAIContext={showAIContext} settings={settings} theme={theme} filePath={filePath} />
+            <Preview
+              content={content}
+              showAIContext={showAIContext}
+              settings={settings}
+              theme={theme}
+              filePath={filePath}
+              scrollRef={scrollSyncPreviewRef}
+              onScroll={handlePreviewScroll}
+            />
           </div>
         )}
       </div>

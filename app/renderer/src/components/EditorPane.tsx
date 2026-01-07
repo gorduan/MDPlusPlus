@@ -7,6 +7,7 @@ import React, { useState, forwardRef, useImperativeHandle, useRef, useCallback }
 import Editor, { EditorRef } from './Editor';
 import WysiwygEditor from './WysiwygEditor';
 import EditorModeToggle, { EditorMode } from './EditorModeToggle';
+import type { editor } from 'monaco-editor';
 
 type Theme = 'dark' | 'light';
 
@@ -15,6 +16,10 @@ interface EditorPaneProps {
   onChange: (content: string) => void;
   onCursorChange: (position: { line: number; column: number }) => void;
   theme?: Theme;
+  /** Called when editor is scrolled */
+  onScroll?: (editor: editor.IStandaloneCodeEditor) => void;
+  /** Called when editor is mounted */
+  onEditorMount?: (editor: editor.IStandaloneCodeEditor) => void;
 }
 
 export interface EditorPaneRef {
@@ -25,7 +30,7 @@ export interface EditorPaneRef {
 }
 
 const EditorPane = forwardRef<EditorPaneRef, EditorPaneProps>(
-  ({ content, onChange, onCursorChange, theme = 'dark' }, ref) => {
+  ({ content, onChange, onCursorChange, theme = 'dark', onScroll, onEditorMount }, ref) => {
     const [mode, setMode] = useState<EditorMode>('source');
     const monacoEditorRef = useRef<EditorRef | null>(null);
 
@@ -69,6 +74,8 @@ const EditorPane = forwardRef<EditorPaneRef, EditorPaneProps>(
               onChange={handleContentChange}
               onCursorChange={onCursorChange}
               theme={theme}
+              onScroll={onScroll}
+              onEditorMount={onEditorMount}
             />
           ) : (
             <WysiwygEditor

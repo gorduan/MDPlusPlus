@@ -38,13 +38,30 @@ interface PreviewProps {
   settings?: ParserSettings;
   theme?: Theme;
   filePath?: string | null;
+  /** Ref for scroll sync - attaches to the scrollable preview container */
+  scrollRef?: React.RefObject<HTMLDivElement | null>;
+  /** Callback when preview is scrolled */
+  onScroll?: () => void;
 }
 
-export default function Preview({ content, showAIContext = false, settings, theme = 'dark', filePath }: PreviewProps) {
+export default function Preview({ content, showAIContext = false, settings, theme = 'dark', filePath, scrollRef, onScroll }: PreviewProps) {
   const [html, setHtml] = useState('');
   const [errors, setErrors] = useState<RenderError[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const previewRef = useRef<HTMLDivElement>(null);
+  const internalPreviewRef = useRef<HTMLDivElement>(null);
+
+  // Callback ref that updates both internal and external refs
+  const setPreviewRef = useCallback((node: HTMLDivElement | null) => {
+    // Update internal ref
+    (internalPreviewRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+    // Update external ref if provided
+    if (scrollRef) {
+      (scrollRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+    }
+  }, [scrollRef]);
+
+  // For accessing the DOM element in effects
+  const previewRef = internalPreviewRef;
 
   // Script execution state
   const [scripts, setScripts] = useState<ScriptBlockData[]>([]);
@@ -319,7 +336,11 @@ export default function Preview({ content, showAIContext = false, settings, them
   }, [scriptResults]);
 
   return (
-    <div className="preview-container">
+    <div
+      className="preview-container"
+      ref={setPreviewRef}
+      onScroll={onScroll}
+    >
       {/* Script Security Dialog for .mdsc files */}
       {isMdscFile && scriptPermission === 'pending' && scripts.length > 0 && (
         <ScriptSecurityDialog

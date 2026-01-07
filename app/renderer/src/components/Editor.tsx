@@ -13,17 +13,32 @@ interface EditorProps {
   content: string;
   onChange: (content: string) => void;
   onCursorChange: (position: { line: number; column: number }) => void;
+  onScroll?: (editor: editor.IStandaloneCodeEditor) => void;
+  onEditorMount?: (editor: editor.IStandaloneCodeEditor) => void;
   theme?: Theme;
 }
 
 export interface EditorRef {
   insert: (text: string) => void;
   insertWrap: (wrapper: string) => void;
+  getEditor: () => editor.IStandaloneCodeEditor | null;
 }
 
-const Editor = forwardRef<EditorRef, EditorProps>(({ content, onChange, onCursorChange, theme = 'dark' }, ref) => {
+const Editor = forwardRef<EditorRef, EditorProps>(({ content, onChange, onCursorChange, onScroll, onEditorMount, theme = 'dark' }, ref) => {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
+  // Use refs to always access the latest callback without re-registering listeners
+  const onScrollRef = useRef(onScroll);
+  const onEditorMountRef = useRef(onEditorMount);
+
+  // Keep refs updated
+  useEffect(() => {
+    onScrollRef.current = onScroll;
+  }, [onScroll]);
+
+  useEffect(() => {
+    onEditorMountRef.current = onEditorMount;
+  }, [onEditorMount]);
 
   // Expose methods to parent
   useImperativeHandle(ref, () => ({
@@ -54,6 +69,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ content, onChange, onCursor
         }]);
       }
     },
+    getEditor: () => editorRef.current,
   }));
 
   // Switch theme when prop changes
@@ -88,39 +104,43 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ content, onChange, onCursor
           [/^:::ai-context\s*\{/, { token: 'keyword.ai-context', next: '@aicontextWithParams' }],
 
           // MD++ Container directives (:::name or :::name{...})
-          [/^(:::)(\w+)(\s*\{[^}]*\})?\s*$/, ['keyword.directive', 'keyword.directive.name', 'variable.directive.params']],
+          [/^:::\w+\s*\{[^}]*\}\s*$/, 'keyword.directive'],
+          [/^:::\w+\s*$/, 'keyword.directive'],
           [/^:::$/, 'keyword.directive'],
 
           // MD++ Leaf directives (::name)
-          [/^(::)(\w+)(\s*\{[^}]*\})?/, ['keyword.directive', 'keyword.directive.name', 'variable.directive.params']],
+          [/^::\w+\s*\{[^}]*\}/, 'keyword.directive'],
+          [/^::\w+/, 'keyword.directive'],
 
           // MD++ Text directives (:name[content]{attrs})
-          [/(:)(\w+)(\[)/, ['keyword.directive.inline', 'keyword.directive.name', 'bracket.directive']],
+          [/:\w+\[/, 'keyword.directive.inline'],
 
           // Tables
           [/^\|/, { token: 'keyword.table', next: '@table' }],
 
           // Headings (ATX style)
-          [/^(#{1,6})(\s)(.*)$/, ['keyword.heading.marker', '', 'keyword.heading.text']],
+          [/^#{1,6}\s+.*$/, 'keyword.heading'],
 
           // Fenced code blocks with language
-          [/^(```)(\w+)?$/, [{ token: 'string.code.fence', next: '@codeblock' }, 'string.code.language']],
-          [/^(~~~)(\w+)?$/, [{ token: 'string.code.fence', next: '@codeblockTilde' }, 'string.code.language']],
+          [/^```\w+$/, { token: 'string.code.fence', next: '@codeblock' }],
+          [/^```$/, { token: 'string.code.fence', next: '@codeblock' }],
+          [/^~~~\w+$/, { token: 'string.code.fence', next: '@codeblockTilde' }],
+          [/^~~~$/, { token: 'string.code.fence', next: '@codeblockTilde' }],
 
           // Math blocks (display)
           [/^\$\$$/, { token: 'keyword.math.display', next: '@mathblock' }],
 
           // Blockquotes
-          [/^(>+)(\s?)/, ['keyword.quote.marker', '']],
+          [/^>+\s?/, 'keyword.quote.marker'],
 
           // Task lists
-          [/^(\s*)([-*+])(\s+)(\[[ xX]\])(\s)/, ['', 'keyword.list.marker', '', 'keyword.task.checkbox', '']],
+          [/^\s*[-*+]\s+\[[ xX]\]\s/, 'keyword.task.checkbox'],
 
           // Unordered lists
-          [/^(\s*)([-*+])(\s+)/, ['', 'keyword.list.marker', '']],
+          [/^\s*[-*+]\s+/, 'keyword.list.marker'],
 
           // Ordered lists
-          [/^(\s*)(\d+\.)(\s+)/, ['', 'keyword.list.ordered.marker', '']],
+          [/^\s*\d+\.\s+/, 'keyword.list.ordered.marker'],
 
           // Horizontal rules
           [/^[-*_]{3,}\s*$/, 'keyword.hr'],
@@ -502,6 +522,18 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ content, onChange, onCursor
         column: e.position.column,
       });
     });
+
+    // Track scroll events for scroll sync - always register, use ref for latest callback
+    editor.onDidScrollChange(() => {
+      if (onScrollRef.current) {
+        onScrollRef.current(editor);
+      }
+    });
+
+    // Notify parent that editor is mounted
+    if (onEditorMountRef.current) {
+      onEditorMountRef.current(editor);
+    }
 
     // Set initial cursor position
     const pos = editor.getPosition();
