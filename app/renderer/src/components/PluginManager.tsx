@@ -25,6 +25,10 @@ import {
   ToggleRight,
   RefreshCw,
   ExternalLink,
+  AlertTriangle,
+  Link2,
+  Code2,
+  Layers,
 } from 'lucide-react';
 
 // Plugin definition type (matches src/types.ts)
@@ -38,6 +42,18 @@ export interface PluginInfo {
   js?: string[];
   components: Record<string, ComponentInfo>;
   enabled: boolean;
+  /** Plugin type: parser, components, hybrid, or theme */
+  type?: 'parser' | 'components' | 'hybrid' | 'theme';
+  /** Plugin dependencies */
+  dependencies?: string[];
+  /** Optional dependencies */
+  optionalDependencies?: string[];
+  /** Conflicting plugins */
+  conflicts?: string[];
+  /** Parser priority (higher = runs earlier) */
+  priority?: number;
+  /** Code block languages handled by this plugin */
+  codeBlockLanguages?: string[];
 }
 
 export interface ComponentInfo {
@@ -56,16 +72,36 @@ interface PluginManagerProps {
 }
 
 /**
+ * Get plugin type display name and icon
+ */
+function getPluginTypeInfo(type?: string): { label: string; icon: React.ReactNode } {
+  switch (type) {
+    case 'parser':
+      return { label: 'Parser', icon: <Code2 size={12} /> };
+    case 'components':
+      return { label: 'Components', icon: <Puzzle size={12} /> };
+    case 'hybrid':
+      return { label: 'Hybrid', icon: <Layers size={12} /> };
+    case 'theme':
+      return { label: 'Theme', icon: <Package size={12} /> };
+    default:
+      return { label: 'Plugin', icon: <Package size={12} /> };
+  }
+}
+
+/**
  * Plugin Card Component
  * Displays individual plugin with toggle, details, and component list
  */
 function PluginCard({
   plugin,
+  allPlugins,
   onToggle,
   isExpanded,
   onToggleExpand,
 }: {
   plugin: PluginInfo;
+  allPlugins: PluginInfo[];
   onToggle: () => void;
   isExpanded: boolean;
   onToggleExpand: () => void;
@@ -76,19 +112,41 @@ function PluginCard({
     0
   );
 
+  // Check for dependency issues
+  const missingDeps = (plugin.dependencies || []).filter(
+    (dep) => !allPlugins.find((p) => p.id === dep)?.enabled
+  );
+  const activeConflicts = (plugin.conflicts || []).filter(
+    (conf) => allPlugins.find((p) => p.id === conf)?.enabled
+  );
+
+  const typeInfo = getPluginTypeInfo(plugin.type);
+  const hasWarnings = (missingDeps.length > 0 || activeConflicts.length > 0) && plugin.enabled;
+
   return (
-    <div className={`plugin-card ${plugin.enabled ? 'plugin-card--enabled' : ''}`}>
+    <div className={`plugin-card ${plugin.enabled ? 'plugin-card--enabled' : ''} ${hasWarnings ? 'plugin-card--warning' : ''}`}>
       <div className="plugin-card__header">
         <div className="plugin-card__icon">
           <Package size={24} />
         </div>
         <div className="plugin-card__info">
-          <h4 className="plugin-card__name">{plugin.framework}</h4>
+          <h4 className="plugin-card__name">
+            {plugin.framework}
+            {hasWarnings && (
+              <span className="plugin-card__warning-icon" title="Has dependency issues">
+                <AlertTriangle size={14} />
+              </span>
+            )}
+          </h4>
           <div className="plugin-card__meta">
             <span className="plugin-card__version">v{plugin.version}</span>
             {plugin.author && (
               <span className="plugin-card__author">by {plugin.author}</span>
             )}
+            <span className={`plugin-card__type plugin-card__type--${plugin.type || 'plugin'}`}>
+              {typeInfo.icon}
+              {typeInfo.label}
+            </span>
           </div>
         </div>
         <div className="plugin-card__actions">
@@ -115,15 +173,49 @@ function PluginCard({
         </p>
       )}
 
+      {/* Dependency Warnings */}
+      {plugin.enabled && missingDeps.length > 0 && (
+        <div className="plugin-card__alert plugin-card__alert--warning">
+          <AlertTriangle size={14} />
+          <span>
+            Missing dependencies: <strong>{missingDeps.join(', ')}</strong>
+          </span>
+        </div>
+      )}
+
+      {/* Conflict Warnings */}
+      {plugin.enabled && activeConflicts.length > 0 && (
+        <div className="plugin-card__alert plugin-card__alert--error">
+          <AlertTriangle size={14} />
+          <span>
+            Conflicts with: <strong>{activeConflicts.join(', ')}</strong>
+          </span>
+        </div>
+      )}
+
       <div className="plugin-card__stats">
-        <span className="plugin-card__stat">
-          <Puzzle size={14} />
-          {componentCount} Component{componentCount !== 1 ? 's' : ''}
-        </span>
+        {componentCount > 0 && (
+          <span className="plugin-card__stat">
+            <Puzzle size={14} />
+            {componentCount} Component{componentCount !== 1 ? 's' : ''}
+          </span>
+        )}
         {variantCount > 0 && (
           <span className="plugin-card__stat">
             <ToggleLeft size={14} />
             {variantCount} Variant{variantCount !== 1 ? 's' : ''}
+          </span>
+        )}
+        {plugin.codeBlockLanguages && plugin.codeBlockLanguages.length > 0 && (
+          <span className="plugin-card__stat" title={`Languages: ${plugin.codeBlockLanguages.join(', ')}`}>
+            <Code2 size={14} />
+            {plugin.codeBlockLanguages.length} Language{plugin.codeBlockLanguages.length !== 1 ? 's' : ''}
+          </span>
+        )}
+        {plugin.dependencies && plugin.dependencies.length > 0 && (
+          <span className="plugin-card__stat" title={`Dependencies: ${plugin.dependencies.join(', ')}`}>
+            <Link2 size={14} />
+            {plugin.dependencies.length} Dep{plugin.dependencies.length !== 1 ? 's' : ''}
           </span>
         )}
         {plugin.css && plugin.css.length > 0 && (
@@ -139,34 +231,52 @@ function PluginCard({
       </div>
 
       {/* Expandable Component List */}
-      <button
-        className="plugin-card__expand"
-        onClick={onToggleExpand}
-        aria-expanded={isExpanded}
-        aria-controls={`plugin-components-${plugin.id}`}
-      >
-        <span>Show Components</span>
-        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-      </button>
+      {componentCount > 0 && (
+        <>
+          <button
+            className="plugin-card__expand"
+            onClick={onToggleExpand}
+            aria-expanded={isExpanded}
+            aria-controls={`plugin-components-${plugin.id}`}
+          >
+            <span>Show Components</span>
+            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
 
-      {isExpanded && (
-        <div
-          className="plugin-card__components"
-          id={`plugin-components-${plugin.id}`}
-        >
-          <h5>Available Components</h5>
-          <div className="plugin-card__component-list">
-            {Object.entries(plugin.components).map(([name, comp]) => (
-              <div key={name} className="plugin-component">
-                <code className="plugin-component__syntax">
-                  :::{plugin.framework}:{name}
-                </code>
-                {comp.variants && Object.keys(comp.variants).length > 0 && (
-                  <div className="plugin-component__variants">
-                    Variants: {Object.keys(comp.variants).join(', ')}
+          {isExpanded && (
+            <div
+              className="plugin-card__components"
+              id={`plugin-components-${plugin.id}`}
+            >
+              <h5>Available Components</h5>
+              <div className="plugin-card__component-list">
+                {Object.entries(plugin.components).map(([name, comp]) => (
+                  <div key={name} className="plugin-component">
+                    <code className="plugin-component__syntax">
+                      :::{plugin.framework}:{name}
+                    </code>
+                    {comp.variants && Object.keys(comp.variants).length > 0 && (
+                      <div className="plugin-component__variants">
+                        Variants: {Object.keys(comp.variants).join(', ')}
+                      </div>
+                    )}
                   </div>
-                )}
+                ))}
               </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Show code block languages for parser plugins */}
+      {plugin.codeBlockLanguages && plugin.codeBlockLanguages.length > 0 && isExpanded && (
+        <div className="plugin-card__languages">
+          <h5>Supported Code Blocks</h5>
+          <div className="plugin-card__language-list">
+            {plugin.codeBlockLanguages.map((lang) => (
+              <code key={lang} className="plugin-card__language">
+                ```{lang}
+              </code>
             ))}
           </div>
         </div>
@@ -352,6 +462,7 @@ export default function PluginManager({
                 <PluginCard
                   key={plugin.id}
                   plugin={plugin}
+                  allPlugins={plugins}
                   onToggle={() => onPluginToggle(plugin.id)}
                   isExpanded={expandedPlugins.has(plugin.id)}
                   onToggleExpand={() => handleToggleExpand(plugin.id)}

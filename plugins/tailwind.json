@@ -1,0 +1,100 @@
+{
+  "framework": "tailwind",
+  "version": "1.0.0",
+  "author": "MD++ Team",
+  "description": "Tailwind CSS utility-first components - Use :::tailwind:component syntax",
+  "css": [
+    "https://cdn.tailwindcss.com"
+  ],
+  "components": {
+    "card": {
+      "tag": "div",
+      "classes": ["bg-white", "dark:bg-gray-800", "rounded-lg", "shadow-lg", "p-6", "mb-4"],
+      "structure": {
+        "header": {
+          "tag": "div",
+          "classes": ["text-xl", "font-bold", "mb-2", "text-gray-900", "dark:text-white"],
+          "contentSource": "title"
+        },
+        "body": {
+          "tag": "div",
+          "classes": ["text-gray-700", "dark:text-gray-300"],
+          "contentSource": "content"
+        }
+      }
+    },
+    "alert": {
+      "tag": "div",
+      "classes": ["p-4", "rounded-lg", "mb-4"],
+      "variants": {
+        "info": ["bg-blue-100", "text-blue-800", "dark:bg-blue-900", "dark:text-blue-200"],
+        "success": ["bg-green-100", "text-green-800", "dark:bg-green-900", "dark:text-green-200"],
+        "warning": ["bg-yellow-100", "text-yellow-800", "dark:bg-yellow-900", "dark:text-yellow-200"],
+        "error": ["bg-red-100", "text-red-800", "dark:bg-red-900", "dark:text-red-200"],
+        "default": ["bg-gray-100", "text-gray-800", "dark:bg-gray-700", "dark:text-gray-200"]
+      }
+    },
+    "badge": {
+      "tag": "span",
+      "classes": ["inline-flex", "items-center", "px-2.5", "py-0.5", "rounded-full", "text-xs", "font-medium"],
+      "variants": {
+        "primary": ["bg-blue-100", "text-blue-800"],
+        "secondary": ["bg-gray-100", "text-gray-800"],
+        "success": ["bg-green-100", "text-green-800"],
+        "warning": ["bg-yellow-100", "text-yellow-800"],
+        "danger": ["bg-red-100", "text-red-800"]
+      }
+    },
+    "button": {
+      "tag": "button",
+      "classes": ["px-4", "py-2", "rounded-lg", "font-medium", "transition-colors", "duration-200"],
+      "variants": {
+        "primary": ["bg-blue-600", "text-white", "hover:bg-blue-700"],
+        "secondary": ["bg-gray-200", "text-gray-800", "hover:bg-gray-300"],
+        "success": ["bg-green-600", "text-white", "hover:bg-green-700"],
+        "danger": ["bg-red-600", "text-white", "hover:bg-red-700"],
+        "outline": ["border-2", "border-blue-600", "text-blue-600", "hover:bg-blue-50"]
+      }
+    },
+    "container": {
+      "tag": "div",
+      "classes": ["container", "mx-auto", "px-4"]
+    },
+    "grid": {
+      "tag": "div",
+      "classes": ["grid", "gap-4"],
+      "variants": {
+        "cols-2": ["grid-cols-1", "md:grid-cols-2"],
+        "cols-3": ["grid-cols-1", "md:grid-cols-2", "lg:grid-cols-3"],
+        "cols-4": ["grid-cols-1", "md:grid-cols-2", "lg:grid-cols-4"]
+      }
+    },
+    "flex": {
+      "tag": "div",
+      "classes": ["flex"],
+      "variants": {
+        "row": ["flex-row"],
+        "col": ["flex-col"],
+        "center": ["items-center", "justify-center"],
+        "between": ["items-center", "justify-between"],
+        "wrap": ["flex-wrap"]
+      }
+    },
+    "divider": {
+      "tag": "hr",
+      "classes": ["my-4", "border-gray-200", "dark:border-gray-700"]
+    },
+    "quote": {
+      "tag": "blockquote",
+      "classes": ["border-l-4", "border-gray-300", "pl-4", "py-2", "italic", "text-gray-600", "dark:text-gray-400"]
+    },
+    "code": {
+      "tag": "div",
+      "classes": ["bg-gray-900", "text-gray-100", "rounded-lg", "p-4", "overflow-x-auto", "font-mono", "text-sm"]
+    },
+    "highlight": {
+      "tag": "span",
+      "classes": ["bg-yellow-200", "dark:bg-yellow-800", "px-1", "rounded"]
+    }
+  }
+}

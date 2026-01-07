@@ -2,7 +2,46 @@
 // Extended Markdown with Framework-Agnostic Component Directives
 
 export { MDPlusPlus } from './parser';
+export { MDPlusPlusWithPlugins, createPluginParser } from './plugin-parser';
+export type { PluginParserOptions } from './plugin-parser';
 export { PluginLoader, createPluginLoader } from './plugin-loader';
+
+// Plugin System exports
+export {
+  PluginRegistry,
+  createPluginRegistry,
+  PluginLoader as NewPluginLoader,
+  createPluginLoader as createNewPluginLoader,
+  PluginResolver,
+  convertLegacyPlugin,
+  PipelineBuilder,
+  createPipelineBuilder,
+} from './plugin-system';
+
+export type {
+  PluginType,
+  ParserPhase,
+  PluginStatus,
+  PluginManifest,
+  PluginDependencies,
+  ParserConfig,
+  AssetConfig,
+  SettingsConfig,
+  LifecycleConfig,
+  PluginContext,
+  MDPlusPlusPlugin,
+  RegisteredPlugin,
+  PluginLoadResult,
+  DependencyResolutionResult,
+  PluginEventType,
+  PluginEvent,
+  PluginEventListener,
+  LegacyPluginDefinition,
+  PluginLoaderConfig,
+  PipelinePlugins,
+  CodeBlockHandler,
+  PipelineBuilderOptions,
+} from './plugin-system';
 export {
   extractAIContext,
   getVisibleContexts,

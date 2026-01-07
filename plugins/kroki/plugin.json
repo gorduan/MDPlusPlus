@@ -1,0 +1,70 @@
+{
+  "$schema": "https://mdplusplus.dev/schemas/plugin.json",
+  "id": "kroki",
+  "name": "Kroki Diagrams",
+  "version": "1.0.0",
+  "author": "MD++ Team",
+  "description": "Kroki integration for 30+ diagram types including PlantUML, Graphviz, D2, Structurizr, BPMN, Excalidraw, and more. Diagrams are rendered server-side.",
+  "license": "MIT",
+
+  "type": "parser",
+
+  "dependencies": {
+    "plugins": []
+  },
+
+  "parser": {
+    "entry": "./parser.ts",
+    "phase": "remark",
+    "priority": 85,
+    "codeBlockLanguages": [
+      "plantuml",
+      "graphviz", "dot",
+      "d2",
+      "structurizr",
+      "bpmn",
+      "excalidraw",
+      "mermaid-kroki",
+      "actdiag",
+      "blockdiag",
+      "nwdiag",
+      "packetdiag",
+      "rackdiag",
+      "seqdiag",
+      "c4plantuml",
+      "dbml",
+      "ditaa",
+      "erd",
+      "nomnoml",
+      "pikchr",
+      "svgbob",
+      "umlet",
+      "vega",
+      "vegalite",
+      "wavedrom",
+      "wireviz",
+      "bytefield",
+      "diagramsnet",
+      "tikz"
+    ]
+  },
+
+  "settings": {
+    "defaults": {
+      "serverUrl": "https://kroki.io",
+      "format": "svg",
+      "cacheDiagrams": true,
+      "fallbackOnError": true
+    }
+  },
+
+  "components": {},
+
+  "categories": ["diagrams", "visualization", "technical"],
+  "keywords": [
+    "kroki", "diagrams", "plantuml", "graphviz", "d2",
+    "structurizr", "bpmn", "excalidraw", "ditaa", "erd"
+  ],
+
+  "minAppVersion": "1.0.0"
+}

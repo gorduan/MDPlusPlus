@@ -1,0 +1,112 @@
+{
+  "$schema": "https://mdplusplus.dev/schemas/plugin.json",
+  "id": "mermaid",
+  "name": "Mermaid Diagrams",
+  "version": "1.0.0",
+  "author": "MD++ Team",
+  "description": "Mermaid diagram support - flowcharts, sequence diagrams, class diagrams, gantt charts, and more.",
+  "license": "MIT",
+
+  "type": "hybrid",
+
+  "dependencies": {
+    "plugins": []
+  },
+
+  "contributes": {
+    "parser": {
+      "entry": "./parser.ts",
+      "phase": "remark",
+      "priority": 90,
+      "codeBlockLanguages": ["mermaid"]
+    },
+
+    "toolbar": {
+      "entry": "./toolbar/items.ts",
+      "groups": [
+        {
+          "id": "insert",
+          "label": "Insert",
+          "priority": 40
+        }
+      ],
+      "items": [
+        {
+          "id": "insert-diagram",
+          "command": "setMermaid",
+          "group": "insert",
+          "priority": 4,
+          "icon": "GitBranch",
+          "label": "Diagram",
+          "tooltip": "Insert Mermaid Diagram (Ctrl+Shift+M)",
+          "shortcut": "Ctrl+Shift+M"
+        }
+      ]
+    },
+
+    "editor": {
+      "extensions": [
+        {
+          "name": "mermaidBlock",
+          "type": "node",
+          "module": "extension",
+          "nodeView": "nodeview",
+          "priority": 100
+        }
+      ]
+    },
+
+    "preview": {
+      "renderer": "./preview/renderer.ts",
+      "selectors": [".mermaid", "pre.mermaid", "[data-type=\"mermaid-block\"]"]
+    },
+
+    "export": {
+      "assets": "./export/assets.ts"
+    },
+
+    "keybindings": [
+      {
+        "command": "setMermaid",
+        "key": "ctrl+shift+m",
+        "mac": "cmd+shift+m",
+        "when": "editorTextFocus"
+      }
+    ],
+
+    "help": {
+      "entries": [
+        {
+          "title": "Mermaid Diagrams",
+          "description": "Create diagrams using Mermaid syntax",
+          "syntax": "```mermaid\ngraph TD\n    A-->B\n```",
+          "link": "https://mermaid.js.org/intro/",
+          "category": "diagrams",
+          "keywords": ["mermaid", "flowchart", "sequence", "diagram"]
+        }
+      ]
+    }
+  },
+
+  "settings": {
+    "defaults": {
+      "theme": "default",
+      "securityLevel": "loose",
+      "startOnLoad": true,
+      "logLevel": "error"
+    }
+  },
+
+  "components": {
+    "diagram": {
+      "tag": "pre",
+      "classes": ["mermaid"],
+      "description": "Mermaid diagram container for directive syntax"
+    }
+  },
+
+  "categories": ["diagrams", "visualization"],
+  "keywords": ["mermaid", "diagrams", "flowchart", "sequence", "gantt", "class-diagram"],
+
+  "minAppVersion": "1.0.0"
+}

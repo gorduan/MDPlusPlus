@@ -144,11 +144,13 @@ export default function Preview({ content, showAIContext = false, settings, them
     // Settings are optional - use defaults if not provided
     if (settings) {
       options.enableGfm = settings.enableGfm;
-      options.enableMath = settings.enableMath;
-      options.enableCallouts = settings.enableCallouts;
       options.enableHeadingAnchors = settings.enableHeadingAnchors;
       options.enableDirectives = settings.enableDirectives;
       options.enableAIContext = settings.enableAIContext;
+      // Math, Mermaid, Callouts are now controlled via enabledPlugins
+      options.enableMath = enabledPluginNames.includes('katex');
+      options.enableMermaid = enabledPluginNames.includes('mermaid');
+      options.enableCallouts = enabledPluginNames.includes('admonitions');
     }
 
     return new MDPlusPlus(options);
@@ -280,9 +282,39 @@ export default function Preview({ content, showAIContext = false, settings, them
       });
     };
 
-    enhanceAdmonitions();
-    renderMermaid();
-    renderKaTeX();
+    // Check which plugins are enabled
+    const enabledPluginNames = settings?.enabledPlugins || ['katex', 'mermaid', 'admonitions', 'bootstrap'];
+    const isMermaidEnabled = enabledPluginNames.includes('mermaid');
+    const isKatexEnabled = enabledPluginNames.includes('katex');
+    const isAdmonitionsEnabled = enabledPluginNames.includes('admonitions');
+
+    // Reset Mermaid diagrams to source code if plugin is disabled
+    const resetMermaid = () => {
+      const mermaidElements = previewRef.current!.querySelectorAll('.mermaid');
+      mermaidElements.forEach((el) => {
+        const originalCode = el.getAttribute('data-original');
+        if (originalCode) {
+          // Clear SVG and show original code
+          el.innerHTML = '';
+          el.textContent = originalCode;
+          el.removeAttribute('data-processed');
+        }
+      });
+    };
+
+    // Only run plugin-specific rendering if the plugin is enabled
+    if (isAdmonitionsEnabled) {
+      enhanceAdmonitions();
+    }
+    if (isMermaidEnabled) {
+      renderMermaid();
+    } else {
+      // Reset any rendered diagrams when Mermaid is disabled
+      resetMermaid();
+    }
+    if (isKatexEnabled) {
+      renderKaTeX();
+    }
     renderHighlight();
 
     // Extract scripts from DOM for .mdsc files
@@ -290,7 +322,7 @@ export default function Preview({ content, showAIContext = false, settings, them
       const extractedScripts = extractScriptsFromDOM(previewRef.current!);
       setScripts(extractedScripts);
     }
-  }, [html, theme, isMdscFile]);
+  }, [html, theme, isMdscFile, settings?.enabledPlugins]);
 
   // Inject script results into the DOM
   useEffect(() => {

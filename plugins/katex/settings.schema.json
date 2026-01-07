@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "KaTeX Plugin Settings",
+  "type": "object",
+  "properties": {
+    "displayMode": {
+      "type": "boolean",
+      "default": true,
+      "description": "Render equations in display mode (centered, larger) by default"
+    },
+    "throwOnError": {
+      "type": "boolean",
+      "default": false,
+      "description": "Throw an error on invalid LaTeX (otherwise shows error message in output)"
+    },
+    "strict": {
+      "oneOf": [
+        { "type": "boolean" },
+        { "type": "string", "enum": ["warn", "error"] }
+      ],
+      "default": false,
+      "description": "Enable strict mode for better error messages"
+    },
+    "trust": {
+      "type": "boolean",
+      "default": false,
+      "description": "Trust the input (allows \\url, \\href, etc.)"
+    },
+    "macros": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {},
+      "description": "Custom LaTeX macros (e.g., {\"\\\\R\": \"\\\\mathbb{R}\"})"
+    }
+  },
+  "additionalProperties": false
+}

@@ -35,6 +35,7 @@
   "scripts": {
     "build": "tsup",
     "build:parser": "tsup src/index.ts --format esm --dts --outDir dist",
+    "build:browser": "tsup src/index.ts --format iife --globalName MDPlusPlus --outDir dist --minify --no-splitting --platform browser",
     "build:components": "tsup components/index.ts --format esm --dts --outDir dist/components --external react --external react-dom",
     "dev": "tsup --watch",
     "clean": "rimraf dist out",

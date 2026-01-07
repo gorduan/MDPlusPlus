@@ -1,0 +1,121 @@
+{
+  "$schema": "https://mdplusplus.dev/schemas/plugin.json",
+  "id": "katex",
+  "name": "KaTeX Math",
+  "version": "1.0.0",
+  "author": "MD++ Team",
+  "description": "LaTeX math rendering with KaTeX. Supports $inline$ and $$display$$ math, plus code blocks with math/latex/katex language.",
+  "license": "MIT",
+
+  "type": "parser",
+
+  "dependencies": {
+    "plugins": [],
+    "npm": ["remark-math@^6.0.0", "rehype-katex@^7.0.0"]
+  },
+
+  "conflicts": ["mathjax"],
+
+  "contributes": {
+    "parser": {
+      "entry": "./parser.ts",
+      "phase": "both",
+      "priority": 100,
+      "codeBlockLanguages": ["math", "latex", "katex"]
+    },
+
+    "toolbar": {
+      "entry": "./toolbar/items.ts",
+      "groups": [
+        {
+          "id": "math",
+          "label": "Math",
+          "priority": 42
+        }
+      ],
+      "items": [
+        {
+          "id": "insert-inline-math",
+          "command": "insertInlineMath",
+          "group": "math",
+          "priority": 0,
+          "icon": "Sigma",
+          "label": "Inline Math",
+          "tooltip": "Insert inline math ($...$)",
+          "shortcut": "Ctrl+M"
+        },
+        {
+          "id": "insert-display-math",
+          "command": "insertDisplayMath",
+          "group": "math",
+          "priority": 1,
+          "icon": "SquareSigma",
+          "label": "Display Math",
+          "tooltip": "Insert display math ($$...$$)",
+          "shortcut": "Ctrl+Shift+M"
+        }
+      ]
+    },
+
+    "preview": {
+      "renderer": "./preview/renderer.ts",
+      "selectors": [".math", ".language-math", ".math-inline", ".math-display"]
+    },
+
+    "export": {
+      "assets": "./export/assets.ts"
+    },
+
+    "keybindings": [
+      {
+        "command": "insertInlineMath",
+        "key": "ctrl+m",
+        "mac": "cmd+m",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "insertDisplayMath",
+        "key": "ctrl+shift+m",
+        "mac": "cmd+shift+m",
+        "when": "editorTextFocus"
+      }
+    ],
+
+    "help": {
+      "entries": [
+        {
+          "title": "Inline Math",
+          "description": "Inline LaTeX math expressions",
+          "syntax": "$E = mc^2$",
+          "category": "math",
+          "keywords": ["math", "latex", "katex", "equation", "inline"]
+        },
+        {
+          "title": "Display Math",
+          "description": "Block-level LaTeX math expressions",
+          "syntax": "$$\n\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}\n$$",
+          "category": "math",
+          "keywords": ["math", "latex", "katex", "equation", "display", "block"]
+        }
+      ]
+    }
+  },
+
+  "settings": {
+    "schema": "./settings.schema.json",
+    "defaults": {
+      "displayMode": true,
+      "throwOnError": false,
+      "strict": false,
+      "trust": false,
+      "macros": {}
+    }
+  },
+
+  "components": {},
+
+  "categories": ["math", "science"],
+  "keywords": ["latex", "math", "katex", "formulas", "equations"],
+
+  "minAppVersion": "1.0.0"
+}

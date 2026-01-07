@@ -20,6 +20,8 @@ interface EditorPaneProps {
   onScroll?: (editor: editor.IStandaloneCodeEditor) => void;
   /** Called when editor is mounted */
   onEditorMount?: (editor: editor.IStandaloneCodeEditor) => void;
+  /** List of enabled plugin IDs for WYSIWYG extensions */
+  enabledPlugins?: string[];
 }
 
 export interface EditorPaneRef {
@@ -30,7 +32,7 @@ export interface EditorPaneRef {
 }
 
 const EditorPane = forwardRef<EditorPaneRef, EditorPaneProps>(
-  ({ content, onChange, onCursorChange, theme = 'dark', onScroll, onEditorMount }, ref) => {
+  ({ content, onChange, onCursorChange, theme = 'dark', onScroll, onEditorMount, enabledPlugins = [] }, ref) => {
     const [mode, setMode] = useState<EditorMode>('source');
     const monacoEditorRef = useRef<EditorRef | null>(null);
 
@@ -82,6 +84,7 @@ const EditorPane = forwardRef<EditorPaneRef, EditorPaneProps>(
               content={content}
               onChange={handleContentChange}
               theme={theme}
+              enabledPlugins={enabledPlugins}
             />
           )}
         </div>

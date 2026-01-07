@@ -15,10 +15,7 @@ export interface ParserSettings {
   enableAutolinks: boolean;
   enableFootnotes: boolean;
 
-  // Extensions
-  enableMath: boolean;
-  enableMermaid: boolean;
-  enableCallouts: boolean;
+  // Core Features (not plugin-based)
   enableHeadingAnchors: boolean;
 
   // MD++ Features
@@ -29,7 +26,7 @@ export interface ParserSettings {
   enableScripts: boolean;
   scriptSecurityLevel: ScriptSecurityLevel;
 
-  // Plugins
+  // Plugins (replaces enableMath, enableMermaid, enableCallouts)
   enabledPlugins: string[];
 }
 
@@ -40,15 +37,13 @@ export const DEFAULT_SETTINGS: ParserSettings = {
   enableStrikethrough: true,
   enableAutolinks: true,
   enableFootnotes: true,
-  enableMath: true,
-  enableMermaid: true,
-  enableCallouts: true,
   enableHeadingAnchors: true,
   enableDirectives: true,
   enableAIContext: true,
   enableScripts: true,
   scriptSecurityLevel: 'standard',
-  enabledPlugins: ['bootstrap', 'admonitions'],
+  // Default plugins: math (katex), diagrams (mermaid), callouts (admonitions), UI (bootstrap)
+  enabledPlugins: ['katex', 'mermaid', 'admonitions', 'bootstrap'],
 };
 
 interface SettingsDialogProps {
@@ -56,7 +51,7 @@ interface SettingsDialogProps {
   onClose: () => void;
   settings: ParserSettings;
   onSettingsChange: (settings: ParserSettings) => void;
-  availablePlugins: string[];
+  onOpenPluginManager?: () => void;
 }
 
 export default function SettingsDialog({
@@ -64,7 +59,7 @@ export default function SettingsDialog({
   onClose,
   settings,
   onSettingsChange,
-  availablePlugins,
+  onOpenPluginManager,
 }: SettingsDialogProps) {
   if (!isOpen) return null;
 
@@ -74,12 +69,6 @@ export default function SettingsDialog({
     }
   };
 
-  const handlePluginToggle = (plugin: string) => {
-    const plugins = settings.enabledPlugins.includes(plugin)
-      ? settings.enabledPlugins.filter(p => p !== plugin)
-      : [...settings.enabledPlugins, plugin];
-    onSettingsChange({ ...settings, enabledPlugins: plugins });
-  };
 
   return (
     <div className="settings-overlay" onClick={onClose}>
@@ -150,33 +139,9 @@ export default function SettingsDialog({
             </div>
           </section>
 
-          {/* Extensions Section */}
+          {/* Core Features Section */}
           <section className="settings-section">
-            <h3>Extensions</h3>
-            <label className="settings-toggle">
-              <input
-                type="checkbox"
-                checked={settings.enableMath}
-                onChange={() => handleToggle('enableMath')}
-              />
-              <span>Math / LaTeX (KaTeX)</span>
-            </label>
-            <label className="settings-toggle">
-              <input
-                type="checkbox"
-                checked={settings.enableMermaid}
-                onChange={() => handleToggle('enableMermaid')}
-              />
-              <span>Mermaid Diagrams</span>
-            </label>
-            <label className="settings-toggle">
-              <input
-                type="checkbox"
-                checked={settings.enableCallouts}
-                onChange={() => handleToggle('enableCallouts')}
-              />
-              <span>Callouts / Admonitions</span>
-            </label>
+            <h3>Core Features</h3>
             <label className="settings-toggle">
               <input
                 type="checkbox"
@@ -185,6 +150,9 @@ export default function SettingsDialog({
               />
               <span>Heading Anchors</span>
             </label>
+            <p className="settings-hint" style={{ marginTop: '12px' }}>
+              Math, Mermaid, and Callouts are now managed via <strong>Plugins</strong>.
+            </p>
           </section>
 
           {/* MD++ Features Section */}
@@ -241,21 +209,23 @@ export default function SettingsDialog({
             </div>
           </section>
 
-          {/* Plugins Section */}
+          {/* Plugins Section - Link to Plugin Manager */}
           <section className="settings-section">
             <h3>Plugins</h3>
-            {availablePlugins.map(plugin => (
-              <label key={plugin} className="settings-toggle">
-                <input
-                  type="checkbox"
-                  checked={settings.enabledPlugins.includes(plugin)}
-                  onChange={() => handlePluginToggle(plugin)}
-                />
-                <span>{plugin}</span>
-              </label>
-            ))}
-            {availablePlugins.length === 0 && (
-              <p className="settings-hint">No plugins loaded</p>
+            <p className="settings-hint">
+              {settings.enabledPlugins.length} plugins enabled
+            </p>
+            {onOpenPluginManager && (
+              <button
+                className="settings-btn secondary"
+                onClick={() => {
+                  onClose();
+                  onOpenPluginManager();
+                }}
+                style={{ marginTop: '8px' }}
+              >
+                Open Plugin Manager
+              </button>
             )}
           </section>
         </div>

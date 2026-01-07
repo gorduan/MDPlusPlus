@@ -24,7 +24,8 @@
   "include": [
     "src/**/*",
     "components/**/*",
-    "app/**/*"
+    "app/**/*",
+    "plugins/**/*"
   ],
   "exclude": [
     "node_modules",

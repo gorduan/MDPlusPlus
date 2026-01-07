@@ -1,0 +1,211 @@
+{
+  "$schema": "https://mdplusplus.dev/schemas/plugin.json",
+  "id": "admonitions",
+  "name": "Admonitions",
+  "version": "1.0.0",
+  "author": "MD++ Team",
+  "description": "Admonition/callout boxes for notes, tips, warnings, and danger alerts. Compatible with GitHub and Obsidian callout syntax.",
+  "license": "MIT",
+
+  "type": "components",
+
+  "contributes": {
+    "toolbar": {
+      "entry": "./toolbar/items.ts",
+      "groups": [
+        {
+          "id": "callout",
+          "label": "Callouts",
+          "priority": 45
+        }
+      ],
+      "items": [
+        {
+          "id": "callout-note",
+          "command": "toggleAdmonition",
+          "group": "callout",
+          "priority": 0,
+          "icon": "Info",
+          "label": "Note",
+          "tooltip": "Insert Note Callout (Ctrl+Shift+N)",
+          "shortcut": "Ctrl+Shift+N"
+        },
+        {
+          "id": "callout-tip",
+          "command": "toggleAdmonition",
+          "group": "callout",
+          "priority": 1,
+          "icon": "Lightbulb",
+          "label": "Tip",
+          "tooltip": "Insert Tip Callout"
+        },
+        {
+          "id": "callout-warning",
+          "command": "toggleAdmonition",
+          "group": "callout",
+          "priority": 2,
+          "icon": "AlertTriangle",
+          "label": "Warning",
+          "tooltip": "Insert Warning Callout"
+        },
+        {
+          "id": "callout-danger",
+          "command": "toggleAdmonition",
+          "group": "callout",
+          "priority": 3,
+          "icon": "AlertCircle",
+          "label": "Danger",
+          "tooltip": "Insert Danger Callout"
+        },
+        {
+          "id": "callout-success",
+          "command": "toggleAdmonition",
+          "group": "callout",
+          "priority": 4,
+          "icon": "CheckCircle",
+          "label": "Success",
+          "tooltip": "Insert Success Callout"
+        },
+        {
+          "id": "callout-question",
+          "command": "toggleAdmonition",
+          "group": "callout",
+          "priority": 5,
+          "icon": "HelpCircle",
+          "label": "Question",
+          "tooltip": "Insert Question Callout"
+        }
+      ]
+    },
+
+    "editor": {
+      "extensions": [
+        {
+          "name": "admonitionBlock",
+          "type": "node",
+          "module": "extension",
+          "priority": 100
+        }
+      ]
+    },
+
+    "preview": {
+      "renderer": "./preview/renderer.ts",
+      "selectors": [".admonition", "[data-type=\"admonition\"]", ".callout", "blockquote[data-callout]"]
+    },
+
+    "export": {
+      "assets": "./export/assets.ts"
+    },
+
+    "keybindings": [
+      {
+        "command": "toggleAdmonition",
+        "key": "ctrl+shift+n",
+        "mac": "cmd+shift+n",
+        "when": "editorTextFocus",
+        "args": { "type": "note" }
+      }
+    ],
+
+    "help": {
+      "entries": [
+        {
+          "title": "Note Callout",
+          "description": "Informational note block",
+          "syntax": "> [!NOTE]\n> This is a note",
+          "category": "callouts",
+          "keywords": ["note", "callout", "admonition", "info"]
+        },
+        {
+          "title": "Tip Callout",
+          "description": "Helpful tip or best practice",
+          "syntax": "> [!TIP]\n> This is a tip",
+          "category": "callouts",
+          "keywords": ["tip", "callout", "admonition", "hint"]
+        },
+        {
+          "title": "Warning Callout",
+          "description": "Warning message",
+          "syntax": "> [!WARNING]\n> This is a warning",
+          "category": "callouts",
+          "keywords": ["warning", "callout", "admonition", "caution"]
+        },
+        {
+          "title": "Danger Callout",
+          "description": "Danger or critical warning",
+          "syntax": "> [!DANGER]\n> This is dangerous",
+          "category": "callouts",
+          "keywords": ["danger", "callout", "admonition", "critical", "error"]
+        }
+      ]
+    }
+  },
+
+  "components": {
+    "note": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-note"],
+      "description": "Informational note",
+      "aiVisible": true
+    },
+    "tip": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-tip"],
+      "description": "Helpful tip or best practice",
+      "aiVisible": true
+    },
+    "warning": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-warning"],
+      "description": "Warning message",
+      "aiVisible": true
+    },
+    "danger": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-danger"],
+      "description": "Danger or critical warning",
+      "aiVisible": true
+    },
+    "info": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-info"],
+      "description": "General information"
+    },
+    "success": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-success"],
+      "description": "Success message"
+    },
+    "question": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-question"],
+      "description": "Question or FAQ"
+    },
+    "quote": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-quote"],
+      "description": "Quotation block"
+    },
+    "example": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-example"],
+      "description": "Example block"
+    },
+    "bug": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-bug"],
+      "description": "Bug or known issue"
+    },
+    "abstract": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-abstract"],
+      "description": "Abstract or summary"
+    }
+  },
+
+  "categories": ["callouts", "documentation"],
+  "keywords": ["admonitions", "callouts", "notes", "warnings", "tips", "alerts"],
+
+  "minAppVersion": "1.0.0"
+}

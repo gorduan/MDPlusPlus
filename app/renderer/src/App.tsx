@@ -1807,6 +1807,7 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
               theme={theme}
               onScroll={handleEditorScroll}
               onEditorMount={registerEditor}
+              enabledPlugins={settings.enabledPlugins}
             />
           </div>
         )}

@@ -7,8 +7,7 @@ import { toolbarRegistry, ToolbarItem } from './ToolbarRegistry';
 import {
   Bold, Italic, Strikethrough, Code, Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Minus, Undo, Redo, Link,
-  Image, Table, Code2, FileText, Bot, LayoutGrid, Highlighter, GitBranch,
-  Info, Lightbulb, AlertTriangle, AlertCircle, CheckCircle, HelpCircle
+  Image, Table, Code2, FileText, Bot, LayoutGrid, Highlighter,
 } from 'lucide-react';
 
 const builtinItems: ToolbarItem[] = [
@@ -233,17 +232,8 @@ const builtinItems: ToolbarItem[] = [
     tooltip: 'Horizontal Rule',
     action: (editor) => editor.chain().focus().setHorizontalRule().run(),
   },
-  {
-    id: 'mermaid',
-    type: 'button',
-    group: 'insert',
-    priority: 4,
-    icon: GitBranch,
-    label: 'Diagram',
-    tooltip: 'Insert Mermaid Diagram (Ctrl+Shift+M)',
-    shortcut: 'Ctrl+Shift+M',
-    action: (editor) => editor.chain().focus().setMermaid().run(),
-  },
+  // Note: Mermaid diagram button is now contributed by the mermaid plugin
+  // See: plugins/mermaid/toolbar/items.ts
 
   // MD++ group
   {
@@ -297,99 +287,8 @@ const builtinItems: ToolbarItem[] = [
       }
     },
   },
-
-  // Callout/Admonition group
-  {
-    id: 'callout-note',
-    type: 'button',
-    group: 'callout',
-    priority: 0,
-    icon: Info,
-    label: 'Note',
-    tooltip: 'Insert Note Callout (Ctrl+Shift+N)',
-    shortcut: 'Ctrl+Shift+N',
-    isActive: (editor) => {
-      const { selection } = editor.state;
-      const node = editor.state.doc.nodeAt(selection.from);
-      return node?.type.name === 'admonitionBlock' && node.attrs.type === 'note';
-    },
-    action: (editor) => editor.chain().focus().toggleAdmonition('note').run(),
-  },
-  {
-    id: 'callout-tip',
-    type: 'button',
-    group: 'callout',
-    priority: 1,
-    icon: Lightbulb,
-    label: 'Tip',
-    tooltip: 'Insert Tip Callout',
-    isActive: (editor) => {
-      const { selection } = editor.state;
-      const node = editor.state.doc.nodeAt(selection.from);
-      return node?.type.name === 'admonitionBlock' && node.attrs.type === 'tip';
-    },
-    action: (editor) => editor.chain().focus().toggleAdmonition('tip').run(),
-  },
-  {
-    id: 'callout-warning',
-    type: 'button',
-    group: 'callout',
-    priority: 2,
-    icon: AlertTriangle,
-    label: 'Warning',
-    tooltip: 'Insert Warning Callout',
-    isActive: (editor) => {
-      const { selection } = editor.state;
-      const node = editor.state.doc.nodeAt(selection.from);
-      return node?.type.name === 'admonitionBlock' && node.attrs.type === 'warning';
-    },
-    action: (editor) => editor.chain().focus().toggleAdmonition('warning').run(),
-  },
-  {
-    id: 'callout-danger',
-    type: 'button',
-    group: 'callout',
-    priority: 3,
-    icon: AlertCircle,
-    label: 'Danger',
-    tooltip: 'Insert Danger Callout',
-    isActive: (editor) => {
-      const { selection } = editor.state;
-      const node = editor.state.doc.nodeAt(selection.from);
-      return node?.type.name === 'admonitionBlock' && node.attrs.type === 'danger';
-    },
-    action: (editor) => editor.chain().focus().toggleAdmonition('danger').run(),
-  },
-  {
-    id: 'callout-success',
-    type: 'button',
-    group: 'callout',
-    priority: 4,
-    icon: CheckCircle,
-    label: 'Success',
-    tooltip: 'Insert Success Callout',
-    isActive: (editor) => {
-      const { selection } = editor.state;
-      const node = editor.state.doc.nodeAt(selection.from);
-      return node?.type.name === 'admonitionBlock' && node.attrs.type === 'success';
-    },
-    action: (editor) => editor.chain().focus().toggleAdmonition('success').run(),
-  },
-  {
-    id: 'callout-question',
-    type: 'button',
-    group: 'callout',
-    priority: 5,
-    icon: HelpCircle,
-    label: 'Question',
-    tooltip: 'Insert Question Callout',
-    isActive: (editor) => {
-      const { selection } = editor.state;
-      const node = editor.state.doc.nodeAt(selection.from);
-      return node?.type.name === 'admonitionBlock' && node.attrs.type === 'question';
-    },
-    action: (editor) => editor.chain().focus().toggleAdmonition('question').run(),
-  },
+  // Note: Callout/Admonition buttons are now contributed by the admonitions plugin
+  // See: plugins/admonitions/toolbar/items.ts
 ];
 
 /**

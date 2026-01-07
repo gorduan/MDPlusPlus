@@ -1,0 +1,42 @@
+{
+  "$schema": "https://mdplusplus.dev/schemas/plugin.json",
+  "id": "material-icons",
+  "name": "Material Design Icons",
+  "version": "1.0.0",
+  "author": "MD++ Team",
+  "description": "Google Material Design Icons integration. Use ![icon](google:icon-name) syntax to insert icons.",
+  "license": "MIT",
+
+  "type": "parser",
+
+  "parser": {
+    "entry": "./parser.ts",
+    "phase": "remark",
+    "priority": 110
+  },
+
+  "assets": {
+    "css": [
+      "https://fonts.googleapis.com/icon?family=Material+Icons",
+      "https://fonts.googleapis.com/icon?family=Material+Icons+Outlined",
+      "https://fonts.googleapis.com/icon?family=Material+Icons+Round",
+      "https://fonts.googleapis.com/icon?family=Material+Icons+Sharp",
+      "https://fonts.googleapis.com/icon?family=Material+Icons+Two+Tone"
+    ]
+  },
+
+  "settings": {
+    "defaults": {
+      "defaultStyle": "filled",
+      "defaultSize": "24px",
+      "customClass": ""
+    }
+  },
+
+  "components": {},
+
+  "categories": ["icons", "ui"],
+  "keywords": ["material", "icons", "google", "symbols", "ui"],
+
+  "minAppVersion": "1.0.0"
+}
