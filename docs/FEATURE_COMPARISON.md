@@ -98,9 +98,9 @@ Das ursprüngliche md++ Projekt war ein **Planungsdokument** mit umfangreichen S
 | Feature | Geplant | Umgesetzt | Status | Anmerkungen |
 |---------|---------|-----------|--------|-------------|
 | Mermaid Diagramme | ✅ | ✅ | **FERTIG** | Vollständig integriert |
-| Kroki API | ✅ | ❌ | **OFFEN** | Nicht implementiert |
+| Kroki API | ✅ | ✅ | **FERTIG** | 30+ Diagrammtypen (plantuml, graphviz, d2, etc.) |
 | MathJax | ✅ | ⚠️ | **ANDERS** | KaTeX statt MathJax |
-| Reveal.js Slides | ✅ | ❌ | **OFFEN** | Nicht implementiert |
+| Reveal.js Slides | ✅ | ✅ | **FERTIG** | Präsentationsmodus mit parseSlides() |
 
 ### CSS-Blöcke
 
@@ -190,12 +190,12 @@ Diese Features wurden zusätzlich implementiert, obwohl sie im ursprünglichen P
 |-----------|---------|-----------|---------|
 | **Phase 1: Core** | 15 | 15 | 100% |
 | **Phase 2: Desktop** | 12 | 10 | 83% |
-| **Erweiterte Features** | 25 | 19 | 76% |
+| **Erweiterte Features** | 25 | 21 | 84% |
 | **Sicherheit** | 8 | 7 | 88% |
 | **Phase 3: MCP** | 5 | 0 | 0% |
 | **Phase 3.5: Web** | 5 | 0 | 0% |
 | **Phase 4: Editor** | 10 | 8 | 80% |
-| **GESAMT** | ~80 | ~59 | **~74%** |
+| **GESAMT** | ~80 | ~61 | **~76%** |
 
 > **Update 2025-01-05**: Mehrere Features wurden neu implementiert:
 > - Material Icons Plugin (`![icon](google:name)` Syntax)
@@ -216,6 +216,13 @@ Diese Features wurden zusätzlich implementiert, obwohl sie im ursprünglichen P
 > - `hastscript` v9 für korrekte {.class #id} Konvertierung
 > - Sicherheits-Filter für Event-Handler (onclick, onerror, etc.)
 > - Schutz vor javascript: URLs und gefährlichen style-Attributen
+>
+> **Update 2025-01-07**: Kroki & Reveal.js Integration:
+> - Kroki Plugin für 30+ Diagrammtypen (plantuml, graphviz, d2, erd, etc.)
+> - Reveal.js Slides Plugin für Präsentationen
+> - `parseSlides()` und `generateRevealHtml()` Funktionen
+> - Unterstützt horizontale und vertikale Slides
+> - Speaker Notes und Slide-Attribute
 
 ### Prioritäten für zukünftige Entwicklung
 
@@ -224,7 +231,7 @@ Diese Features wurden zusätzlich implementiert, obwohl sie im ursprünglichen P
 3. **Mittel**: MCP-Server für AI-Integration
 4. ~~**Mittel**: Scroll-Sync zwischen Editor und Preview~~ ✅ Implementiert
 5. ~~**Niedrig**: Tailwind CSS Plugin~~ ✅ Implementiert
-6. **Niedrig**: Kroki/Reveal.js Integration
+6. ~~**Niedrig**: Kroki/Reveal.js Integration~~ ✅ Implementiert
 7. **Niedrig**: CDN-Bundle für Browser-Nutzung
 8. **Optional**: WordPress-Plugin
 

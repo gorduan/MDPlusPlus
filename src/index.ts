@@ -11,6 +11,17 @@ export {
   hasAIContext
 } from './ai-context';
 
+// Security configuration utilities
+export {
+  SECURITY_PROFILES,
+  parseSecurityConfig,
+  generateSampleSecurityYAML,
+  isSourceTrusted,
+  validateSecurityConfig,
+  getSecurityRecommendation
+} from './security-config';
+export type { SecurityYAML } from './security-config';
+
 // File format utilities
 export {
   detectFileFormat,
@@ -34,6 +45,40 @@ export {
   extractScriptsFromFile,
   extractScriptsFromHTML
 } from './plugins/script-block';
+
+// Kroki diagram utilities
+export {
+  remarkKroki,
+  KROKI_DIAGRAM_TYPES,
+  isKrokiLanguage,
+  extractKrokiType,
+  buildKrokiUrl,
+  encodeKrokiDiagram,
+  getKrokiLanguages
+} from './plugins/kroki';
+export type {
+  KrokiDiagramType,
+  KrokiOutputFormat,
+  KrokiPluginOptions
+} from './plugins/kroki';
+
+// Reveal.js slides utilities
+export {
+  remarkRevealSlides,
+  REVEAL_THEMES,
+  REVEAL_TRANSITIONS,
+  parseSlides,
+  generateRevealHtml,
+  generateEmbeddedRevealHtml,
+  isPresentation
+} from './plugins/reveal-slides';
+export type {
+  RevealTheme,
+  RevealTransition,
+  RevealPluginOptions,
+  SlideData,
+  PresentationData
+} from './plugins/reveal-slides';
 
 export type {
   // File format types

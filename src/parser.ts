@@ -45,6 +45,7 @@ import { remarkScriptBlock, extractScriptsFromFile } from './plugins/script-bloc
 import { remarkAIPlaceholder, extractPlaceholdersFromFile } from './plugins/ai-placeholder';
 import { remarkMaterialIcons } from './plugins/material-icons';
 import { remarkStyleBlock, extractStylesFromFile } from './plugins/style-block';
+import { remarkKroki, getKrokiLanguages, type KrokiPluginOptions } from './plugins/kroki';
 
 /**
  * Default security configuration
@@ -214,6 +215,13 @@ export class MDPlusPlus {
       processor = processor.use(remarkMath);
     }
 
+    // Kroki diagrams (plantuml, graphviz, d2, etc.)
+    if (this.isEnabled('enableKroki')) {
+      processor = processor.use(remarkKroki, {
+        serverUrl: this.options.krokiServerUrl || 'https://kroki.io',
+      } as KrokiPluginOptions);
+    }
+
     // Code block handling (mermaid, math blocks)
     processor = processor.use(this.createCodeBlockPlugin());
 
@@ -302,6 +310,13 @@ export class MDPlusPlus {
     // Math/LaTeX
     if (this.isEnabled('enableMath')) {
       processor = processor.use(remarkMath);
+    }
+
+    // Kroki diagrams (plantuml, graphviz, d2, etc.)
+    if (this.isEnabled('enableKroki')) {
+      processor = processor.use(remarkKroki, {
+        serverUrl: this.options.krokiServerUrl || 'https://kroki.io',
+      } as KrokiPluginOptions);
     }
 
     // Code block handling (mermaid, math blocks)
@@ -394,6 +409,13 @@ export class MDPlusPlus {
     // Math/LaTeX
     if (this.isEnabled('enableMath')) {
       processor = processor.use(remarkMath);
+    }
+
+    // Kroki diagrams (plantuml, graphviz, d2, etc.)
+    if (this.isEnabled('enableKroki')) {
+      processor = processor.use(remarkKroki, {
+        serverUrl: this.options.krokiServerUrl || 'https://kroki.io',
+      } as KrokiPluginOptions);
     }
 
     // Code block handling (mermaid, math blocks)
@@ -506,6 +528,13 @@ export class MDPlusPlus {
     // Math/LaTeX
     if (caps.math) {
       processor = processor.use(remarkMath);
+    }
+
+    // Kroki diagrams (plantuml, graphviz, d2, etc.)
+    if (this.isEnabled('enableKroki')) {
+      processor = processor.use(remarkKroki, {
+        serverUrl: this.options.krokiServerUrl || 'https://kroki.io',
+      } as KrokiPluginOptions);
     }
 
     // Code block handling (mermaid, math blocks)

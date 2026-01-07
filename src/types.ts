@@ -134,12 +134,12 @@ export function hasCapability(format: FileFormat, capability: keyof FormatCapabi
 export interface StyleBlockData {
   /** Unique identifier for this style block */
   id: string;
-  /** The CSS/SCSS code */
-  code: string;
-  /** Style language: 'css' or 'scss' */
-  lang: 'css' | 'scss';
-  /** Scope: 'global' applies to whole document, 'scoped' only to following content */
-  scope: 'global' | 'scoped';
+  /** Type: 'inline' for :::style, 'external' for :::link-css */
+  type: 'inline' | 'external';
+  /** CSS content for inline, URL for external */
+  content: string;
+  /** Whether the style is scoped to following content */
+  scoped?: boolean;
   /** Line number in source document */
   line?: number;
 }
@@ -303,6 +303,14 @@ export interface ParserOptions {
   enableAIContext?: boolean;
   /** Enable MarkdownScript blocks (:::script) */
   enableScripts?: boolean;
+  /** Enable Material Icons (![icon](google:name)) */
+  enableMaterialIcons?: boolean;
+  /** Enable style blocks (:::style, :::link-css) */
+  enableStyles?: boolean;
+  /** Enable Kroki diagrams (plantuml, graphviz, etc.) */
+  enableKroki?: boolean;
+  /** Kroki server URL (default: https://kroki.io) */
+  krokiServerUrl?: string;
 }
 
 // ============================================
