@@ -19,6 +19,7 @@ import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeStringify from 'rehype-stringify';
 import { visit } from 'unist-util-visit';
+import { h } from 'hastscript';
 import matter from 'gray-matter';
 import type {
   PluginDefinition,
@@ -42,6 +43,8 @@ import {
 } from './types';
 import { remarkScriptBlock, extractScriptsFromFile } from './plugins/script-block';
 import { remarkAIPlaceholder, extractPlaceholdersFromFile } from './plugins/ai-placeholder';
+import { remarkMaterialIcons } from './plugins/material-icons';
+import { remarkStyleBlock, extractStylesFromFile } from './plugins/style-block';
 
 /**
  * Default security configuration
@@ -95,6 +98,72 @@ export class MDPlusPlus {
   }
 
   /**
+   * Detect component naming conflicts between plugins
+   * Returns a map of component names to the plugins that define them
+   */
+  detectPluginConflicts(): Map<string, string[]> {
+    const componentToPlugins = new Map<string, string[]>();
+
+    for (const plugin of this.plugins.values()) {
+      for (const componentName of Object.keys(plugin.components)) {
+        const existing = componentToPlugins.get(componentName) || [];
+        existing.push(plugin.framework);
+        componentToPlugins.set(componentName, existing);
+      }
+    }
+
+    // Filter to only include conflicts (more than one plugin defines the component)
+    const conflicts = new Map<string, string[]>();
+    for (const [component, plugins] of componentToPlugins) {
+      if (plugins.length > 1) {
+        conflicts.set(component, plugins);
+      }
+    }
+
+    return conflicts;
+  }
+
+  /**
+   * Get a detailed conflict report as a string
+   */
+  getConflictReport(): string {
+    const conflicts = this.detectPluginConflicts();
+
+    if (conflicts.size === 0) {
+      return 'No plugin conflicts detected.';
+    }
+
+    let report = `Plugin Conflicts Detected:\n`;
+    report += `${'─'.repeat(50)}\n\n`;
+
+    for (const [component, plugins] of conflicts) {
+      report += `Component: "${component}"\n`;
+      report += `  Defined in: ${plugins.join(', ')}\n`;
+      report += `  Resolution: Use framework prefix (e.g., :::${plugins[0]}:${component})\n\n`;
+    }
+
+    report += `${'─'.repeat(50)}\n`;
+    report += `Recommendation: Always use framework prefix to avoid ambiguity.\n`;
+    report += `Example: :::bootstrap:card instead of :::card\n`;
+
+    return report;
+  }
+
+  /**
+   * Check if a specific component has conflicts
+   */
+  hasComponentConflict(componentName: string): boolean {
+    let count = 0;
+    for (const plugin of this.plugins.values()) {
+      if (plugin.components[componentName]) {
+        count++;
+        if (count > 1) return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Check if a feature is enabled (defaults to true)
    */
   private isEnabled(feature: keyof ParserOptions): boolean {
@@ -135,6 +204,11 @@ export class MDPlusPlus {
       processor = processor.use(this.createDirectivePlugin());
     }
 
+    // Material Icons (![icon](google:name))
+    if (this.isEnabled('enableMaterialIcons')) {
+      processor = processor.use(remarkMaterialIcons);
+    }
+
     // Math/LaTeX
     if (this.isEnabled('enableMath')) {
       processor = processor.use(remarkMath);
@@ -142,6 +216,11 @@ export class MDPlusPlus {
 
     // Code block handling (mermaid, math blocks)
     processor = processor.use(this.createCodeBlockPlugin());
+
+    // Style blocks (:::style, :::link-css)
+    if (this.isEnabled('enableStyles')) {
+      processor = processor.use(remarkStyleBlock);
+    }
 
     // MarkdownScript blocks (:::script)
     if (this.isEnabled('enableScripts')) {
@@ -215,6 +294,11 @@ export class MDPlusPlus {
       processor = processor.use(this.createDirectivePlugin());
     }
 
+    // Material Icons (![icon](google:name))
+    if (this.isEnabled('enableMaterialIcons')) {
+      processor = processor.use(remarkMaterialIcons);
+    }
+
     // Math/LaTeX
     if (this.isEnabled('enableMath')) {
       processor = processor.use(remarkMath);
@@ -222,6 +306,11 @@ export class MDPlusPlus {
 
     // Code block handling (mermaid, math blocks)
     processor = processor.use(this.createCodeBlockPlugin());
+
+    // Style blocks (:::style, :::link-css)
+    if (this.isEnabled('enableStyles')) {
+      processor = processor.use(remarkStyleBlock);
+    }
 
     // MarkdownScript blocks (:::script) - always enabled for this method
     processor = processor.use(remarkScriptBlock);
@@ -297,6 +386,11 @@ export class MDPlusPlus {
       processor = processor.use(this.createDirectivePlugin());
     }
 
+    // Material Icons (![icon](google:name))
+    if (this.isEnabled('enableMaterialIcons')) {
+      processor = processor.use(remarkMaterialIcons);
+    }
+
     // Math/LaTeX
     if (this.isEnabled('enableMath')) {
       processor = processor.use(remarkMath);
@@ -304,6 +398,11 @@ export class MDPlusPlus {
 
     // Code block handling (mermaid, math blocks)
     processor = processor.use(this.createCodeBlockPlugin());
+
+    // Style blocks (:::style, :::link-css)
+    if (this.isEnabled('enableStyles')) {
+      processor = processor.use(remarkStyleBlock);
+    }
 
     // MarkdownScript blocks (:::script)
     processor = processor.use(remarkScriptBlock);
@@ -327,9 +426,10 @@ export class MDPlusPlus {
     const file = await processor.process(processedContent);
     let html = String(file);
 
-    // Extract scripts and placeholders from file data
+    // Extract scripts, placeholders, and styles from file data
     const scripts: ScriptBlockData[] = extractScriptsFromFile(file);
     const placeholders: AIPlaceholderData[] = extractPlaceholdersFromFile(file);
+    const styles: StyleBlockData[] = extractStylesFromFile(file);
 
     // Prepend error alerts if any (unless suppressed)
     if (this.errors.length > 0 && !this.options.suppressErrors) {
@@ -348,6 +448,7 @@ export class MDPlusPlus {
       errors: this.errors,
       scripts,
       placeholders,
+      styles,
       format: 'mdsc' as FileFormat, // convertFull assumes full features
     };
   }
@@ -397,6 +498,11 @@ export class MDPlusPlus {
       processor = processor.use(this.createDirectivePlugin());
     }
 
+    // Material Icons (![icon](google:name)) - check ParserOptions
+    if (this.isEnabled('enableMaterialIcons')) {
+      processor = processor.use(remarkMaterialIcons);
+    }
+
     // Math/LaTeX
     if (caps.math) {
       processor = processor.use(remarkMath);
@@ -405,6 +511,11 @@ export class MDPlusPlus {
     // Code block handling (mermaid, math blocks)
     if (caps.mermaid || caps.math) {
       processor = processor.use(this.createCodeBlockPlugin());
+    }
+
+    // Style blocks (:::style, :::link-css)
+    if (caps.styles) {
+      processor = processor.use(remarkStyleBlock);
     }
 
     // MarkdownScript blocks (:::script) - only for .mdsc
@@ -436,7 +547,7 @@ export class MDPlusPlus {
     // Extract data based on format capabilities
     const scripts: ScriptBlockData[] = caps.scripts ? extractScriptsFromFile(file) : [];
     const placeholders: AIPlaceholderData[] = caps.aiPlaceholders ? extractPlaceholdersFromFile(file) : [];
-    const styles: StyleBlockData[] = []; // TODO: Extract styles when plugin is ready
+    const styles: StyleBlockData[] = caps.styles ? extractStylesFromFile(file) : [];
 
     // Prepend error alerts if any (unless suppressed)
     if (this.errors.length > 0 && !this.options.suppressErrors) {
@@ -821,10 +932,17 @@ export class MDPlusPlus {
 
   /**
    * Handle AI context directive
+   *
+   * Visibility modes:
+   * - 'visible': Content is shown in HTML and included in aiContexts
+   * - 'hidden': Content is hidden via CSS (display:none) but still in HTML, included in aiContexts
+   * - 'html-hidden': Content is completely removed from HTML, only included in aiContexts
    */
   private handleAIContext(node: any, attributes: Record<string, any>): void {
-    const visibility = attributes.visibility || node.children?.[0]?.value || 'hidden';
-    const isHidden = visibility === 'hidden';
+    // Get visibility mode from the directive label [hidden], [visible], [html-hidden]
+    // or from attributes
+    const directiveLabel = this.extractDirectiveLabel(node);
+    const visibility = directiveLabel || attributes.visibility || 'hidden';
 
     // Extract content from children
     let content = '';
@@ -832,28 +950,68 @@ export class MDPlusPlus {
       content = this.extractText(node.children);
     }
 
+    // Always add to AI contexts
     this.aiContexts.push({
-      visible: !isHidden,
+      visible: visibility === 'visible',
       content,
-      metadata: attributes,
+      metadata: {
+        ...attributes,
+        visibility,
+      },
     });
 
-    // If hidden and not showing AI context, don't render
-    if (isHidden && !this.options.showAIContext) {
+    // Determine how to render based on visibility mode
+    if (visibility === 'html-hidden') {
+      // Completely remove from HTML output - render as empty/hidden comment
+      node.type = 'html';
+      node.value = '<!-- AI Context (html-hidden) -->';
+      node.children = undefined;
+    } else if (visibility === 'hidden' && !this.options.showAIContext) {
+      // Hidden via CSS but still in HTML
       node.data = node.data || {};
       node.data.hName = 'div';
       node.data.hProperties = {
-        className: ['mdpp-ai-context', 'hidden'],
-        'data-ai-context': 'true'
+        className: ['mdpp-ai-context', 'mdpp-ai-hidden'],
+        'data-ai-context': 'true',
+        'data-visibility': 'hidden',
+        style: 'display: none;',
       };
     } else {
+      // Visible in HTML
       node.data = node.data || {};
       node.data.hName = 'div';
       node.data.hProperties = {
-        className: ['mdpp-ai-context'],
-        'data-ai-context': 'true'
+        className: ['mdpp-ai-context', 'mdpp-ai-visible'],
+        'data-ai-context': 'true',
+        'data-visibility': visibility,
       };
     }
+  }
+
+  /**
+   * Extract the label from a directive node (e.g., [hidden] from :::ai-context[hidden])
+   */
+  private extractDirectiveLabel(node: any): string | undefined {
+    // Check for label in node attributes (remark-directive puts it there)
+    if (node.attributes?.label) {
+      return node.attributes.label;
+    }
+
+    // Check for first child text that looks like a label
+    if (node.children && node.children.length > 0) {
+      const firstChild = node.children[0];
+      // If the first child is a text node with just [word], extract it
+      if (firstChild.type === 'text' && firstChild.value) {
+        const match = firstChild.value.match(/^\[([\w-]+)\]/);
+        if (match) {
+          // Remove the label from the text
+          firstChild.value = firstChild.value.replace(/^\[([\w-]+)\]\s*/, '');
+          return match[1];
+        }
+      }
+    }
+
+    return undefined;
   }
 
   /**
@@ -870,64 +1028,157 @@ export class MDPlusPlus {
   }
 
   /**
-   * Build HAST node from directive
+   * Dangerous attributes that should be filtered for security
+   * Event handlers and javascript: URLs can be exploited for XSS attacks
+   */
+  private static readonly DANGEROUS_ATTRIBUTES = new Set([
+    // Event handlers
+    'onclick', 'ondblclick', 'onmousedown', 'onmouseup', 'onmouseover',
+    'onmousemove', 'onmouseout', 'onmouseenter', 'onmouseleave',
+    'onkeydown', 'onkeyup', 'onkeypress',
+    'onfocus', 'onblur', 'onchange', 'oninput', 'onsubmit', 'onreset',
+    'onload', 'onerror', 'onabort', 'onunload', 'onbeforeunload',
+    'onscroll', 'onresize', 'onhashchange', 'onpopstate',
+    'ondrag', 'ondragstart', 'ondragend', 'ondragenter', 'ondragleave', 'ondragover', 'ondrop',
+    'oncopy', 'oncut', 'onpaste',
+    'ontouchstart', 'ontouchmove', 'ontouchend', 'ontouchcancel',
+    'oncontextmenu', 'onwheel',
+    'onanimationstart', 'onanimationend', 'onanimationiteration',
+    'ontransitionend',
+    'onplay', 'onpause', 'onended', 'onvolumechange', 'ontimeupdate',
+    // Potentially dangerous attributes
+    'formaction', 'xlink:href',
+  ]);
+
+  /**
+   * Filter dangerous attributes from user input
+   * Returns filtered attributes and logs warnings if dangerous attrs were found
+   */
+  private filterDangerousAttributes(
+    attributes: Record<string, any>
+  ): Record<string, any> {
+    const filtered: Record<string, any> = {};
+
+    for (const [key, value] of Object.entries(attributes)) {
+      const lowerKey = key.toLowerCase();
+
+      // Skip dangerous event handlers
+      if (MDPlusPlus.DANGEROUS_ATTRIBUTES.has(lowerKey)) {
+        if (this.security.warnOnCode) {
+          console.warn(`[MD++ Security] Blocked dangerous attribute: ${key}`);
+        }
+        continue;
+      }
+
+      // Check for javascript: URLs in href/src/action attributes
+      if (['href', 'src', 'action', 'data', 'poster', 'srcset'].includes(lowerKey)) {
+        const strValue = String(value).trim().toLowerCase();
+        if (strValue.startsWith('javascript:') || strValue.startsWith('vbscript:') || strValue.startsWith('data:text/html')) {
+          if (this.security.warnOnCode) {
+            console.warn(`[MD++ Security] Blocked dangerous URL in ${key}: ${value}`);
+          }
+          continue;
+        }
+      }
+
+      // Check for javascript: in style attribute (expression() etc.)
+      if (lowerKey === 'style') {
+        const strValue = String(value).toLowerCase();
+        if (strValue.includes('expression(') || strValue.includes('javascript:') || strValue.includes('vbscript:')) {
+          if (this.security.warnOnCode) {
+            console.warn(`[MD++ Security] Blocked dangerous style: ${value}`);
+          }
+          continue;
+        }
+      }
+
+      filtered[key] = value;
+    }
+
+    return filtered;
+  }
+
+  /**
+   * Build HAST node from directive using hastscript for proper attribute handling
+   * Supports:
+   * - {.class-name} shorthand for classes
+   * - {#id-name} shorthand for IDs
+   * - {key="value"} for custom attributes
+   * - {data-*} for data attributes
+   * - Boolean attributes like {disabled}
    */
   private buildHAST(
     node: any,
     componentDef: any,
     attributes: Record<string, any>
   ): { tagName: string; properties: Record<string, any> } {
-    // Parse classes from attributes
-    const classes: string[] = [];
-    const props: Record<string, any> = {};
+    const tagName = componentDef?.tag || 'div';
 
-    // Add component classes
-    if (componentDef?.classes) {
-      classes.push(...componentDef.classes);
-    }
+    // Filter dangerous attributes first
+    const safeAttributes = this.filterDangerousAttributes(attributes);
 
-    // Parse attributes (classes, id, custom attrs)
-    for (const [key, value] of Object.entries(attributes)) {
-      if (key === 'class' || key === 'className') {
-        classes.push(...String(value).split(' '));
-      } else if (key === 'id') {
-        props.id = value;
-      } else if (key.startsWith('.')) {
-        // Class shorthand
-        classes.push(key.slice(1));
-      } else if (key.startsWith('#')) {
-        // ID shorthand
-        props.id = key.slice(1);
-      } else {
-        props[key] = value;
-      }
-    }
+    // Collect classes from component definition
+    const componentClasses: string[] = componentDef?.classes ? [...componentDef.classes] : [];
 
     // Handle variant if specified (support both 'variant' and 'type' attributes)
-    const variantValue = attributes.variant || attributes.type;
+    const variantValue = safeAttributes.variant || safeAttributes.type;
     if (variantValue && componentDef?.variants?.[variantValue]) {
-      classes.push(...componentDef.variants[variantValue]);
+      componentClasses.push(...componentDef.variants[variantValue]);
     }
 
     // Handle dynamic class based on type attribute (e.g., for admonitions)
-    // This adds classes like "admonition-note" when type="note" is used
-    if (attributes.type && !componentDef?.variants?.[attributes.type]) {
-      // Add type-based class if no variant matched
-      const typeClass = `${componentDef?.tag || 'div'}-${attributes.type}`;
-      // Check if base class exists and add type variant
+    if (safeAttributes.type && !componentDef?.variants?.[safeAttributes.type]) {
       if (componentDef?.classes?.length > 0) {
         const baseClass = componentDef.classes[0];
-        classes.push(`${baseClass}-${attributes.type}`);
+        componentClasses.push(`${baseClass}-${safeAttributes.type}`);
       }
     }
 
-    if (classes.length > 0) {
-      props.className = classes;
+    // Build attributes object for hastscript
+    // hastscript's h() function automatically handles:
+    // - .class-name -> className
+    // - #id-name -> id
+    // - boolean attributes
+    const hastAttrs: Record<string, any> = {};
+
+    // Process all attributes
+    for (const [key, value] of Object.entries(safeAttributes)) {
+      // Skip variant/type as we already processed them for classes
+      if (key === 'variant') continue;
+
+      if (key === 'class' || key === 'className') {
+        // Add to component classes
+        componentClasses.push(...String(value).split(/\s+/).filter(Boolean));
+      } else if (key === 'id') {
+        hastAttrs.id = value;
+      } else if (key.startsWith('.')) {
+        // Class shorthand: .my-class -> add to classes
+        componentClasses.push(key.slice(1));
+      } else if (key.startsWith('#')) {
+        // ID shorthand: #my-id -> set id
+        hastAttrs.id = key.slice(1);
+      } else if (value === '' || value === true) {
+        // Boolean attribute: disabled, readonly, etc.
+        hastAttrs[key] = true;
+      } else {
+        // Regular attribute
+        hastAttrs[key] = value;
+      }
     }
 
+    // Add collected classes
+    if (componentClasses.length > 0) {
+      // Use className array for proper hastscript handling
+      hastAttrs.className = [...new Set(componentClasses)]; // Remove duplicates
+    }
+
+    // Use hastscript to build proper hast properties
+    // This handles edge cases and normalizes attributes correctly
+    const hastNode = h(tagName, hastAttrs);
+
     return {
-      tagName: componentDef?.tag || 'div',
-      properties: props,
+      tagName,
+      properties: hastNode.properties || {},
     };
   }
 }
