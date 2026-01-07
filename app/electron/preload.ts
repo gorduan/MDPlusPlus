@@ -51,6 +51,29 @@ export interface AppPaths {
   recovery: string;
   welcome: string;
   session: string;
+  sessions: string;
+}
+
+// Multi-Instance Types
+export interface WindowState {
+  displayId: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  isMaximized: boolean;
+  isFullScreen: boolean;
+}
+
+export interface InstanceInfo {
+  displayName: string;
+  lastOpened: string;
+  tabCount: number;
+}
+
+export interface InstancesData {
+  instances: Record<string, InstanceInfo>;
+  lastUsedInstanceId: string;
 }
 export type ExportTheme = 'dark' | 'light';
 
@@ -222,6 +245,22 @@ const electronAPI = {
     ipcRenderer.on('session-restore', handler);
     return () => ipcRenderer.removeListener('session-restore', handler);
   },
+
+  // Multi-Instance Management
+  getInstanceId: (): Promise<string | null> =>
+    ipcRenderer.invoke('get-instance-id'),
+
+  getAllInstances: (): Promise<InstancesData> =>
+    ipcRenderer.invoke('get-all-instances'),
+
+  getWindowState: (): Promise<WindowState | null> =>
+    ipcRenderer.invoke('get-window-state'),
+
+  deleteInstance: (instanceId: string): Promise<void> =>
+    ipcRenderer.invoke('delete-instance', instanceId),
+
+  renameInstance: (instanceId: string, newName: string): Promise<void> =>
+    ipcRenderer.invoke('rename-instance', instanceId, newName),
 
   // Settings storage (profiles and themes as JSON files)
   loadSettings: (key: string): Promise<unknown | null> =>

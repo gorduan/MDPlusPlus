@@ -30,6 +30,7 @@ interface RecentFile {
   pinned?: boolean;
 }
 
+// Legacy session format (for migration)
 interface SessionState {
   version: number;
   lastOpened: string;
@@ -39,11 +40,49 @@ interface SessionState {
 }
 
 // ============================================
+// Multi-Instance Types
+// ============================================
+
+interface WindowState {
+  displayId: string;        // Monitor identification
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  isMaximized: boolean;
+  isFullScreen: boolean;
+}
+
+interface InstanceSession {
+  instanceId: string;
+  version: number;
+  lastOpened: string;
+  windowState: WindowState;
+  activeTabId: string;
+  tabs: TabState[];
+  recentFiles: RecentFile[];
+}
+
+interface InstanceInfo {
+  displayName: string;
+  lastOpened: string;
+  tabCount: number;
+}
+
+interface InstancesIndex {
+  version: number;
+  lastUsedInstanceId: string;
+  instances: Record<string, InstanceInfo>;
+}
+
+// ============================================
 // App Data Paths
 // ============================================
 
 const APP_DATA_PATH = join(homedir(), 'AppData', 'Roaming', 'MDPlusPlus');
-const SESSION_FILE = join(APP_DATA_PATH, 'session.json');
+const SESSION_FILE = join(APP_DATA_PATH, 'session.json'); // Legacy, for migration
+const SESSIONS_DIR = join(APP_DATA_PATH, 'sessions');
+const INSTANCES_INDEX_FILE = join(SESSIONS_DIR, 'instances.json');
 const RECOVERY_DIR = join(APP_DATA_PATH, 'recovery');
 const APP_WELCOME_FILE = join(APP_DATA_PATH, 'welcome.md');
 
@@ -54,10 +93,74 @@ app.disableHardwareAcceleration();
 let mainWindow: BrowserWindow | null = null;
 let currentFilePath: string | null = null;
 let isModified = false;
+let currentInstanceId: string | null = null;
 
 // Recent files storage (loaded from session)
 let recentFiles: string[] = [];
 const MAX_RECENT_FILES = 10;
+
+// ============================================
+// UUID Generation
+// ============================================
+
+function generateInstanceId(): string {
+  // Simple UUID v4 implementation
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+// ============================================
+// Display Identification
+// ============================================
+
+function getDisplayId(bounds: Electron.Rectangle): string {
+  const display = screen.getDisplayMatching(bounds);
+  return `${display.bounds.x}_${display.bounds.y}_${display.size.width}x${display.size.height}`;
+}
+
+function getCurrentWindowState(): WindowState | null {
+  if (!mainWindow) return null;
+
+  const bounds = mainWindow.getBounds();
+  return {
+    displayId: getDisplayId(bounds),
+    x: bounds.x,
+    y: bounds.y,
+    width: bounds.width,
+    height: bounds.height,
+    isMaximized: mainWindow.isMaximized(),
+    isFullScreen: mainWindow.isFullScreen(),
+  };
+}
+
+function restoreWindowBounds(windowState: WindowState): Electron.Rectangle {
+  const displays = screen.getAllDisplays();
+  const targetDisplay = displays.find(
+    (d) => getDisplayId(d.bounds) === windowState.displayId
+  );
+
+  if (targetDisplay) {
+    // Ensure window is within display bounds
+    const x = Math.max(
+      targetDisplay.bounds.x,
+      Math.min(windowState.x, targetDisplay.bounds.x + targetDisplay.bounds.width - windowState.width)
+    );
+    const y = Math.max(
+      targetDisplay.bounds.y,
+      Math.min(windowState.y, targetDisplay.bounds.y + targetDisplay.bounds.height - windowState.height)
+    );
+    return { x, y, width: windowState.width, height: windowState.height };
+  }
+
+  // Fallback: center on primary display
+  const primary = screen.getPrimaryDisplay();
+  const x = Math.round((primary.workAreaSize.width - windowState.width) / 2);
+  const y = Math.round((primary.workAreaSize.height - windowState.height) / 2);
+  return { x, y, width: windowState.width, height: windowState.height };
+}
 
 // ============================================
 // Session & Recovery Functions
@@ -73,37 +176,325 @@ function ensureAppDataDirs(): void {
   if (!existsSync(RECOVERY_DIR)) {
     mkdirSync(RECOVERY_DIR, { recursive: true });
   }
+  if (!existsSync(SESSIONS_DIR)) {
+    mkdirSync(SESSIONS_DIR, { recursive: true });
+  }
+}
+
+// ============================================
+// Instance Session Functions (Multi-Instance Support)
+// ============================================
+
+function getInstanceSessionPath(instanceId: string): string {
+  return join(SESSIONS_DIR, `${instanceId}.json`);
 }
 
 /**
- * Load session state from disk
+ * Load instance session with backup fallback
  */
-async function loadSession(): Promise<SessionState | null> {
+async function loadInstanceSession(instanceId: string): Promise<InstanceSession | null> {
+  const filePath = getInstanceSessionPath(instanceId);
+  const backupPath = `${filePath}.backup`;
+
+  try {
+    if (existsSync(filePath)) {
+      const content = await readFile(filePath, 'utf-8');
+
+      try {
+        const parsed = JSON.parse(content) as InstanceSession;
+        console.log(`[Session] Loaded instance ${instanceId}`);
+
+        // Create backup on successful load
+        await writeFile(backupPath, content, 'utf-8');
+
+        // Update recent files in memory
+        if (parsed.recentFiles) {
+          recentFiles = parsed.recentFiles.map((rf) => rf.path);
+        }
+
+        return parsed;
+      } catch (parseError) {
+        console.error(`[Session] JSON parse error for instance ${instanceId}, trying backup:`, parseError);
+
+        // Try backup if main file corrupted
+        if (existsSync(backupPath)) {
+          const backupContent = await readFile(backupPath, 'utf-8');
+          const backupParsed = JSON.parse(backupContent) as InstanceSession;
+          console.log(`[Session] Restored instance ${instanceId} from backup`);
+          return backupParsed;
+        }
+
+        throw parseError;
+      }
+    }
+    console.log(`[Session] No session file found for instance ${instanceId}`);
+    return null;
+  } catch (error) {
+    console.error(`[Session] Failed to load instance ${instanceId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Save instance session with atomic write
+ */
+async function saveInstanceSession(session: InstanceSession): Promise<void> {
+  try {
+    ensureAppDataDirs();
+    const filePath = getInstanceSessionPath(session.instanceId);
+    const tempPath = `${filePath}.tmp`;
+    const jsonContent = JSON.stringify(session, null, 2);
+
+    // Atomic write: temp file → delete old → rename
+    await writeFile(tempPath, jsonContent, 'utf-8');
+
+    if (existsSync(filePath)) {
+      await rm(filePath);
+    }
+
+    await rename(tempPath, filePath);
+    console.log(`[Session] Saved instance ${session.instanceId}`);
+  } catch (error) {
+    console.error(`[Session] Failed to save instance ${session.instanceId}:`, error);
+  }
+}
+
+/**
+ * Delete instance session
+ */
+async function deleteInstanceSession(instanceId: string): Promise<void> {
+  try {
+    const filePath = getInstanceSessionPath(instanceId);
+    const backupPath = `${filePath}.backup`;
+
+    if (existsSync(filePath)) {
+      await rm(filePath);
+    }
+    if (existsSync(backupPath)) {
+      await rm(backupPath);
+    }
+
+    console.log(`[Session] Deleted instance ${instanceId}`);
+  } catch (error) {
+    console.error(`[Session] Failed to delete instance ${instanceId}:`, error);
+  }
+}
+
+// ============================================
+// Instances Index Functions
+// ============================================
+
+/**
+ * Load instances index with backup fallback
+ */
+async function loadInstancesIndex(): Promise<InstancesIndex> {
+  const backupPath = `${INSTANCES_INDEX_FILE}.backup`;
+
+  try {
+    if (existsSync(INSTANCES_INDEX_FILE)) {
+      const content = await readFile(INSTANCES_INDEX_FILE, 'utf-8');
+
+      try {
+        const parsed = JSON.parse(content) as InstancesIndex;
+        console.log(`[Session] Loaded instances index`);
+
+        // Create backup on successful load
+        await writeFile(backupPath, content, 'utf-8');
+
+        return parsed;
+      } catch (parseError) {
+        console.error(`[Session] JSON parse error for instances index, trying backup:`, parseError);
+
+        if (existsSync(backupPath)) {
+          const backupContent = await readFile(backupPath, 'utf-8');
+          const backupParsed = JSON.parse(backupContent) as InstancesIndex;
+          console.log(`[Session] Restored instances index from backup`);
+          return backupParsed;
+        }
+
+        throw parseError;
+      }
+    }
+  } catch (error) {
+    console.error(`[Session] Failed to load instances index:`, error);
+  }
+
+  // Return empty index
+  return {
+    version: 1,
+    lastUsedInstanceId: '',
+    instances: {},
+  };
+}
+
+/**
+ * Save instances index with atomic write
+ */
+async function saveInstancesIndex(index: InstancesIndex): Promise<void> {
+  try {
+    ensureAppDataDirs();
+    const tempPath = `${INSTANCES_INDEX_FILE}.tmp`;
+    const jsonContent = JSON.stringify(index, null, 2);
+
+    await writeFile(tempPath, jsonContent, 'utf-8');
+
+    if (existsSync(INSTANCES_INDEX_FILE)) {
+      await rm(INSTANCES_INDEX_FILE);
+    }
+
+    await rename(tempPath, INSTANCES_INDEX_FILE);
+    console.log(`[Session] Saved instances index`);
+  } catch (error) {
+    console.error(`[Session] Failed to save instances index:`, error);
+  }
+}
+
+/**
+ * Update instance info in index
+ */
+async function updateInstanceInIndex(
+  instanceId: string,
+  displayName: string,
+  tabCount: number
+): Promise<void> {
+  const index = await loadInstancesIndex();
+
+  index.instances[instanceId] = {
+    displayName,
+    lastOpened: new Date().toISOString(),
+    tabCount,
+  };
+  index.lastUsedInstanceId = instanceId;
+
+  await saveInstancesIndex(index);
+}
+
+/**
+ * Remove instance from index
+ */
+async function removeInstanceFromIndex(instanceId: string): Promise<void> {
+  const index = await loadInstancesIndex();
+
+  delete index.instances[instanceId];
+
+  // Update lastUsedInstanceId if it was this instance
+  if (index.lastUsedInstanceId === instanceId) {
+    const remaining = Object.keys(index.instances);
+    index.lastUsedInstanceId = remaining.length > 0 ? remaining[0] : '';
+  }
+
+  await saveInstancesIndex(index);
+}
+
+// ============================================
+// Legacy Session Functions (for migration)
+// ============================================
+
+/**
+ * Load legacy session state from disk
+ */
+async function loadLegacySession(): Promise<SessionState | null> {
   try {
     if (existsSync(SESSION_FILE)) {
       const content = await readFile(SESSION_FILE, 'utf-8');
       const session = JSON.parse(content) as SessionState;
-      // Load recent files into memory
-      if (session.recentFiles) {
-        recentFiles = session.recentFiles.map(rf => rf.path);
-      }
       return session;
     }
   } catch (error) {
-    console.error('Failed to load session:', error);
+    console.error('Failed to load legacy session:', error);
   }
   return null;
 }
 
 /**
- * Save session state to disk
+ * Migrate legacy session to new instance format
+ */
+async function migrateLegacySession(): Promise<string | null> {
+  const legacySession = await loadLegacySession();
+
+  if (!legacySession) {
+    return null;
+  }
+
+  console.log(`[Session] Migrating legacy session...`);
+
+  const instanceId = generateInstanceId();
+  const primaryDisplay = screen.getPrimaryDisplay();
+
+  // Create new instance session
+  const instanceSession: InstanceSession = {
+    instanceId,
+    version: 1,
+    lastOpened: legacySession.lastOpened || new Date().toISOString(),
+    windowState: {
+      displayId: getDisplayId(primaryDisplay.bounds),
+      x: Math.round((primaryDisplay.workAreaSize.width - 1200) / 2),
+      y: Math.round((primaryDisplay.workAreaSize.height - 800) / 2),
+      width: 1200,
+      height: 800,
+      isMaximized: false,
+      isFullScreen: false,
+    },
+    activeTabId: legacySession.activeTabId,
+    tabs: legacySession.tabs,
+    recentFiles: legacySession.recentFiles,
+  };
+
+  // Save as new instance
+  await saveInstanceSession(instanceSession);
+
+  // Update index
+  await updateInstanceInIndex(
+    instanceId,
+    'Migrierte Session',
+    legacySession.tabs.length
+  );
+
+  // Delete legacy session file
+  try {
+    await rm(SESSION_FILE);
+    console.log(`[Session] Deleted legacy session file`);
+  } catch {
+    console.log(`[Session] Could not delete legacy session file`);
+  }
+
+  console.log(`[Session] Migration complete, new instance: ${instanceId}`);
+  return instanceId;
+}
+
+/**
+ * Save session state to disk (legacy format, for backward compatibility)
  */
 async function saveSession(session: SessionState): Promise<void> {
-  try {
-    ensureAppDataDirs();
-    await writeFile(SESSION_FILE, JSON.stringify(session, null, 2), 'utf-8');
-  } catch (error) {
-    console.error('Failed to save session:', error);
+  // Convert to instance session and save
+  if (currentInstanceId) {
+    const windowState = getCurrentWindowState();
+    const instanceSession: InstanceSession = {
+      instanceId: currentInstanceId,
+      version: 1,
+      lastOpened: session.lastOpened,
+      windowState: windowState || {
+        displayId: '',
+        x: 0,
+        y: 0,
+        width: 1200,
+        height: 800,
+        isMaximized: false,
+        isFullScreen: false,
+      },
+      activeTabId: session.activeTabId,
+      tabs: session.tabs,
+      recentFiles: session.recentFiles,
+    };
+
+    await saveInstanceSession(instanceSession);
+
+    // Update index
+    await updateInstanceInIndex(
+      currentInstanceId,
+      `Instanz`,
+      session.tabs.length
+    );
   }
 }
 
@@ -204,13 +595,130 @@ async function getWelcomeContent(): Promise<string> {
   return '# Welcome to MD++\n\nStart typing to begin...';
 }
 
+// Debounce utility for window state saving
+function debounce<T extends (...args: unknown[]) => void>(
+  fn: T,
+  delay: number
+): (...args: Parameters<T>) => void {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  return (...args: Parameters<T>) => {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+}
+
+// Track pending window state (for debounced save)
+let pendingWindowStateSave: (() => Promise<void>) | null = null;
+
+/**
+ * Save current window state to instance session
+ */
+async function saveCurrentWindowState(): Promise<void> {
+  if (!mainWindow || !currentInstanceId) return;
+
+  const windowState = getCurrentWindowState();
+  if (!windowState) return;
+
+  // Load current instance session and update window state
+  const session = await loadInstanceSession(currentInstanceId);
+  if (session) {
+    session.windowState = windowState;
+    session.lastOpened = new Date().toISOString();
+    await saveInstanceSession(session);
+  }
+}
+
+// Debounced version for frequent events (move/resize)
+const debouncedSaveWindowState = debounce(() => {
+  saveCurrentWindowState();
+}, 500);
+
+/**
+ * Setup window state tracking events
+ */
+function setupWindowStateTracking(): void {
+  if (!mainWindow) return;
+
+  // Debounced save for frequent events
+  mainWindow.on('move', () => {
+    if (!mainWindow?.isMaximized() && !mainWindow?.isFullScreen()) {
+      debouncedSaveWindowState();
+    }
+  });
+
+  mainWindow.on('resize', () => {
+    if (!mainWindow?.isMaximized() && !mainWindow?.isFullScreen()) {
+      debouncedSaveWindowState();
+    }
+  });
+
+  // Immediate save for state changes
+  mainWindow.on('maximize', () => {
+    saveCurrentWindowState();
+  });
+
+  mainWindow.on('unmaximize', () => {
+    saveCurrentWindowState();
+  });
+
+  mainWindow.on('enter-full-screen', () => {
+    saveCurrentWindowState();
+  });
+
+  mainWindow.on('leave-full-screen', () => {
+    saveCurrentWindowState();
+  });
+}
+
 /**
  * Create the main application window
  */
-function createWindow(): void {
+async function createWindow(): Promise<void> {
+  // Determine instance ID and load session
+  ensureAppDataDirs();
+
+  // Check for legacy session to migrate
+  const migratedInstanceId = await migrateLegacySession();
+
+  // Load instances index
+  const instancesIndex = await loadInstancesIndex();
+
+  // Determine which instance to use
+  let instanceSession: InstanceSession | null = null;
+
+  if (migratedInstanceId) {
+    // Use migrated session
+    currentInstanceId = migratedInstanceId;
+    instanceSession = await loadInstanceSession(migratedInstanceId);
+  } else if (instancesIndex.lastUsedInstanceId) {
+    // Try to load last used instance
+    currentInstanceId = instancesIndex.lastUsedInstanceId;
+    instanceSession = await loadInstanceSession(instancesIndex.lastUsedInstanceId);
+  }
+
+  // If no existing instance, create new one
+  if (!currentInstanceId) {
+    currentInstanceId = generateInstanceId();
+    console.log(`[Session] Created new instance: ${currentInstanceId}`);
+  }
+
+  // Determine window bounds
+  let windowBounds = { x: undefined as number | undefined, y: undefined as number | undefined, width: 1200, height: 800 };
+  let shouldMaximize = false;
+  let shouldFullScreen = false;
+
+  if (instanceSession?.windowState) {
+    const restored = restoreWindowBounds(instanceSession.windowState);
+    windowBounds = { x: restored.x, y: restored.y, width: restored.width, height: restored.height };
+    shouldMaximize = instanceSession.windowState.isMaximized;
+    shouldFullScreen = instanceSession.windowState.isFullScreen;
+  }
+
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: windowBounds.width,
+    height: windowBounds.height,
+    x: windowBounds.x,
+    y: windowBounds.y,
     title: 'MD++ Editor',
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -219,10 +727,20 @@ function createWindow(): void {
       sandbox: false,
       spellcheck: true,
     },
-    show: true,
-    center: true,
+    show: false, // Show after positioning
     backgroundColor: '#1e1e1e',
   });
+
+  // Apply window state (maximize/fullscreen)
+  if (shouldMaximize) {
+    mainWindow.maximize();
+  }
+  if (shouldFullScreen) {
+    mainWindow.setFullScreen(true);
+  }
+
+  // Setup window state tracking
+  setupWindowStateTracking();
 
   // Enable spellcheck for German and English
   mainWindow.webContents.session.setSpellCheckerLanguages(['de', 'en-US']);
@@ -293,19 +811,11 @@ function createWindow(): void {
 
   mainWindow.loadFile(rendererPath);
 
-  // Force window to front and ensure it's visible on primary display
+  // Show window when ready
   mainWindow.once('ready-to-show', () => {
     if (!mainWindow) return;
 
-    // Get primary display bounds
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
-
-    // Center on primary display
-    const winBounds = mainWindow.getBounds();
-    const x = Math.round((screenWidth - winBounds.width) / 2);
-    const y = Math.round((screenHeight - winBounds.height) / 2);
-    mainWindow.setBounds({ x, y, width: winBounds.width, height: winBounds.height });
+    const bounds = mainWindow.getBounds();
 
     // Force visibility
     mainWindow.show();
@@ -317,7 +827,7 @@ function createWindow(): void {
       mainWindow?.setAlwaysOnTop(false);
     }, 500);
 
-    console.log('Window shown on primary display at:', x, y);
+    console.log('Window shown on display at:', bounds.x, bounds.y);
 
     // Initialize app (session restore or welcome)
     initializeApp();
@@ -1104,16 +1614,70 @@ ipcMain.handle('get-plugin-path', () => {
 // Session & Recovery IPC Handlers
 // ============================================
 
+// Get current instance session (replaces legacy get-session)
 ipcMain.handle('get-session', async () => {
-  return await loadSession();
+  if (!currentInstanceId) {
+    return null;
+  }
+  const session = await loadInstanceSession(currentInstanceId);
+  // Return in legacy format for backward compatibility with renderer
+  if (session) {
+    return {
+      version: session.version,
+      lastOpened: session.lastOpened,
+      activeTabId: session.activeTabId,
+      tabs: session.tabs,
+      recentFiles: session.recentFiles,
+    } as SessionState;
+  }
+  return null;
 });
 
+// Save session (converts to instance session internally)
 ipcMain.handle('save-session', async (_, session: SessionState) => {
   await saveSession(session);
   // Update recent files in memory for menu
   if (session.recentFiles) {
     recentFiles = session.recentFiles.map(rf => rf.path);
     createMenu();
+  }
+});
+
+// ============================================
+// Instance Management IPC Handlers
+// ============================================
+
+// Get current instance ID
+ipcMain.handle('get-instance-id', () => {
+  return currentInstanceId;
+});
+
+// Get all instances
+ipcMain.handle('get-all-instances', async () => {
+  const index = await loadInstancesIndex();
+  return {
+    instances: index.instances,
+    lastUsedInstanceId: index.lastUsedInstanceId,
+  };
+});
+
+// Get current window state
+ipcMain.handle('get-window-state', () => {
+  return getCurrentWindowState();
+});
+
+// Delete an instance
+ipcMain.handle('delete-instance', async (_, instanceId: string) => {
+  await deleteInstanceSession(instanceId);
+  await removeInstanceFromIndex(instanceId);
+});
+
+// Rename an instance
+ipcMain.handle('rename-instance', async (_, instanceId: string, newName: string) => {
+  const index = await loadInstancesIndex();
+  if (index.instances[instanceId]) {
+    index.instances[instanceId].displayName = newName;
+    await saveInstancesIndex(index);
   }
 });
 
@@ -1138,7 +1702,8 @@ ipcMain.handle('get-app-paths', () => {
     appData: APP_DATA_PATH,
     recovery: RECOVERY_DIR,
     welcome: APP_WELCOME_FILE,
-    session: SESSION_FILE,
+    session: SESSION_FILE, // Legacy path
+    sessions: SESSIONS_DIR,
   };
 });
 
