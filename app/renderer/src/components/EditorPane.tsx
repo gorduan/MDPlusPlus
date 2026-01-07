@@ -45,6 +45,8 @@ const EditorPane = forwardRef<EditorPaneRef, EditorPaneProps>(
     // Store scroll percentage to restore on mode switch
     const scrollPercentageRef = useRef<number>(0);
     const pendingScrollRestoreRef = useRef<boolean>(false);
+    // Flag to prevent scroll tracking during restore
+    const isRestoringScrollRef = useRef<boolean>(false);
 
     // Expose methods to parent
     useImperativeHandle(ref, () => ({
@@ -99,15 +101,24 @@ const EditorPane = forwardRef<EditorPaneRef, EditorPaneProps>(
 
       // Restore scroll position after mount
       if (pendingScrollRestoreRef.current) {
-        // Small delay to ensure editor is fully rendered
+        const savedPercentage = scrollPercentageRef.current;
+        isRestoringScrollRef.current = true;
+
+        // Use multiple frames to ensure Monaco has fully rendered content
         requestAnimationFrame(() => {
-          const scrollHeight = editorInstance.getScrollHeight();
-          const clientHeight = editorInstance.getLayoutInfo().height;
-          const maxScroll = scrollHeight - clientHeight;
-          if (maxScroll > 0) {
-            editorInstance.setScrollTop(scrollPercentageRef.current * maxScroll);
-          }
-          pendingScrollRestoreRef.current = false;
+          requestAnimationFrame(() => {
+            const scrollHeight = editorInstance.getScrollHeight();
+            const clientHeight = editorInstance.getLayoutInfo().height;
+            const maxScroll = scrollHeight - clientHeight;
+            if (maxScroll > 0) {
+              editorInstance.setScrollTop(savedPercentage * maxScroll);
+            }
+            pendingScrollRestoreRef.current = false;
+            // Reset restore flag after a short delay to let scroll events settle
+            setTimeout(() => {
+              isRestoringScrollRef.current = false;
+            }, 100);
+          });
         });
       }
 
@@ -123,13 +134,22 @@ const EditorPane = forwardRef<EditorPaneRef, EditorPaneProps>(
 
       // Restore scroll position after mount
       if (element && pendingScrollRestoreRef.current) {
-        // Small delay to ensure content is fully rendered
+        const savedPercentage = scrollPercentageRef.current;
+        isRestoringScrollRef.current = true;
+
+        // Use multiple frames to ensure TipTap has fully rendered content
         requestAnimationFrame(() => {
-          const maxScroll = element.scrollHeight - element.clientHeight;
-          if (maxScroll > 0) {
-            element.scrollTop = scrollPercentageRef.current * maxScroll;
-          }
-          pendingScrollRestoreRef.current = false;
+          requestAnimationFrame(() => {
+            const maxScroll = element.scrollHeight - element.clientHeight;
+            if (maxScroll > 0) {
+              element.scrollTop = savedPercentage * maxScroll;
+            }
+            pendingScrollRestoreRef.current = false;
+            // Reset restore flag after a short delay to let scroll events settle
+            setTimeout(() => {
+              isRestoringScrollRef.current = false;
+            }, 100);
+          });
         });
       }
 
@@ -141,11 +161,14 @@ const EditorPane = forwardRef<EditorPaneRef, EditorPaneProps>(
 
     // Track scroll position continuously for Monaco
     const handleMonacoScroll = useCallback((editorInstance: editor.IStandaloneCodeEditor) => {
-      const scrollTop = editorInstance.getScrollTop();
-      const scrollHeight = editorInstance.getScrollHeight();
-      const clientHeight = editorInstance.getLayoutInfo().height;
-      const maxScroll = scrollHeight - clientHeight;
-      scrollPercentageRef.current = maxScroll > 0 ? scrollTop / maxScroll : 0;
+      // Don't update scroll percentage while restoring position
+      if (!isRestoringScrollRef.current) {
+        const scrollTop = editorInstance.getScrollTop();
+        const scrollHeight = editorInstance.getScrollHeight();
+        const clientHeight = editorInstance.getLayoutInfo().height;
+        const maxScroll = scrollHeight - clientHeight;
+        scrollPercentageRef.current = maxScroll > 0 ? scrollTop / maxScroll : 0;
+      }
 
       // Call parent handler
       if (onScroll) {
@@ -155,8 +178,11 @@ const EditorPane = forwardRef<EditorPaneRef, EditorPaneProps>(
 
     // Track scroll position continuously for WYSIWYG
     const handleWysiwygScrollInternal = useCallback((scrollInfo: WysiwygScrollInfo) => {
-      const maxScroll = scrollInfo.scrollHeight - scrollInfo.clientHeight;
-      scrollPercentageRef.current = maxScroll > 0 ? scrollInfo.scrollTop / maxScroll : 0;
+      // Don't update scroll percentage while restoring position
+      if (!isRestoringScrollRef.current) {
+        const maxScroll = scrollInfo.scrollHeight - scrollInfo.clientHeight;
+        scrollPercentageRef.current = maxScroll > 0 ? scrollInfo.scrollTop / maxScroll : 0;
+      }
 
       // Call parent handler
       if (onWysiwygScroll) {
