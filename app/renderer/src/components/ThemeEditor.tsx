@@ -66,6 +66,8 @@ interface ThemeEditorProps {
   onModificationAction: (action: ThemeModificationAction, pendingColors: ThemeColors) => void;
   /** Check if a name is already taken */
   isNameTaken: (name: string, excludeId?: string) => boolean;
+  /** Called when preview colors change (for live preview in Preview component) */
+  onPreviewColorsChange?: (colors: ThemeColors) => void;
 }
 
 // ============================================
@@ -205,12 +207,9 @@ function getColorGroups(colors: ThemeColors): ColorGroup[] {
 // Helper Functions
 // ============================================
 
-function applyThemeToDocument(colors: ThemeColors): void {
-  const root = document.documentElement;
-  Object.entries(colors).forEach(([variable, value]) => {
-    root.style.setProperty(variable, value);
-  });
-}
+// NOTE: We no longer apply theme colors to document root.
+// The Preview component receives themeColors as a prop and applies them via inline styles.
+// The UI theme is controlled separately via data-theme attribute.
 
 // ============================================
 // Component: ColorSwatch
@@ -303,6 +302,7 @@ export default function ThemeEditor({
   onColorsChange,
   onModificationAction,
   isNameTaken,
+  onPreviewColorsChange,
 }: ThemeEditorProps) {
   const [selectedGroup, setSelectedGroup] = useState<string>('backgrounds');
   const [selectedToken, setSelectedToken] = useState<ColorToken | null>(null);
@@ -316,12 +316,12 @@ export default function ThemeEditor({
     setSelectedToken(null);
   }, [activeTheme.id]); // Only react to theme ID changes, not color changes
 
-  // Apply colors live for preview
+  // Notify parent of preview colors for live preview in Preview component
   useEffect(() => {
-    if (isOpen) {
-      applyThemeToDocument(localColors);
+    if (isOpen && onPreviewColorsChange) {
+      onPreviewColorsChange(localColors);
     }
-  }, [localColors, isOpen]);
+  }, [localColors, isOpen, onPreviewColorsChange]);
 
   const handleColorChange = useCallback((variable: keyof ThemeColors, value: string) => {
     const newColors = { ...localColors, [variable]: value };
@@ -361,7 +361,7 @@ export default function ThemeEditor({
     } else {
       // Reset to original colors
       setLocalColors(activeTheme.colors);
-      applyThemeToDocument(activeTheme.colors);
+      // Preview colors will update via the useEffect above
     }
   }, [pendingColors, onModificationAction, onClose, activeTheme.colors]);
 
@@ -371,7 +371,7 @@ export default function ThemeEditor({
     if (activeTheme.isReadOnly) {
       // Just reset local preview
       setLocalColors(defaults);
-      applyThemeToDocument(defaults);
+      // Preview colors will update via the useEffect above
     } else {
       // Actually update the theme
       setLocalColors(defaults);

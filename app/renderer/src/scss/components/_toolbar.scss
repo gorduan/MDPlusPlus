@@ -242,6 +242,43 @@
     background: var(--border-color);
     margin: 0 map.get($spacing, 1);
   }
+
+  // Theme Toggle Button - Shows both sun and moon icons
+  &__btn--theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 1);
+    padding: map.get($spacing, 2);
+    border-radius: map.get($radii, md);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+
+    &:hover {
+      border-color: var(--accent);
+    }
+  }
+
+  // Theme icons within the toggle button
+  &__theme-icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    opacity: 0.4;
+    transition: opacity $transition-fast, color $transition-fast;
+
+    &--active {
+      opacity: 1;
+      color: var(--accent-light);
+    }
+
+    &--sun {
+      color: #f59e0b; // Warm yellow/orange for sun
+    }
+
+    &--moon {
+      color: #6366f1; // Cool indigo/blue for moon
+    }
+  }
 }
 
 // Legacy class support (for backward compatibility)

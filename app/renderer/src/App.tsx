@@ -20,8 +20,23 @@ import { useProfiles } from './hooks/useProfiles';
 import { useThemes } from './hooks/useThemes';
 import type { ProfileModificationAction } from './types/profiles';
 import type { ThemeModificationAction, ThemeColors } from './types/themes';
-import { THEME_IDS } from './types/themes';
 import type { ViewMode, PluginData, SessionState, TabState as IpcTabState } from '../../electron/preload';
+
+// Storage key for UI theme preference (separate from Preview theme)
+const UI_THEME_STORAGE_KEY = 'mdpp-ui-theme';
+
+// Helper to get saved UI theme from localStorage
+function getSavedUITheme(): Theme {
+  try {
+    const saved = localStorage.getItem(UI_THEME_STORAGE_KEY);
+    if (saved === 'light' || saved === 'dark') {
+      return saved;
+    }
+  } catch {
+    // localStorage not available
+  }
+  return 'dark'; // Default to dark
+}
 
 // Empty content for new files
 const NEW_FILE_CONTENT = '';
@@ -90,14 +105,20 @@ export default function App() {
   const [showAIContext, setShowAIContext] = useState(false);
   const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
   const [settingsOpen, setSettingsOpen] = useState(false);
-  // theme for toolbar is derived from activeTheme.baseType
-  const theme: Theme = activeTheme.baseType;
+
+  // UI Theme (toolbar toggle) - affects app UI, NOT preview
+  // This is separate from the Preview theme (Theme Editor)
+  const [uiTheme, setUITheme] = useState<Theme>(getSavedUITheme);
+
+  // Preview theme is derived from activeTheme.baseType (controlled by Theme Editor)
+  const previewTheme: Theme = activeTheme.baseType;
+
   const editorRef = useRef<EditorPaneRef | null>(null);
 
   // Refs to track current values for IPC handlers (avoids stale closures)
   const contentRef = useRef(content);
   const filePathRef = useRef(filePath);
-  const themeRef = useRef(theme);
+  const previewThemeRef = useRef(previewTheme);
   const tabsRef = useRef(tabs);
   const activeTabIdRef = useRef(activeTabId);
 
@@ -108,8 +129,8 @@ export default function App() {
     filePathRef.current = filePath;
   }, [filePath]);
   useEffect(() => {
-    themeRef.current = theme;
-  }, [theme]);
+    previewThemeRef.current = previewTheme;
+  }, [previewTheme]);
   useEffect(() => {
     tabsRef.current = tabs;
   }, [tabs]);
@@ -128,6 +149,10 @@ export default function App() {
   const [isDragging, setIsDragging] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Preview colors state for Theme Editor live preview
+  // When Theme Editor is open, this overrides activeTheme.colors for the Preview
+  const [previewColorsOverride, setPreviewColorsOverride] = useState<ThemeColors | null>(null);
 
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -149,30 +174,31 @@ export default function App() {
     direction: 'bidirectional',
   });
 
-  // Apply theme to document
+  // Apply UI theme to document (affects app UI: toolbar, sidebar, editor, tabs, status bar)
+  // This does NOT affect the Preview - that uses CSS variables from ThemeService
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+    document.documentElement.setAttribute('data-theme', uiTheme);
+    localStorage.setItem(UI_THEME_STORAGE_KEY, uiTheme);
+  }, [uiTheme]);
 
-  // Toggle theme - only switches between built-in Light/Dark
-  // This is a temporary override and doesn't change the profile's default theme
+  // Toggle UI theme - only switches between light/dark for app interface
+  // Preview theme is controlled separately via Theme Editor
   const toggleTheme = useCallback(() => {
-    const newThemeId = theme === 'dark' ? THEME_IDS.LIGHT : THEME_IDS.DARK;
-    applyThemeTemporarily(newThemeId);
-  }, [theme, applyThemeTemporarily]);
+    setUITheme(prev => prev === 'dark' ? 'light' : 'dark');
+  }, []);
 
-  // Sync theme with profile's default theme when profile changes
+  // Sync Preview theme with profile's default theme when profile changes
   useEffect(() => {
     if (settings.defaultThemeId) {
       selectTheme(settings.defaultThemeId);
     }
   }, [settings.defaultThemeId, selectTheme]);
 
-  // Handle default theme change in settings
+  // Handle default theme change in settings (for Preview theme)
   const handleDefaultThemeChange = useCallback((themeId: string) => {
     // Update the profile's defaultThemeId
     updateSettings({ ...settings, defaultThemeId: themeId });
-    // Also apply the theme immediately
+    // Also apply the Preview theme immediately
     selectTheme(themeId);
   }, [settings, updateSettings, selectTheme]);
 
@@ -1873,7 +1899,7 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenThemeEditor={() => setThemeEditorOpen(true)}
         onOpenPluginManager={() => setPluginManagerOpen(true)}
-        theme={theme}
+        theme={uiTheme}
         onToggleTheme={toggleTheme}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         sidebarOpen={sidebarOpen}
@@ -1896,7 +1922,7 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
               content={content}
               onChange={handleContentChange}
               onCursorChange={setCursorPosition}
-              theme={theme}
+              theme={uiTheme}
               editorMode={editorMode}
               onScroll={handleEditorScroll}
               onWysiwygScroll={handleWysiwygScroll}
@@ -1912,7 +1938,8 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
               content={content}
               showAIContext={showAIContext}
               settings={settings}
-              theme={theme}
+              theme={previewTheme}
+              themeColors={previewColorsOverride ?? activeTheme.colors}
               filePath={filePath}
               scrollRef={scrollSyncPreviewRef}
               onScroll={handlePreviewScroll}
@@ -1978,7 +2005,10 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
       />
       <ThemeEditor
         isOpen={themeEditorOpen}
-        onClose={() => setThemeEditorOpen(false)}
+        onClose={() => {
+          setThemeEditorOpen(false);
+          setPreviewColorsOverride(null); // Reset override when closing
+        }}
         themes={themes}
         activeTheme={activeTheme}
         hasCustomTheme={hasCustomThemeInThemes}
@@ -1989,6 +2019,7 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
         onColorsChange={updateColors}
         onModificationAction={handleThemeModificationAction}
         isNameTaken={isThemeNameTaken}
+        onPreviewColorsChange={setPreviewColorsOverride}
       />
       {isDragging && (
         <div className="drop-overlay">

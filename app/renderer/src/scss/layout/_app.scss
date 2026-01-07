@@ -62,18 +62,32 @@
 }
 
 // Preview Pane
+// NOTE: This is the outer container. The actual preview content is in .preview-container
+// which receives theme colors via inline styles from the Preview component.
 .preview-pane {
   display: flex;
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
-  background-color: var(--bg-primary);
+  // Background color is intentionally NOT set here
+  // The .preview-container inside receives it via inline styles from themeColors
 }
 
 .preview-container {
   flex: 1;
   overflow: auto;
   padding: map.get($spacing, 8);
+
+  // IMPORTANT: Preview uses its own color scheme, independent of the app UI theme.
+  // The preview colors are set via inline styles (themeColors prop) from the Theme Editor.
+  // This prevents the UI theme toggle (data-theme) from affecting the preview.
+  //
+  // The color-scheme is set to 'normal' to prevent light-dark() from affecting child elements.
+  // Instead, we rely on the CSS custom properties being set directly on this element.
+  color-scheme: normal;
+
+  // NOTE: background-color and color are set via inline styles from themeColors prop
+  // This ensures the Preview uses Theme Editor colors, not the app UI theme
 }
 
 .preview-loading {

@@ -9,6 +9,7 @@ import { MDPlusPlus } from '../../../../src/parser';
 import type { RenderResult, RenderError, PluginDefinition } from '../../../../src/types';
 import type { ScriptBlockData } from '../script/types';
 import type { ParserSettings } from './SettingsDialog';
+import type { ThemeColors } from '../types/themes';
 import ScriptSecurityDialog from './ScriptSecurityDialog';
 import { useScriptExecution, extractScriptsFromDOM } from '../hooks/useScriptExecution';
 import mermaid from 'mermaid';
@@ -37,6 +38,8 @@ interface PreviewProps {
   showAIContext?: boolean;
   settings?: ParserSettings;
   theme?: Theme;
+  /** Theme colors from Theme Editor - applied only to preview */
+  themeColors?: ThemeColors;
   filePath?: string | null;
   /** Ref for scroll sync - attaches to the scrollable preview container */
   scrollRef?: React.RefObject<HTMLDivElement | null>;
@@ -44,7 +47,7 @@ interface PreviewProps {
   onScroll?: () => void;
 }
 
-export default function Preview({ content, showAIContext = false, settings, theme = 'dark', filePath, scrollRef, onScroll }: PreviewProps) {
+export default function Preview({ content, showAIContext = false, settings, theme = 'dark', themeColors, filePath, scrollRef, onScroll }: PreviewProps) {
   const [html, setHtml] = useState('');
   const [errors, setErrors] = useState<RenderError[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -367,11 +370,33 @@ export default function Preview({ content, showAIContext = false, settings, them
     });
   }, [scriptResults]);
 
+  // Create style object with theme colors for preview-specific styling
+  // These CSS custom properties are set on .preview-container and cascade to .preview-content
+  // This ensures the Preview uses the Theme Editor colors, NOT the app UI theme (light-dark)
+  const previewStyle = useMemo((): React.CSSProperties | undefined => {
+    if (!themeColors) return undefined;
+
+    // Build style object with all theme color variables
+    // React supports CSS custom properties in the style prop
+    const style: Record<string, string> = {};
+    Object.entries(themeColors).forEach(([variable, value]) => {
+      style[variable] = value;
+    });
+
+    // Also set color and background-color directly to ensure they're applied
+    // This is a fallback in case CSS variable inheritance doesn't work as expected
+    style['backgroundColor'] = themeColors['--bg-primary'];
+    style['color'] = themeColors['--text-primary'];
+
+    return style as React.CSSProperties;
+  }, [themeColors]);
+
   return (
     <div
       className="preview-container"
       ref={setPreviewRef}
       onScroll={onScroll}
+      style={previewStyle}
     >
       {/* Script Security Dialog for .mdsc files */}
       {isMdscFile && scriptPermission === 'pending' && scripts.length > 0 && (

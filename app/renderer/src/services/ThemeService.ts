@@ -47,13 +47,43 @@ function createInitialState(): ThemesState {
 }
 
 /**
- * Apply theme colors to document root
+ * List of CSS custom properties that may have been set by previous versions
  */
-function applyThemeToDocument(colors: ThemeColors): void {
+const THEME_CSS_VARIABLES = [
+  '--bg-primary', '--bg-secondary', '--bg-card', '--bg-hover', '--bg-code',
+  '--text-primary', '--text-secondary', '--text-muted', '--text-code',
+  '--accent', '--accent-hover', '--accent-light',
+  '--color-success', '--color-warning', '--color-error', '--color-info',
+  '--border-color',
+  '--syntax-keyword', '--syntax-string', '--syntax-function',
+  '--syntax-variable', '--syntax-comment', '--syntax-number',
+];
+
+/**
+ * Remove any theme CSS variables from document root
+ * This cleans up variables that may have been set by previous app versions
+ */
+function cleanupDocumentThemeVariables(): void {
   const root = document.documentElement;
-  Object.entries(colors).forEach(([variable, value]) => {
-    root.style.setProperty(variable, value);
+  THEME_CSS_VARIABLES.forEach((variable) => {
+    root.style.removeProperty(variable);
   });
+}
+
+/**
+ * Apply theme colors to document root
+ *
+ * NOTE: This function is now a NO-OP.
+ * - UI theme is controlled via data-theme attribute and SCSS light-dark() function
+ * - Preview theme is applied via inline styles on the preview-container (themeColors prop)
+ *
+ * We intentionally do NOT set CSS variables on :root because that would
+ * override the SCSS-based light/dark theme system for the app UI.
+ */
+function applyThemeToDocument(_colors: ThemeColors): void {
+  // NO-OP: Do not apply theme colors to document root
+  // The Preview component receives themeColors as a prop and applies them via inline styles
+  // The app UI uses data-theme attribute with CSS light-dark() function from SCSS
 }
 
 /**
@@ -76,6 +106,10 @@ export class ThemeService {
   static async initialize(): Promise<void> {
     if (this.initialized) return;
     if (this.initPromise) return this.initPromise;
+
+    // Clean up any CSS variables from previous app versions
+    // The UI now uses data-theme attribute with SCSS light-dark() function
+    cleanupDocumentThemeVariables();
 
     this.initPromise = this.loadFromFile();
     await this.initPromise;
