@@ -189,6 +189,63 @@ function getInstanceSessionPath(instanceId: string): string {
   return join(SESSIONS_DIR, `${instanceId}.json`);
 }
 
+function getInstanceLockPath(instanceId: string): string {
+  return join(SESSIONS_DIR, `${instanceId}.lock`);
+}
+
+/**
+ * Try to acquire lock for an instance
+ * Returns true if lock acquired, false if already locked by another process
+ */
+function tryAcquireInstanceLock(instanceId: string): boolean {
+  const lockPath = getInstanceLockPath(instanceId);
+
+  try {
+    // Check if lock file exists and is still valid
+    if (existsSync(lockPath)) {
+      const lockContent = require('fs').readFileSync(lockPath, 'utf-8');
+      const lockData = JSON.parse(lockContent);
+      const lockPid = lockData.pid;
+
+      // Check if the process is still running
+      try {
+        process.kill(lockPid, 0); // Signal 0 = check if process exists
+        // Process exists, lock is held
+        console.log(`[Session] Instance ${instanceId} is locked by PID ${lockPid}`);
+        return false;
+      } catch {
+        // Process doesn't exist, stale lock - remove it
+        console.log(`[Session] Removing stale lock for instance ${instanceId}`);
+        require('fs').unlinkSync(lockPath);
+      }
+    }
+
+    // Create lock file with our PID
+    require('fs').writeFileSync(lockPath, JSON.stringify({ pid: process.pid, timestamp: Date.now() }), 'utf-8');
+    console.log(`[Session] Acquired lock for instance ${instanceId} (PID ${process.pid})`);
+    return true;
+  } catch (error) {
+    console.error(`[Session] Failed to acquire lock for ${instanceId}:`, error);
+    return false;
+  }
+}
+
+/**
+ * Release lock for an instance
+ */
+function releaseInstanceLock(instanceId: string): void {
+  const lockPath = getInstanceLockPath(instanceId);
+
+  try {
+    if (existsSync(lockPath)) {
+      require('fs').unlinkSync(lockPath);
+      console.log(`[Session] Released lock for instance ${instanceId}`);
+    }
+  } catch (error) {
+    console.error(`[Session] Failed to release lock for ${instanceId}:`, error);
+  }
+}
+
 /**
  * Load instance session with backup fallback
  */
@@ -687,18 +744,29 @@ async function createWindow(): Promise<void> {
   let instanceSession: InstanceSession | null = null;
 
   if (migratedInstanceId) {
-    // Use migrated session
-    currentInstanceId = migratedInstanceId;
-    instanceSession = await loadInstanceSession(migratedInstanceId);
-  } else if (instancesIndex.lastUsedInstanceId) {
-    // Try to load last used instance
-    currentInstanceId = instancesIndex.lastUsedInstanceId;
-    instanceSession = await loadInstanceSession(instancesIndex.lastUsedInstanceId);
+    // Use migrated session (and acquire lock)
+    if (tryAcquireInstanceLock(migratedInstanceId)) {
+      currentInstanceId = migratedInstanceId;
+      instanceSession = await loadInstanceSession(migratedInstanceId);
+    }
   }
 
-  // If no existing instance, create new one
+  // Try to restore last used instance if not already set
+  if (!currentInstanceId && instancesIndex.lastUsedInstanceId) {
+    // Try to acquire lock for last used instance
+    if (tryAcquireInstanceLock(instancesIndex.lastUsedInstanceId)) {
+      currentInstanceId = instancesIndex.lastUsedInstanceId;
+      instanceSession = await loadInstanceSession(instancesIndex.lastUsedInstanceId);
+    } else {
+      // Last used instance is locked, create new instance
+      console.log(`[Session] Last used instance is in use, creating new instance`);
+    }
+  }
+
+  // If no existing instance (or locked), create new one
   if (!currentInstanceId) {
     currentInstanceId = generateInstanceId();
+    tryAcquireInstanceLock(currentInstanceId);
     console.log(`[Session] Created new instance: ${currentInstanceId}`);
   }
 
@@ -793,6 +861,10 @@ async function createWindow(): Promise<void> {
   });
 
   mainWindow.on('closed', () => {
+    // Release instance lock when window closes
+    if (currentInstanceId) {
+      releaseInstanceLock(currentInstanceId);
+    }
     mainWindow = null;
   });
 
@@ -1835,8 +1907,19 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
+  // Release instance lock before quitting
+  if (currentInstanceId) {
+    releaseInstanceLock(currentInstanceId);
+  }
   if (process.platform !== 'darwin') {
     app.quit();
+  }
+});
+
+// Also release lock on app quit (covers edge cases)
+app.on('will-quit', () => {
+  if (currentInstanceId) {
+    releaseInstanceLock(currentInstanceId);
   }
 });
 
