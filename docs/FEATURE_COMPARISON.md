@@ -141,7 +141,7 @@ Das ursprüngliche md++ Projekt war ein **Planungsdokument** mit umfangreichen S
 
 | Feature | Geplant | Umgesetzt | Status | Anmerkungen |
 |---------|---------|-----------|--------|-------------|
-| CDN-Script | ✅ | ❌ | **OFFEN** | Kein Browser-Bundle |
+| CDN-Script | ✅ | ✅ | **FERTIG** | `dist/mdplusplus.browser.global.js` (~274KB) |
 | Web Component `<markdown-pp>` | ✅ | ❌ | **OFFEN** | Nicht implementiert |
 | WordPress-Plugin | ✅ | ❌ | **OFFEN** | Nicht implementiert |
 | REST-API | ✅ | ❌ | **OFFEN** | Nicht implementiert |
@@ -211,6 +211,12 @@ Diese Features wurden zusätzlich implementiert, obwohl sie im ursprünglichen P
 > - `useScrollSync` Hook mit Debouncing und Loop-Prevention
 > - Monaco Tokenizer Fixes für MD++ Syntax-Highlighting
 >
+> **Update 2025-01-07**: CDN-Bundle für Browser-Nutzung:
+> - Browser IIFE Bundle (`dist/mdplusplus.browser.global.js`, ~274KB minified)
+> - Kann via `<script>` Tag eingebunden werden
+> - Globales `MDPlusPlus` Namespace mit allen Exports
+> - Beispiele in `examples/cdn-usage.html` und `examples/esm-usage.html`
+>
 > **Update 2025-01-07**: Vollständige Attribut-Unterstützung:
 > - `remark-directive` auf v4.0.0 aktualisiert
 > - `hastscript` v9 für korrekte {.class #id} Konvertierung
@@ -232,7 +238,7 @@ Diese Features wurden zusätzlich implementiert, obwohl sie im ursprünglichen P
 4. ~~**Mittel**: Scroll-Sync zwischen Editor und Preview~~ ✅ Implementiert
 5. ~~**Niedrig**: Tailwind CSS Plugin~~ ✅ Implementiert
 6. ~~**Niedrig**: Kroki/Reveal.js Integration~~ ✅ Implementiert
-7. **Niedrig**: CDN-Bundle für Browser-Nutzung
+7. ~~**Niedrig**: CDN-Bundle für Browser-Nutzung~~ ✅ Implementiert
 8. **Optional**: WordPress-Plugin
 
 ---

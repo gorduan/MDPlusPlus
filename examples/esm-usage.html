@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MD++ ESM Usage Example</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      margin: 0 0 10px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 14px;
+    }
+    pre .keyword { color: #569cd6; }
+    pre .string { color: #ce9178; }
+    pre .comment { color: #6a9955; }
+    pre .function { color: #dcdcaa; }
+    .output {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    .output h3 {
+      margin-top: 0;
+      color: #495057;
+    }
+    #result {
+      font-family: system-ui;
+    }
+    #result table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 15px 0;
+    }
+    #result th, #result td {
+      border: 1px solid #dee2e6;
+      padding: 10px;
+      text-align: left;
+    }
+    #result th { background: #f8f9fa; }
+    #result code {
+      background: #e9ecef;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+    #result pre {
+      background: #f8f9fa;
+      color: #212529;
+    }
+    .badge {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>MD++ ESM Module</h1>
+    <p class="subtitle">
+      <span class="badge">ES Modules</span>
+      <span class="badge">Modern Browsers</span>
+      <span class="badge">Tree-shakeable</span>
+    </p>
+
+    <h2>Usage with ES Modules</h2>
+    <pre><code><span class="comment">// Import as ES Module</span>
+<span class="keyword">import</span> { MDPlusPlus, parseSlides, KROKI_DIAGRAM_TYPES } <span class="keyword">from</span> <span class="string">'./mdplusplus.esm.js'</span>;
+
+<span class="comment">// Create parser instance</span>
+<span class="keyword">const</span> parser = <span class="keyword">new</span> <span class="function">MDPlusPlus</span>({
+  enableGfm: <span class="keyword">true</span>,
+  enableMath: <span class="keyword">true</span>,
+  enableKroki: <span class="keyword">true</span>,
+});
+
+<span class="comment">// Convert markdown to HTML</span>
+<span class="keyword">const</span> result = <span class="keyword">await</span> parser.<span class="function">convert</span>(markdown);
+console.<span class="function">log</span>(result.html);</code></pre>
+
+    <div class="output">
+      <h3>Live Demo Output</h3>
+      <div id="result">Loading...</div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Import MD++ as ES Module
+    import {
+      MDPlusPlus,
+      KROKI_DIAGRAM_TYPES,
+      REVEAL_THEMES,
+      parseSlides,
+      isPresentation,
+    } from '../dist/mdplusplus.browser.esm.js';
+
+    // Sample markdown
+    const markdown = `# ES Module Demo
+
+MD++ works great with modern ES modules!
+
+## Features Available
+
+| Feature | Description |
+|---------|-------------|
+| \`MDPlusPlus\` | Main parser class |
+| \`parseSlides\` | Reveal.js slides parsing |
+| \`KROKI_DIAGRAM_TYPES\` | ${KROKI_DIAGRAM_TYPES?.length || 30}+ diagram types |
+| \`REVEAL_THEMES\` | ${REVEAL_THEMES?.length || 12} presentation themes |
+
+## Code Example
+
+\`\`\`javascript
+const parser = new MDPlusPlus();
+const result = await parser.convert(markdown);
+\`\`\`
+
+> This content was rendered using the ESM bundle!
+`;
+
+    // Create parser
+    const parser = new MDPlusPlus({
+      enableGfm: true,
+      enableMath: true,
+      enableCallouts: true,
+    });
+
+    // Render
+    try {
+      const result = await parser.convert(markdown);
+      document.getElementById('result').innerHTML = result.html;
+
+      console.log('MD++ ESM Bundle loaded successfully!');
+      console.log('Kroki diagram types:', KROKI_DIAGRAM_TYPES?.length);
+      console.log('Reveal.js themes:', REVEAL_THEMES);
+      console.log('isPresentation test:', isPresentation('---\n# Slide 1\n---\n# Slide 2\n---\n# Slide 3'));
+    } catch (error) {
+      document.getElementById('result').innerHTML =
+        `<pre style="color:red;">Error: ${error.message}</pre>`;
+      console.error(error);
+    }
+  </script>
+</body>
+</html>
