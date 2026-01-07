@@ -443,6 +443,160 @@ async function removeInstanceFromIndex(instanceId: string): Promise<void> {
   await saveInstancesIndex(index);
 }
 
+/**
+ * Delete all data for an instance (session file, backup, lock, and index entry)
+ */
+async function deleteInstanceData(instanceId: string): Promise<void> {
+  console.log(`[Session] Deleting instance data: ${instanceId}`);
+
+  // Remove from index
+  await removeInstanceFromIndex(instanceId);
+
+  // Delete session file and backup
+  const sessionPath = getInstanceSessionPath(instanceId);
+  const backupPath = `${sessionPath}.backup`;
+  const lockPath = getInstanceLockPath(instanceId);
+
+  try {
+    if (existsSync(sessionPath)) {
+      await rm(sessionPath);
+      console.log(`[Session] Deleted session file: ${sessionPath}`);
+    }
+  } catch (error) {
+    console.error(`[Session] Failed to delete session file:`, error);
+  }
+
+  try {
+    if (existsSync(backupPath)) {
+      await rm(backupPath);
+      console.log(`[Session] Deleted backup file: ${backupPath}`);
+    }
+  } catch (error) {
+    console.error(`[Session] Failed to delete backup file:`, error);
+  }
+
+  try {
+    if (existsSync(lockPath)) {
+      await rm(lockPath);
+      console.log(`[Session] Deleted lock file: ${lockPath}`);
+    }
+  } catch (error) {
+    console.error(`[Session] Failed to delete lock file:`, error);
+  }
+}
+
+/**
+ * Get list of closed (unlocked) instances that can be restored
+ * Excludes the current instance
+ */
+function getClosedInstances(
+  instancesIndex: InstancesIndex,
+  currentId: string
+): Array<{ id: string; info: InstanceInfo }> {
+  const closedInstances: Array<{ id: string; info: InstanceInfo }> = [];
+
+  for (const [id, info] of Object.entries(instancesIndex.instances)) {
+    // Skip current instance
+    if (id === currentId) continue;
+
+    // Check if instance is locked (already open)
+    const lockPath = getInstanceLockPath(id);
+    if (existsSync(lockPath)) {
+      try {
+        const lockContent = require('fs').readFileSync(lockPath, 'utf-8');
+        const lockData = JSON.parse(lockContent);
+        // Check if process is still running
+        try {
+          process.kill(lockData.pid, 0);
+          // Process is running, skip this instance
+          continue;
+        } catch {
+          // Process not running, stale lock - will be cleaned up
+        }
+      } catch {
+        // Invalid lock file, ignore
+      }
+    }
+
+    // Instance is not locked, add to list
+    closedInstances.push({ id, info });
+  }
+
+  return closedInstances;
+}
+
+/**
+ * Show dialog asking user if they want to restore other closed instances
+ */
+async function showRestoreInstancesDialog(
+  closedInstances: Array<{ id: string; info: InstanceInfo }>
+): Promise<boolean> {
+  if (closedInstances.length === 0) return false;
+
+  const instanceCount = closedInstances.length;
+  const instanceWord = instanceCount === 1 ? 'Instanz' : 'Instanzen';
+
+  // Build detail message with instance info
+  const details = closedInstances
+    .map((inst) => {
+      const date = new Date(inst.info.lastOpened);
+      const dateStr = date.toLocaleDateString('de-DE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+      const tabWord = inst.info.tabCount === 1 ? 'Tab' : 'Tabs';
+      return `• ${inst.info.displayName || 'Unbenannt'} (${inst.info.tabCount} ${tabWord}, zuletzt: ${dateStr})`;
+    })
+    .join('\n');
+
+  const result = await dialog.showMessageBox(mainWindow!, {
+    type: 'question',
+    buttons: ['Alle öffnen', 'Nein'],
+    defaultId: 0,
+    cancelId: 1,
+    title: 'Weitere Instanzen gefunden',
+    message: `Es wurden ${instanceCount} weitere geschlossene ${instanceWord} erkannt.\nSollen sie alle geöffnet werden?`,
+    detail: details,
+  });
+
+  return result.response === 0;
+}
+
+/**
+ * Open additional instances by launching new app processes
+ */
+async function openAdditionalInstances(
+  instanceIds: string[]
+): Promise<void> {
+  for (const instanceId of instanceIds) {
+    // Launch a new instance with the specific instance ID as argument
+    const args = ['--restore-instance', instanceId];
+
+    if (app.isPackaged) {
+      // In production, use app.relaunch behavior
+      app.relaunch({ args });
+    } else {
+      // In development, spawn a new electron process
+      const { spawn } = require('child_process');
+      const electronPath = process.execPath;
+      const appPath = app.getAppPath();
+
+      spawn(electronPath, [appPath, ...args], {
+        detached: true,
+        stdio: 'ignore',
+      }).unref();
+    }
+
+    console.log(`[Session] Launched additional instance: ${instanceId}`);
+
+    // Small delay between launches to prevent race conditions
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+}
+
 // ============================================
 // Legacy Session Functions (for migration)
 // ============================================
@@ -734,6 +888,22 @@ async function createWindow(): Promise<void> {
   // Determine instance ID and load session
   ensureAppDataDirs();
 
+  // Check for --restore-instance argument (launched by another instance)
+  const restoreInstanceArg = process.argv.find((arg) => arg.startsWith('--restore-instance'));
+  let requestedInstanceId: string | null = null;
+  let isChildInstance = false;
+
+  if (restoreInstanceArg) {
+    const argIndex = process.argv.indexOf(restoreInstanceArg);
+    if (restoreInstanceArg.includes('=')) {
+      requestedInstanceId = restoreInstanceArg.split('=')[1];
+    } else if (argIndex >= 0 && process.argv[argIndex + 1]) {
+      requestedInstanceId = process.argv[argIndex + 1];
+    }
+    isChildInstance = !!requestedInstanceId;
+    console.log(`[Session] Requested instance via argument: ${requestedInstanceId}`);
+  }
+
   // Check for legacy session to migrate
   const migratedInstanceId = await migrateLegacySession();
 
@@ -743,7 +913,18 @@ async function createWindow(): Promise<void> {
   // Determine which instance to use
   let instanceSession: InstanceSession | null = null;
 
-  if (migratedInstanceId) {
+  // If a specific instance was requested via argument, try to use it
+  if (requestedInstanceId) {
+    if (tryAcquireInstanceLock(requestedInstanceId)) {
+      currentInstanceId = requestedInstanceId;
+      instanceSession = await loadInstanceSession(requestedInstanceId);
+      console.log(`[Session] Restored requested instance: ${requestedInstanceId}`);
+    } else {
+      console.log(`[Session] Requested instance ${requestedInstanceId} is locked, creating new instance`);
+    }
+  }
+
+  if (!currentInstanceId && migratedInstanceId) {
     // Use migrated session (and acquire lock)
     if (tryAcquireInstanceLock(migratedInstanceId)) {
       currentInstanceId = migratedInstanceId;
@@ -769,6 +950,10 @@ async function createWindow(): Promise<void> {
     tryAcquireInstanceLock(currentInstanceId);
     console.log(`[Session] Created new instance: ${currentInstanceId}`);
   }
+
+  // Store whether this is a child instance (launched to restore additional instances)
+  // We'll check this later to decide whether to show the restore dialog
+  const shouldCheckForOtherInstances = !isChildInstance;
 
   // Determine window bounds
   let windowBounds = { x: undefined as number | undefined, y: undefined as number | undefined, width: 1200, height: 800 };
@@ -833,30 +1018,66 @@ async function createWindow(): Promise<void> {
     mainWindow?.webContents.send('devtools-state', false);
   });
 
-  // Handle close with unsaved changes
+  // Track if we're in the process of closing (to prevent dialog loops)
+  let isClosing = false;
+
+  // Handle close with unsaved changes and instance saving
   mainWindow.on('close', async (e) => {
+    if (isClosing) return;
+
+    // Step 1: Check for unsaved changes in the current file
     if (isModified) {
       e.preventDefault();
       const result = await dialog.showMessageBox(mainWindow!, {
         type: 'warning',
-        buttons: ['Save', "Don't Save", 'Cancel'],
+        buttons: ['Speichern', 'Nicht speichern', 'Abbrechen'],
         defaultId: 0,
         cancelId: 2,
-        title: 'Unsaved Changes',
-        message: 'Do you want to save the changes before closing?',
+        title: 'Ungespeicherte Änderungen',
+        message: 'Möchten Sie die Änderungen vor dem Schließen speichern?',
       });
 
       if (result.response === 0) {
         // Save
         const saved = await saveFile();
-        if (saved) {
-          mainWindow?.destroy();
+        if (!saved) {
+          return; // Save was cancelled or failed, don't close
         }
-      } else if (result.response === 1) {
-        // Don't save
-        mainWindow?.destroy();
+      } else if (result.response === 2) {
+        // Cancel - don't close
+        return;
       }
-      // Cancel - do nothing
+      // response === 1 means "Don't save", continue to instance dialog
+    }
+
+    // Step 2: Ask about saving the instance for next session
+    e.preventDefault();
+    isClosing = true;
+
+    const instanceResult = await dialog.showMessageBox(mainWindow!, {
+      type: 'question',
+      buttons: ['Instanz speichern', 'Instanz verwerfen', 'Abbrechen'],
+      defaultId: 0,
+      cancelId: 2,
+      title: 'Instanz speichern?',
+      message: 'Soll diese Instanz beim nächsten Start wiederhergestellt werden?',
+      detail: 'Bei "Instanz speichern" werden alle Tabs und die Fensterposition gespeichert.\nBei "Instanz verwerfen" wird diese Instanz dauerhaft gelöscht.',
+    });
+
+    if (instanceResult.response === 0) {
+      // Save instance - it's already auto-saved, just close
+      console.log(`[Session] User chose to save instance ${currentInstanceId}`);
+      mainWindow?.destroy();
+    } else if (instanceResult.response === 1) {
+      // Discard instance - delete it from storage
+      console.log(`[Session] User chose to discard instance ${currentInstanceId}`);
+      if (currentInstanceId) {
+        await deleteInstanceData(currentInstanceId);
+      }
+      mainWindow?.destroy();
+    } else {
+      // Cancel - don't close
+      isClosing = false;
     }
   });
 
@@ -884,7 +1105,7 @@ async function createWindow(): Promise<void> {
   mainWindow.loadFile(rendererPath);
 
   // Show window when ready
-  mainWindow.once('ready-to-show', () => {
+  mainWindow.once('ready-to-show', async () => {
     if (!mainWindow) return;
 
     const bounds = mainWindow.getBounds();
@@ -903,6 +1124,22 @@ async function createWindow(): Promise<void> {
 
     // Initialize app (session restore or welcome)
     initializeApp();
+
+    // Check for other closed instances and ask user if they want to restore them
+    // Only do this for the main instance, not for child instances launched via --restore-instance
+    if (shouldCheckForOtherInstances && currentInstanceId) {
+      // Small delay to ensure window is fully shown
+      setTimeout(async () => {
+        const closedInstances = getClosedInstances(instancesIndex, currentInstanceId!);
+        if (closedInstances.length > 0) {
+          console.log(`[Session] Found ${closedInstances.length} closed instances`);
+          const shouldRestore = await showRestoreInstancesDialog(closedInstances);
+          if (shouldRestore) {
+            await openAdditionalInstances(closedInstances.map((inst) => inst.id));
+          }
+        }
+      }, 1000);
+    }
   });
 
   // Create application menu
