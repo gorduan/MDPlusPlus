@@ -14,528 +14,43 @@ import HelpDialog from './components/HelpDialog';
 import TableEditor from './components/TableEditor';
 import ThemeEditor, { getCustomThemeForExport } from './components/ThemeEditor';
 import PluginManager, { PluginInfo, ComponentInfo } from './components/PluginManager';
+import TabBar, { TabData } from './components/TabBar/TabBar';
 import { useScrollSync } from './hooks/useScrollSync';
-import type { ViewMode, PluginData } from '../../electron/preload';
-
-// Welcome content shown when app starts
-const WELCOME_CONTENT = `# Willkommen bei MD++
-
-**MD++ (Markdown Plus Plus)** ist ein erweiterter Markdown-Editor mit Live-Vorschau.
-
-| Feature | Beschreibung |
-|---------|--------------|
-| **AI Context Blocks** | Kontextinformationen für KI-Assistenten einbetten |
-| **Component Directives** | Framework-unabhängige UI-Komponenten |
-| **Plugin-System** | Erweiterbar durch Bootstrap, Admonitions, etc. |
-| **Live-Vorschau** | Änderungen sofort sehen |
-
-> **Tipp:** Einstellungen öffnen mit \`Ctrl+,\` · Neue Datei mit \`Ctrl+N\`
-
----
-
-# Kern-Markdown
-*Immer verfügbar*
-
----
-
-## Fett & Kursiv
-
-**Syntax:**
-\`\`\`markdown
-**fetter Text**
-*kursiver Text*
-***fett und kursiv***
-\`\`\`
-
-**Ausgabe:**
-
-**fetter Text**
-
-*kursiver Text*
-
-***fett und kursiv***
-
----
-
-## Inline-Code
-
-**Syntax:**
-\`\`\`markdown
-Nutze \\\`console.log()\\\` zum Debuggen.
-\`\`\`
-
-**Ausgabe:**
-
-Nutze \`console.log()\` zum Debuggen.
-
----
-
-## Überschriften
-
-**Syntax:**
-\`\`\`markdown
-# Überschrift 1
-## Überschrift 2
-### Überschrift 3
-\`\`\`
-
-**Ausgabe:**
-
-### Überschrift 3 (Beispiel)
-
----
-
-## Listen
-
-**Syntax:**
-\`\`\`markdown
-- Punkt A
-- Punkt B
-  - Verschachtelt
-
-1. Erster
-2. Zweiter
-\`\`\`
-
-**Ausgabe:**
-
-- Punkt A
-- Punkt B
-  - Verschachtelt
-
-1. Erster
-2. Zweiter
-
----
-
-## Links
-
-**Syntax:**
-\`\`\`markdown
-[GitHub](https://github.com)
-\`\`\`
-
-**Ausgabe:**
-
-[GitHub](https://github.com)
-
----
-
-## Blockquotes
-
-**Syntax:**
-\`\`\`markdown
-> Dies ist ein Zitat.
-> Über mehrere Zeilen.
-\`\`\`
-
-**Ausgabe:**
-
-> Dies ist ein Zitat.
-> Über mehrere Zeilen.
-
----
-
-## Code-Blöcke
-
-**Syntax:**
-\`\`\`\`markdown
-\`\`\`javascript
-function greet(name) {
-  return \`Hello, \${name}!\`;
-}
-\`\`\`
-\`\`\`\`
-
-**Ausgabe:**
-
-\`\`\`javascript
-function greet(name) {
-  return \`Hello, \${name}!\`;
-}
-\`\`\`
-
----
-
-# GitHub Flavored Markdown
-*Feature: \`enableGfm\` · Standard: Aktiv*
-
----
-
-## Tabellen
-*Feature: \`enableTables\`*
-
-**Syntax:**
-\`\`\`markdown
-| Links | Zentriert | Rechts |
-|:------|:---------:|-------:|
-| A     | B         | C      |
-\`\`\`
-
-**Ausgabe:**
-
-| Links | Zentriert | Rechts |
-|:------|:---------:|-------:|
-| A     | B         | C      |
-
----
-
-## Task-Listen
-*Feature: \`enableTaskLists\`*
-
-**Syntax:**
-\`\`\`markdown
-- [x] Erledigt
-- [ ] Offen
-\`\`\`
-
-**Ausgabe:**
-
-- [x] Erledigt
-- [ ] Offen
-
----
-
-## Durchstreichen
-*Feature: \`enableStrikethrough\`*
-
-**Syntax:**
-\`\`\`markdown
-~~durchgestrichen~~
-\`\`\`
-
-**Ausgabe:**
-
-~~durchgestrichen~~
-
----
-
-## Fußnoten
-*Feature: \`enableFootnotes\`*
-
-**Syntax:**
-\`\`\`markdown
-Text mit Fußnote[^1].
-
-[^1]: Fußnoteninhalt hier.
-\`\`\`
-
-**Ausgabe:**
-
-Text mit Fußnote[^1].
-
-[^1]: Fußnoteninhalt hier.
-
----
-
-# Erweiterungen
-*Standard: Aktiv*
-
----
-
-## Mathematische Formeln
-*Feature: \`enableMath\`*
-
-**Syntax (Inline):**
-\`\`\`markdown
-Die Formel $E = mc^2$ ist berühmt.
-\`\`\`
-
-**Ausgabe:**
-
-Die Formel $E = mc^2$ ist berühmt.
-
-**Syntax (Block):**
-\`\`\`markdown
-$$
-\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}
-$$
-\`\`\`
-
-**Ausgabe:**
-
-$$
-\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}
-$$
-
----
-
-## Callouts / Hinweisboxen
-*Feature: \`enableCallouts\`*
-
-**Syntax:**
-\`\`\`markdown
-> [!NOTE]
-> Eine Notiz.
-
-> [!TIP]
-> Ein Tipp.
-
-> [!WARNING]
-> Eine Warnung.
-
-> [!DANGER]
-> Gefahr!
-\`\`\`
-
-**Ausgabe:**
-
-> [!NOTE]
-> Eine Notiz.
-
-> [!TIP]
-> Ein Tipp.
-
-> [!WARNING]
-> Eine Warnung.
-
-> [!DANGER]
-> Gefahr!
-
----
-
-## Mermaid-Diagramme
-*Feature: \`enableMermaid\`*
-
-**Syntax:**
-\`\`\`\`markdown
-\`\`\`mermaid
-graph LR
-    A[Start] --> B{Frage}
-    B -->|Ja| C[Aktion]
-    B -->|Nein| D[Ende]
-\`\`\`
-\`\`\`\`
-
-**Ausgabe:**
-
-\`\`\`mermaid
-graph LR
-    A[Start] --> B{Frage}
-    B -->|Ja| C[Aktion]
-    B -->|Nein| D[Ende]
-\`\`\`
-
----
-
-# MD++ Exklusiv
-
----
-
-## AI Context Blocks
-*Feature: \`enableAIContext\` · Standard: Aktiv*
-
-Kontext für KI-Assistenten, optional versteckbar.
-
-**Syntax (sichtbar):**
-\`\`\`markdown
-:::ai-context{visibility=visible}
-Dieser Kontext ist für Menschen und KI sichtbar.
-:::
-\`\`\`
-
-**Ausgabe:**
-
-:::ai-context{visibility=visible}
-Dieser Kontext ist für Menschen und KI sichtbar.
-:::
-
-**Syntax (versteckt):**
-\`\`\`markdown
-:::ai-context{visibility=hidden}
-Nur für KI sichtbar. Toggle mit Ctrl+Shift+A.
-:::
-\`\`\`
-
-**Ausgabe:** *(Versteckt - aktiviere mit Ctrl+Shift+A)*
-
-:::ai-context{visibility=hidden}
-Nur für KI sichtbar. Du siehst dies, weil AI-Context aktiv ist.
-:::
-
----
-
-## Component Directives
-*Feature: \`enableDirectives\` · Standard: Aktiv*
-
-UI-Komponenten aus Plugins verwenden.
-
-**Syntax:**
-\`\`\`markdown
-:::plugin:component{attribut="wert"}
-Inhalt hier
-:::
-\`\`\`
-
----
-
-# Plugin: Bootstrap
-*Plugin: \`bootstrap\` · Standard: Aktiv*
-
----
-
-## Alert
-
-**Syntax:**
-\`\`\`markdown
-:::bootstrap:alert{variant="info"}
-Info-Nachricht
-:::
-\`\`\`
-
-**Ausgabe:**
-
-:::bootstrap:alert{variant="info"}
-Info-Nachricht
-:::
-
-**Varianten:** \`primary\`, \`secondary\`, \`success\`, \`danger\`, \`warning\`, \`info\`
-
-:::bootstrap:alert{variant="success"}
-Erfolg!
-:::
-
-:::bootstrap:alert{variant="warning"}
-Warnung!
-:::
-
-:::bootstrap:alert{variant="danger"}
-Fehler!
-:::
-
----
-
-## Card
-
-**Syntax:**
-\`\`\`markdown
-:::bootstrap:card
-### Titel
-Inhalt mit **Markdown**.
-:::
-\`\`\`
-
-**Ausgabe:**
-
-:::bootstrap:card
-### Karten-Titel
-Inhalt mit **Markdown** und Listen:
-- Punkt 1
-- Punkt 2
-:::
-
----
-
-# Plugin: Admonitions
-*Plugin: \`admonitions\` · Standard: Aktiv*
-
----
-
-## Note
-
-**Syntax:**
-\`\`\`markdown
-:::admonition{type="note" title="Hinweis"}
-Inhalt der Notiz.
-:::
-\`\`\`
-
-**Ausgabe:**
-
-:::admonition{type="note" title="Hinweis"}
-Inhalt der Notiz.
-:::
-
----
-
-## Tip
-
-**Syntax:**
-\`\`\`markdown
-:::admonition{type="tip" title="Tipp"}
-Best Practice hier.
-:::
-\`\`\`
-
-**Ausgabe:**
-
-:::admonition{type="tip" title="Tipp"}
-Best Practice hier.
-:::
-
----
-
-## Warning
-
-**Syntax:**
-\`\`\`markdown
-:::admonition{type="warning" title="Achtung"}
-Wichtige Warnung.
-:::
-\`\`\`
-
-**Ausgabe:**
-
-:::admonition{type="warning" title="Achtung"}
-Wichtige Warnung.
-:::
-
----
-
-## Danger
-
-**Syntax:**
-\`\`\`markdown
-:::admonition{type="danger" title="Gefahr"}
-Kritischer Hinweis!
-:::
-\`\`\`
-
-**Ausgabe:**
-
-:::admonition{type="danger" title="Gefahr"}
-Kritischer Hinweis!
-:::
-
----
-
-# Optionale Plugins
-*In Einstellungen (Ctrl+,) aktivieren*
-
-| Plugin | Beschreibung |
-|--------|--------------|
-| \`katex\` | Erweitertes LaTeX-Rendering |
-| \`mermaid\` | Zusätzliche Diagramm-Typen |
-
----
-
-# Tastenkürzel
-
-| Aktion | Kürzel |
-|--------|--------|
-| Neue Datei | Ctrl+N |
-| Öffnen | Ctrl+O |
-| Speichern | Ctrl+S |
-| Speichern unter | Ctrl+Shift+S |
-| Einstellungen | Ctrl+, |
-| AI-Kontext Toggle | Ctrl+Shift+A |
-| Nur Editor | Ctrl+1 |
-| Nur Vorschau | Ctrl+2 |
-| Split-Ansicht | Ctrl+3 |
-`;
+import type { ViewMode, PluginData, SessionState, TabState as IpcTabState } from '../../electron/preload';
 
 // Empty content for new files
 const NEW_FILE_CONTENT = '';
 
-// Available plugins list
-const AVAILABLE_PLUGINS = ['bootstrap', 'admonitions', 'katex', 'mermaid'];
+// Helper to generate unique tab IDs
+function generateTabId(): string {
+  return crypto.randomUUID();
+}
+
+// Helper to extract filename from path
+function getFileName(filePath: string | null): string {
+  if (!filePath) return 'Untitled';
+  const parts = filePath.split(/[\\/]/);
+  return parts[parts.length - 1] || 'Untitled';
+}
+
+// Welcome content is now loaded from external file (resources/welcome.md)
+// See: app/electron/main.ts setupWelcomeFile() and getWelcomeContent()
 
 export default function App() {
-  const [content, setContent] = useState(WELCOME_CONTENT);
-  const [viewMode, setViewMode] = useState<ViewMode>('preview');
+  // Multi-tab state
+  const [tabs, setTabs] = useState<TabData[]>([]);
+  const [activeTabId, setActiveTabId] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Derived state from active tab
+  const activeTab = tabs.find((t) => t.id === activeTabId);
+  const content = activeTab?.content ?? '';
+  const filePath = activeTab?.filePath ?? null;
+  const isModified = activeTab?.isModified ?? false;
+
+  // UI state
+  const [viewMode, setViewMode] = useState<ViewMode>('split');
   const [showAIContext, setShowAIContext] = useState(false);
-  const [filePath, setFilePath] = useState<string | null>(null);
-  const [isModified, setIsModified] = useState(false);
   const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<ParserSettings>(DEFAULT_SETTINGS);
@@ -546,6 +61,9 @@ export default function App() {
   const contentRef = useRef(content);
   const filePathRef = useRef(filePath);
   const themeRef = useRef(theme);
+  const tabsRef = useRef(tabs);
+  const activeTabIdRef = useRef(activeTabId);
+
   useEffect(() => {
     contentRef.current = content;
   }, [content]);
@@ -555,6 +73,12 @@ export default function App() {
   useEffect(() => {
     themeRef.current = theme;
   }, [theme]);
+  useEffect(() => {
+    tabsRef.current = tabs;
+  }, [tabs]);
+  useEffect(() => {
+    activeTabIdRef.current = activeTabId;
+  }, [activeTabId]);
 
   // New feature states
   const [searchOpen, setSearchOpen] = useState(false);
@@ -595,6 +119,238 @@ export default function App() {
   const toggleTheme = useCallback(() => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   }, []);
+
+  // === TAB MANAGEMENT ===
+
+  // Create a new tab
+  const createTab = useCallback((filePathArg?: string | null, contentArg?: string): TabData => {
+    const id = generateTabId();
+    return {
+      id,
+      filePath: filePathArg ?? null,
+      title: getFileName(filePathArg ?? null),
+      isModified: false,
+      content: contentArg ?? NEW_FILE_CONTENT,
+    };
+  }, []);
+
+  // Add a new empty tab
+  const handleNewTab = useCallback(() => {
+    const newTab = createTab();
+    setTabs((prev) => [...prev, newTab]);
+    setActiveTabId(newTab.id);
+  }, [createTab]);
+
+  // Select a tab
+  const handleTabSelect = useCallback((tabId: string) => {
+    setActiveTabId(tabId);
+  }, []);
+
+  // Update content of active tab
+  const updateActiveTabContent = useCallback((newContent: string) => {
+    if (!activeTabId) return;
+    setTabs((prev) =>
+      prev.map((tab) =>
+        tab.id === activeTabId
+          ? { ...tab, content: newContent, isModified: true }
+          : tab
+      )
+    );
+  }, [activeTabId]);
+
+  // Mark active tab as saved
+  const markActiveTabSaved = useCallback((newFilePath?: string) => {
+    if (!activeTabId) return;
+    setTabs((prev) =>
+      prev.map((tab) =>
+        tab.id === activeTabId
+          ? {
+              ...tab,
+              isModified: false,
+              filePath: newFilePath ?? tab.filePath,
+              title: getFileName(newFilePath ?? tab.filePath),
+            }
+          : tab
+      )
+    );
+  }, [activeTabId]);
+
+  // Close a tab
+  const handleTabClose = useCallback(async (tabId: string) => {
+    const tab = tabs.find((t) => t.id === tabId);
+    if (!tab) return;
+
+    // If tab is modified, we let the user decide (auto-recovery saves anyway)
+    // But we should still prompt
+    if (tab.isModified) {
+      // For now, just close - recovery system will have saved state
+      // In a full implementation, show a dialog
+      console.log(`Closing modified tab: ${tab.title}`);
+    }
+
+    // Delete recovery file
+    try {
+      await window.electronAPI?.deleteRecovery(tabId);
+    } catch (e) {
+      console.error('Failed to delete recovery file:', e);
+    }
+
+    // Remove tab
+    const remainingTabs = tabs.filter((t) => t.id !== tabId);
+    setTabs(remainingTabs);
+
+    // If we closed the active tab, switch to another
+    if (tabId === activeTabId) {
+      if (remainingTabs.length > 0) {
+        // Switch to the last tab
+        setActiveTabId(remainingTabs[remainingTabs.length - 1].id);
+      } else {
+        // No tabs left, create a new one with welcome content
+        loadWelcomeAndCreateTab();
+      }
+    }
+  }, [tabs, activeTabId]);
+
+  // Load welcome content and create initial tab
+  const loadWelcomeAndCreateTab = useCallback(async () => {
+    try {
+      const welcomeContent = await window.electronAPI?.getWelcomeContent();
+      const welcomePath = await window.electronAPI?.getWelcomePath();
+      const newTab = createTab(welcomePath ?? null, welcomeContent ?? '# Welcome to MD++');
+      setTabs([newTab]);
+      setActiveTabId(newTab.id);
+    } catch (e) {
+      console.error('Failed to load welcome content:', e);
+      const newTab = createTab(null, '# Welcome to MD++\n\nStart writing...');
+      setTabs([newTab]);
+      setActiveTabId(newTab.id);
+    }
+  }, [createTab]);
+
+  // Open a file in a new tab or existing tab
+  const openFileInTab = useCallback((openFilePath: string, openContent: string) => {
+    // Check if file is already open
+    const existingTab = tabs.find((t) => t.filePath === openFilePath);
+    if (existingTab) {
+      setActiveTabId(existingTab.id);
+      // Update content if it changed on disk
+      setTabs((prev) =>
+        prev.map((t) =>
+          t.id === existingTab.id && !t.isModified
+            ? { ...t, content: openContent }
+            : t
+        )
+      );
+      return;
+    }
+
+    // Create new tab
+    const newTab = createTab(openFilePath, openContent);
+    setTabs((prev) => [...prev, newTab]);
+    setActiveTabId(newTab.id);
+  }, [tabs, createTab]);
+
+  // === SESSION MANAGEMENT ===
+
+  // Save session state
+  const saveSessionState = useCallback(async () => {
+    if (!isInitialized || tabs.length === 0) return;
+
+    const sessionState: SessionState = {
+      version: 1,
+      lastOpened: new Date().toISOString(),
+      activeTabId: activeTabId ?? '',
+      tabs: tabs.map((tab) => ({
+        id: tab.id,
+        filePath: tab.filePath,
+        title: tab.title,
+        isModified: tab.isModified,
+        recoveryFile: tab.isModified ? `${tab.id}.md` : undefined,
+      })),
+      recentFiles: [], // Will be managed separately
+    };
+
+    try {
+      await window.electronAPI?.saveSession(sessionState);
+    } catch (e) {
+      console.error('Failed to save session:', e);
+    }
+  }, [tabs, activeTabId, isInitialized]);
+
+  // Auto-save session when tabs change
+  useEffect(() => {
+    if (isInitialized) {
+      saveSessionState();
+    }
+  }, [tabs, activeTabId, isInitialized, saveSessionState]);
+
+  // Initialize app - restore session or show welcome
+  useEffect(() => {
+    async function initializeApp() {
+      if (isInitialized) return;
+
+      try {
+        const session = await window.electronAPI?.getSession();
+
+        if (session && session.tabs && session.tabs.length > 0) {
+          // Restore session
+          const restoredTabs: TabData[] = await Promise.all(
+            session.tabs.map(async (tabState: IpcTabState) => {
+              let tabContent = '';
+
+              // Try to load recovery file for modified tabs
+              if (tabState.isModified) {
+                const recoveryContent = await window.electronAPI?.readRecovery(tabState.id);
+                if (recoveryContent) {
+                  tabContent = recoveryContent;
+                }
+              }
+
+              // If no recovery content, try to load from file
+              if (!tabContent && tabState.filePath) {
+                const result = await window.electronAPI?.readFile(tabState.filePath);
+                if (result?.success && result.content) {
+                  tabContent = result.content;
+                }
+              }
+
+              return {
+                id: tabState.id,
+                filePath: tabState.filePath,
+                title: tabState.title,
+                isModified: tabState.isModified,
+                content: tabContent,
+              };
+            })
+          );
+
+          // Filter out tabs that couldn't be restored
+          const validTabs = restoredTabs.filter((t) => t.content !== '' || t.filePath === null);
+
+          if (validTabs.length > 0) {
+            setTabs(validTabs);
+            // Restore active tab or default to first
+            const activeId = validTabs.find((t) => t.id === session.activeTabId)?.id ?? validTabs[0].id;
+            setActiveTabId(activeId);
+            setIsInitialized(true);
+            console.log(`Restored session with ${validTabs.length} tabs`);
+            return;
+          }
+        }
+
+        // No session or empty session - load welcome
+        await loadWelcomeAndCreateTab();
+        setIsInitialized(true);
+      } catch (e) {
+        console.error('Failed to initialize app:', e);
+        // Fallback to welcome
+        await loadWelcomeAndCreateTab();
+        setIsInitialized(true);
+      }
+    }
+
+    initializeApp();
+  }, [isInitialized, loadWelcomeAndCreateTab]);
 
   // Load plugins on startup
   const loadPlugins = useCallback(async () => {
@@ -644,29 +400,27 @@ export default function App() {
     );
   }, []);
 
-  // Auto-save functionality
+  // Auto-recovery functionality (saves to recovery folder, not original file)
   useEffect(() => {
-    if (isModified && filePath) {
+    if (activeTab?.isModified && activeTabId) {
       // Clear any existing timeout
       if (autoSaveTimeoutRef.current) {
         clearTimeout(autoSaveTimeoutRef.current);
       }
 
-      // Set up auto-save after 3 seconds of inactivity
+      // Set up auto-recovery after 5 seconds of inactivity
       autoSaveTimeoutRef.current = setTimeout(async () => {
         setAutoSaveStatus('saving');
         try {
-          await window.electronAPI?.writeFile(filePath, content);
-          setIsModified(false);
-          window.electronAPI?.setModified(false);
+          await window.electronAPI?.saveRecovery(activeTabId, activeTab.content);
           setAutoSaveStatus('saved');
           // Reset status after 2 seconds
           setTimeout(() => setAutoSaveStatus('idle'), 2000);
         } catch (error) {
-          console.error('Auto-save failed:', error);
+          console.error('Auto-recovery failed:', error);
           setAutoSaveStatus('idle');
         }
-      }, 3000);
+      }, 5000);
     }
 
     return () => {
@@ -674,7 +428,7 @@ export default function App() {
         clearTimeout(autoSaveTimeoutRef.current);
       }
     };
-  }, [content, isModified, filePath]);
+  }, [activeTab?.content, activeTab?.isModified, activeTabId]);
 
   // Drag & drop handlers
   useEffect(() => {
@@ -721,14 +475,11 @@ export default function App() {
     };
   }, []);
 
-  // Handle content changes
+  // Handle content changes - updates active tab
   const handleContentChange = useCallback((newContent: string) => {
-    setContent(newContent);
-    if (!isModified) {
-      setIsModified(true);
-      window.electronAPI?.setModified(true);
-    }
-  }, [isModified]);
+    updateActiveTabContent(newContent);
+    window.electronAPI?.setModified(true);
+  }, [updateActiveTabContent]);
 
   // Set up electron IPC handlers - file operations (no content dependency)
   useEffect(() => {
@@ -741,27 +492,89 @@ export default function App() {
       window.electronAPI.sendContent(contentRef.current);
     });
 
-    // Handle new file
+    // Handle new file - create new tab
     const unsubNew = window.electronAPI.onFileNew(() => {
-      setContent(NEW_FILE_CONTENT);
-      setFilePath(null);
-      setIsModified(false);
+      const newTab: TabData = {
+        id: generateTabId(),
+        filePath: null,
+        title: 'Untitled',
+        isModified: false,
+        content: NEW_FILE_CONTENT,
+      };
+      setTabs((prev) => [...prev, newTab]);
+      setActiveTabId(newTab.id);
       window.electronAPI.setModified(false);
     });
 
-    // Handle file opened
+    // Handle file opened - open in new tab or switch to existing
     const unsubOpened = window.electronAPI.onFileOpened((data) => {
-      setContent(data.content);
-      setFilePath(data.path);
-      setIsModified(false);
+      // Check if file is already open
+      const existingTab = tabsRef.current.find((t) => t.filePath === data.path);
+      if (existingTab) {
+        setActiveTabId(existingTab.id);
+        // Update content if not modified
+        setTabs((prev) =>
+          prev.map((t) =>
+            t.id === existingTab.id && !t.isModified
+              ? { ...t, content: data.content }
+              : t
+          )
+        );
+      } else {
+        // Create new tab
+        const newTab: TabData = {
+          id: generateTabId(),
+          filePath: data.path,
+          title: getFileName(data.path),
+          isModified: false,
+          content: data.content,
+        };
+        setTabs((prev) => [...prev, newTab]);
+        setActiveTabId(newTab.id);
+      }
       window.electronAPI.setModified(false);
     });
 
-    // Handle file saved
+    // Handle file saved - update active tab
     const unsubSaved = window.electronAPI.onFileSaved((path) => {
-      setFilePath(path);
-      setIsModified(false);
+      const currentActiveId = activeTabIdRef.current;
+      if (currentActiveId) {
+        setTabs((prev) =>
+          prev.map((t) =>
+            t.id === currentActiveId
+              ? {
+                  ...t,
+                  isModified: false,
+                  filePath: path,
+                  title: getFileName(path),
+                }
+              : t
+          )
+        );
+        // Delete recovery file since we saved
+        window.electronAPI.deleteRecovery(currentActiveId).catch(console.error);
+      }
       window.electronAPI.setModified(false);
+    });
+
+    // Handle welcome menu action
+    const unsubSessionRestore = window.electronAPI.onSessionRestore?.(async () => {
+      // Reload welcome file
+      try {
+        const welcomeContent = await window.electronAPI.getWelcomeContent();
+        const welcomePath = await window.electronAPI.getWelcomePath();
+        const newTab: TabData = {
+          id: generateTabId(),
+          filePath: welcomePath,
+          title: getFileName(welcomePath),
+          isModified: false,
+          content: welcomeContent,
+        };
+        setTabs((prev) => [...prev, newTab]);
+        setActiveTabId(newTab.id);
+      } catch (e) {
+        console.error('Failed to open welcome file:', e);
+      }
     });
 
     // Handle view mode changes
@@ -1665,6 +1478,7 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
       unsubNew();
       unsubOpened();
       unsubSaved();
+      unsubSessionRestore?.();
       unsubViewMode();
       unsubMenuAction();
       unsubInsert();
@@ -1680,26 +1494,20 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
     window.electronAPI?.setModified(isModified);
   }, [isModified]);
 
-  // File action handlers
+  // File action handlers - now using tab system
   const handleNewFile = useCallback(() => {
-    setContent('');
-    setFilePath(null);
-    setIsModified(false);
-    window.electronAPI?.setModified(false);
+    handleNewTab();
     setSidebarOpen(false);
-  }, []);
+  }, [handleNewTab]);
 
   const handleOpenFile = useCallback(async () => {
     setSidebarOpen(false);
     // Use direct invoke pattern - more reliable than IPC events
     const result = await window.electronAPI?.openFileDialog?.();
-    if (result?.success && result.content) {
-      setContent(result.content);
-      setFilePath(result.path ?? null);
-      setIsModified(false);
-      window.electronAPI?.setModified(false);
+    if (result?.success && result.content && result.path) {
+      openFileInTab(result.path, result.content);
     }
-  }, []);
+  }, [openFileInTab]);
 
   const handleSaveFile = useCallback(() => {
     window.electronAPI?.saveFile();
@@ -1716,8 +1524,47 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
       const isShift = e.shiftKey;
       const isAlt = e.altKey;
 
+      // === Tab Operations ===
+      // New Tab: Ctrl+T
+      if (isCtrl && !isShift && !isAlt && e.key.toLowerCase() === 't') {
+        e.preventDefault();
+        handleNewTab();
+        return;
+      }
+
+      // Close Tab: Ctrl+W
+      if (isCtrl && !isShift && !isAlt && e.key.toLowerCase() === 'w') {
+        e.preventDefault();
+        if (activeTabId) {
+          handleTabClose(activeTabId);
+        }
+        return;
+      }
+
+      // Next Tab: Ctrl+Tab
+      if (isCtrl && !isShift && !isAlt && e.key === 'Tab') {
+        e.preventDefault();
+        if (tabs.length > 1 && activeTabId) {
+          const currentIndex = tabs.findIndex((t) => t.id === activeTabId);
+          const nextIndex = (currentIndex + 1) % tabs.length;
+          setActiveTabId(tabs[nextIndex].id);
+        }
+        return;
+      }
+
+      // Previous Tab: Ctrl+Shift+Tab
+      if (isCtrl && isShift && !isAlt && e.key === 'Tab') {
+        e.preventDefault();
+        if (tabs.length > 1 && activeTabId) {
+          const currentIndex = tabs.findIndex((t) => t.id === activeTabId);
+          const prevIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+          setActiveTabId(tabs[prevIndex].id);
+        }
+        return;
+      }
+
       // === File Operations ===
-      // New File: Ctrl+N
+      // New File: Ctrl+N (same as new tab)
       if (isCtrl && !isShift && !isAlt && e.key.toLowerCase() === 'n') {
         e.preventDefault();
         handleNewFile();
@@ -1906,7 +1753,7 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [searchOpen, sidebarOpen, viewMode, handleNewFile, handleOpenFile, handleSaveFile, handleSaveAs]);
+  }, [searchOpen, sidebarOpen, viewMode, handleNewFile, handleOpenFile, handleSaveFile, handleSaveAs, handleNewTab, handleTabClose, tabs, activeTabId]);
 
   return (
     <div className={`app ${sidebarOpen ? 'app--sidebar-open' : ''}`}>
@@ -1939,6 +1786,16 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         sidebarOpen={sidebarOpen}
       />
+      {/* Tab Bar - only show when initialized */}
+      {isInitialized && (
+        <TabBar
+          tabs={tabs}
+          activeTabId={activeTabId}
+          onTabSelect={handleTabSelect}
+          onTabClose={handleTabClose}
+          onNewTab={handleNewTab}
+        />
+      )}
       <div className={`main-content view-${viewMode}`}>
         {(viewMode === 'editor' || viewMode === 'split') && (
           <div className="editor-pane">
@@ -1981,13 +1838,13 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
         onClose={() => setSettingsOpen(false)}
         settings={settings}
         onSettingsChange={setSettings}
-        availablePlugins={AVAILABLE_PLUGINS}
+        onOpenPluginManager={() => setPluginManagerOpen(true)}
       />
       <SearchReplace
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
         content={content}
-        onReplace={setContent}
+        onReplace={updateActiveTabContent}
         mode={searchMode}
       />
       <HelpDialog

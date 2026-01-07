@@ -5,8 +5,47 @@
 
 import { app, BrowserWindow, ipcMain, dialog, Menu, shell, screen } from 'electron';
 import { join, dirname, resolve, basename } from 'path';
-import { readFile, writeFile, stat, readdir } from 'fs/promises';
+import { readFile, writeFile, stat, readdir, rm } from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
+import { homedir } from 'os';
+
+// ============================================
+// Session & Recovery Types
+// ============================================
+
+interface TabState {
+  id: string;
+  filePath: string | null;
+  title: string;
+  isModified: boolean;
+  recoveryFile?: string;
+  cursorPosition?: { line: number; column: number };
+  scrollPosition?: number;
+  viewMode?: 'editor' | 'preview' | 'split';
+}
+
+interface RecentFile {
+  path: string;
+  lastOpened: string;
+  pinned?: boolean;
+}
+
+interface SessionState {
+  version: number;
+  lastOpened: string;
+  activeTabId: string;
+  tabs: TabState[];
+  recentFiles: RecentFile[];
+}
+
+// ============================================
+// App Data Paths
+// ============================================
+
+const APP_DATA_PATH = join(homedir(), 'AppData', 'Roaming', 'MDPlusPlus');
+const SESSION_FILE = join(APP_DATA_PATH, 'session.json');
+const RECOVERY_DIR = join(APP_DATA_PATH, 'recovery');
+const APP_WELCOME_FILE = join(APP_DATA_PATH, 'welcome.md');
 
 // Force software rendering to fix GPU crashes on Windows
 app.disableHardwareAcceleration();
@@ -16,9 +55,154 @@ let mainWindow: BrowserWindow | null = null;
 let currentFilePath: string | null = null;
 let isModified = false;
 
-// Recent files storage
-const recentFiles: string[] = [];
+// Recent files storage (loaded from session)
+let recentFiles: string[] = [];
 const MAX_RECENT_FILES = 10;
+
+// ============================================
+// Session & Recovery Functions
+// ============================================
+
+/**
+ * Ensure app data directories exist
+ */
+function ensureAppDataDirs(): void {
+  if (!existsSync(APP_DATA_PATH)) {
+    mkdirSync(APP_DATA_PATH, { recursive: true });
+  }
+  if (!existsSync(RECOVERY_DIR)) {
+    mkdirSync(RECOVERY_DIR, { recursive: true });
+  }
+}
+
+/**
+ * Load session state from disk
+ */
+async function loadSession(): Promise<SessionState | null> {
+  try {
+    if (existsSync(SESSION_FILE)) {
+      const content = await readFile(SESSION_FILE, 'utf-8');
+      const session = JSON.parse(content) as SessionState;
+      // Load recent files into memory
+      if (session.recentFiles) {
+        recentFiles = session.recentFiles.map(rf => rf.path);
+      }
+      return session;
+    }
+  } catch (error) {
+    console.error('Failed to load session:', error);
+  }
+  return null;
+}
+
+/**
+ * Save session state to disk
+ */
+async function saveSession(session: SessionState): Promise<void> {
+  try {
+    ensureAppDataDirs();
+    await writeFile(SESSION_FILE, JSON.stringify(session, null, 2), 'utf-8');
+  } catch (error) {
+    console.error('Failed to save session:', error);
+  }
+}
+
+/**
+ * Save recovery file for a tab
+ */
+async function saveRecoveryFile(tabId: string, content: string): Promise<void> {
+  try {
+    ensureAppDataDirs();
+    const recoveryPath = join(RECOVERY_DIR, `${tabId}.md`);
+    await writeFile(recoveryPath, content, 'utf-8');
+  } catch (error) {
+    console.error('Failed to save recovery file:', error);
+  }
+}
+
+/**
+ * Read recovery file for a tab
+ */
+async function readRecoveryFile(tabId: string): Promise<string | null> {
+  try {
+    const recoveryPath = join(RECOVERY_DIR, `${tabId}.md`);
+    if (existsSync(recoveryPath)) {
+      return await readFile(recoveryPath, 'utf-8');
+    }
+  } catch (error) {
+    console.error('Failed to read recovery file:', error);
+  }
+  return null;
+}
+
+/**
+ * Delete recovery file for a tab
+ */
+async function deleteRecoveryFile(tabId: string): Promise<void> {
+  try {
+    const recoveryPath = join(RECOVERY_DIR, `${tabId}.md`);
+    if (existsSync(recoveryPath)) {
+      await rm(recoveryPath);
+    }
+  } catch (error) {
+    console.error('Failed to delete recovery file:', error);
+  }
+}
+
+/**
+ * Clean up orphaned recovery files
+ */
+async function cleanupRecoveryFiles(validTabIds: string[]): Promise<void> {
+  try {
+    if (!existsSync(RECOVERY_DIR)) return;
+
+    const files = await readdir(RECOVERY_DIR);
+    for (const file of files) {
+      const tabId = file.replace('.md', '');
+      if (!validTabIds.includes(tabId)) {
+        await rm(join(RECOVERY_DIR, file));
+      }
+    }
+  } catch (error) {
+    console.error('Failed to cleanup recovery files:', error);
+  }
+}
+
+/**
+ * Setup welcome file (copy from resources if not exists)
+ */
+async function setupWelcomeFile(): Promise<void> {
+  ensureAppDataDirs();
+
+  if (!existsSync(APP_WELCOME_FILE)) {
+    // Copy from resources
+    const resourceWelcome = join(__dirname, '../../resources/welcome.md');
+    if (existsSync(resourceWelcome)) {
+      const content = await readFile(resourceWelcome, 'utf-8');
+      await writeFile(APP_WELCOME_FILE, content, 'utf-8');
+      console.log('Welcome file created at:', APP_WELCOME_FILE);
+    }
+  }
+}
+
+/**
+ * Get welcome file content
+ */
+async function getWelcomeContent(): Promise<string> {
+  try {
+    if (existsSync(APP_WELCOME_FILE)) {
+      return await readFile(APP_WELCOME_FILE, 'utf-8');
+    }
+    // Fallback to resources
+    const resourceWelcome = join(__dirname, '../../resources/welcome.md');
+    if (existsSync(resourceWelcome)) {
+      return await readFile(resourceWelcome, 'utf-8');
+    }
+  } catch (error) {
+    console.error('Failed to load welcome file:', error);
+  }
+  return '# Welcome to MD++\n\nStart typing to begin...';
+}
 
 /**
  * Create the main application window
@@ -135,8 +319,8 @@ function createWindow(): void {
 
     console.log('Window shown on primary display at:', x, y);
 
-    // Load welcome file on startup
-    loadWelcomeFile();
+    // Initialize app (session restore or welcome)
+    initializeApp();
   });
 
   // Create application menu
@@ -144,24 +328,31 @@ function createWindow(): void {
 }
 
 /**
- * Load welcome file on startup
+ * Initialize app on startup - setup welcome file, load session
  */
-async function loadWelcomeFile(): Promise<void> {
+async function initializeApp(): Promise<void> {
   // Wait for renderer to be fully loaded
   await new Promise(resolve => setTimeout(resolve, 500));
 
-  const welcomePath = join(__dirname, '../../examples/welcome.md');
+  // Setup welcome file
+  await setupWelcomeFile();
 
-  try {
-    if (existsSync(welcomePath)) {
-      const content = await readFile(welcomePath, 'utf-8');
-      // Don't set currentFilePath - treat as untitled until saved
-      mainWindow?.webContents.send('file-opened', { path: null, content });
-      console.log('Welcome file loaded');
-    }
-  } catch (error) {
-    console.log('Could not load welcome file:', error);
+  // Load previous session
+  const session = await loadSession();
+
+  if (session && session.tabs && session.tabs.length > 0) {
+    // Restore previous session
+    mainWindow?.webContents.send('session-restore', session);
+    console.log('Session restored with', session.tabs.length, 'tabs');
+  } else {
+    // No session - load welcome file
+    const content = await getWelcomeContent();
+    mainWindow?.webContents.send('file-opened', { path: APP_WELCOME_FILE, content, isWelcome: true });
+    console.log('Welcome file loaded');
   }
+
+  // Rebuild menu with loaded recent files
+  createMenu();
 }
 
 /**
@@ -360,6 +551,10 @@ function createMenu(): void {
     {
       label: 'Help',
       submenu: [
+        {
+          label: 'Welcome',
+          click: () => mainWindow?.webContents.send('menu-action', 'open-welcome'),
+        },
         {
           label: 'Keyboard Shortcuts',
           accelerator: 'F1',
@@ -916,6 +1111,56 @@ ipcMain.handle('load-plugins', async () => {
 
 ipcMain.handle('get-plugin-path', () => {
   return getPluginsPath();
+});
+
+// ============================================
+// Session & Recovery IPC Handlers
+// ============================================
+
+ipcMain.handle('get-session', async () => {
+  return await loadSession();
+});
+
+ipcMain.handle('save-session', async (_, session: SessionState) => {
+  await saveSession(session);
+  // Update recent files in memory for menu
+  if (session.recentFiles) {
+    recentFiles = session.recentFiles.map(rf => rf.path);
+    createMenu();
+  }
+});
+
+ipcMain.handle('save-recovery', async (_, tabId: string, content: string) => {
+  await saveRecoveryFile(tabId, content);
+});
+
+ipcMain.handle('read-recovery', async (_, tabId: string) => {
+  return await readRecoveryFile(tabId);
+});
+
+ipcMain.handle('delete-recovery', async (_, tabId: string) => {
+  await deleteRecoveryFile(tabId);
+});
+
+ipcMain.handle('cleanup-recovery', async (_, validTabIds: string[]) => {
+  await cleanupRecoveryFiles(validTabIds);
+});
+
+ipcMain.handle('get-app-paths', () => {
+  return {
+    appData: APP_DATA_PATH,
+    recovery: RECOVERY_DIR,
+    welcome: APP_WELCOME_FILE,
+    session: SESSION_FILE,
+  };
+});
+
+ipcMain.handle('get-welcome-content', async () => {
+  return await getWelcomeContent();
+});
+
+ipcMain.handle('get-welcome-path', () => {
+  return APP_WELCOME_FILE;
 });
 
 /**

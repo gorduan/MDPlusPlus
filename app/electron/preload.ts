@@ -18,7 +18,40 @@ export interface FileOpenedEvent {
 }
 
 export type ViewMode = 'editor' | 'preview' | 'split';
-export type MenuAction = 'find' | 'replace' | 'toggle-ai-context' | 'insert-table' | 'show-help';
+export type MenuAction = 'find' | 'replace' | 'toggle-ai-context' | 'insert-table' | 'show-help' | 'open-welcome';
+
+// Session & Recovery Types
+export interface TabState {
+  id: string;
+  filePath: string | null;
+  title: string;
+  isModified: boolean;
+  recoveryFile?: string;
+  cursorPosition?: { line: number; column: number };
+  scrollPosition?: number;
+  viewMode?: 'editor' | 'preview' | 'split';
+}
+
+export interface RecentFile {
+  path: string;
+  lastOpened: string;
+  pinned?: boolean;
+}
+
+export interface SessionState {
+  version: number;
+  lastOpened: string;
+  activeTabId: string;
+  tabs: TabState[];
+  recentFiles: RecentFile[];
+}
+
+export interface AppPaths {
+  appData: string;
+  recovery: string;
+  welcome: string;
+  session: string;
+}
 export type ExportTheme = 'dark' | 'light';
 
 export interface ExportOptions {
@@ -154,6 +187,41 @@ const electronAPI = {
 
   getPluginPath: (): Promise<string> =>
     ipcRenderer.invoke('get-plugin-path'),
+
+  // Session & Recovery
+  getSession: (): Promise<SessionState | null> =>
+    ipcRenderer.invoke('get-session'),
+
+  saveSession: (session: SessionState): Promise<void> =>
+    ipcRenderer.invoke('save-session', session),
+
+  saveRecovery: (tabId: string, content: string): Promise<void> =>
+    ipcRenderer.invoke('save-recovery', tabId, content),
+
+  readRecovery: (tabId: string): Promise<string | null> =>
+    ipcRenderer.invoke('read-recovery', tabId),
+
+  deleteRecovery: (tabId: string): Promise<void> =>
+    ipcRenderer.invoke('delete-recovery', tabId),
+
+  cleanupRecovery: (validTabIds: string[]): Promise<void> =>
+    ipcRenderer.invoke('cleanup-recovery', validTabIds),
+
+  getAppPaths: (): Promise<AppPaths> =>
+    ipcRenderer.invoke('get-app-paths'),
+
+  getWelcomeContent: (): Promise<string> =>
+    ipcRenderer.invoke('get-welcome-content'),
+
+  getWelcomePath: (): Promise<string> =>
+    ipcRenderer.invoke('get-welcome-path'),
+
+  // Session restore event
+  onSessionRestore: (callback: (session: SessionState) => void) => {
+    const handler = (_: Electron.IpcRendererEvent, session: SessionState) => callback(session);
+    ipcRenderer.on('session-restore', handler);
+    return () => ipcRenderer.removeListener('session-restore', handler);
+  },
 };
 
 // Plugin data type
