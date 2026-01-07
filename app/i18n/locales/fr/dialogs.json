@@ -1,0 +1,64 @@
+{
+  "unsavedChanges": {
+    "title": "Modifications non enregistrées",
+    "message": "Voulez-vous enregistrer les modifications avant de fermer ?",
+    "save": "Enregistrer",
+    "dontSave": "Ne pas enregistrer",
+    "cancel": "Annuler"
+  },
+  "saveInstance": {
+    "title": "Enregistrer l'instance ?",
+    "message": "Cette instance doit-elle être restaurée au prochain démarrage ?",
+    "detail": "\"Enregistrer l'instance\" conservera tous les onglets et la position de la fenêtre.\n\"Supprimer l'instance\" supprimera définitivement cette instance.",
+    "save": "Enregistrer l'instance",
+    "discard": "Supprimer l'instance",
+    "cancel": "Annuler"
+  },
+  "restoreInstances": {
+    "title": "Autres instances trouvées",
+    "message": "{{count}} autre(s) instance(s) fermée(s) ont été trouvée(s).\nVoulez-vous les ouvrir toutes ?",
+    "message_one": "1 autre instance fermée a été trouvée.\nVoulez-vous l'ouvrir ?",
+    "message_other": "{{count}} autres instances fermées ont été trouvées.\nVoulez-vous les ouvrir toutes ?",
+    "detail": "{{instances}}",
+    "openAll": "Tout ouvrir",
+    "no": "Non",
+    "unnamed": "Sans nom"
+  },
+  "export": {
+    "title": "Exporter",
+    "selectTheme": "Quel thème doit être utilisé pour l'exportation ?",
+    "lightTheme": "Thème clair",
+    "darkTheme": "Thème sombre",
+    "currentTheme": "Thème actuel"
+  },
+  "fileFilters": {
+    "markdown": "Fichiers Markdown",
+    "mdpp": "Fichiers MD++",
+    "markdownScript": "Fichiers MarkdownScript",
+    "allFiles": "Tous les fichiers",
+    "htmlFiles": "Fichiers HTML",
+    "pdfFiles": "Fichiers PDF"
+  },
+  "errors": {
+    "loadFailed": "Échec du chargement : {{description}}",
+    "saveFailed": "Échec de l'enregistrement",
+    "exportFailed": "Échec de l'exportation"
+  },
+  "profile": {
+    "createTitle": "Créer un profil",
+    "editTitle": "Modifier le profil",
+    "deleteTitle": "Supprimer le profil",
+    "deleteMessage": "Êtes-vous sûr de vouloir supprimer le profil \"{{name}}\" ?",
+    "nameLabel": "Nom du profil",
+    "namePlaceholder": "Entrez le nom du profil"
+  },
+  "theme": {
+    "createTitle": "Créer un thème",
+    "editTitle": "Modifier le thème",
+    "deleteTitle": "Supprimer le thème",
+    "deleteMessage": "Êtes-vous sûr de vouloir supprimer le thème \"{{name}}\" ?",
+    "exportTitle": "Exporter le thème",
+    "nameLabel": "Nom du thème",
+    "namePlaceholder": "Entrez le nom du thème"
+  }
+}

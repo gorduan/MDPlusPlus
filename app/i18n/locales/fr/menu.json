@@ -1,0 +1,64 @@
+{
+  "file": {
+    "label": "Fichier",
+    "new": "Nouveau",
+    "open": "Ouvrir...",
+    "openRecent": "Ouvrir récent",
+    "clearRecent": "Effacer la liste",
+    "save": "Enregistrer",
+    "saveAs": "Enregistrer sous...",
+    "exportHtml": "Exporter en HTML...",
+    "exportPdf": "Exporter en PDF...",
+    "exit": "Quitter"
+  },
+  "edit": {
+    "label": "Édition",
+    "undo": "Annuler",
+    "redo": "Rétablir",
+    "cut": "Couper",
+    "copy": "Copier",
+    "paste": "Coller",
+    "selectAll": "Tout sélectionner",
+    "find": "Rechercher...",
+    "replace": "Remplacer...",
+    "preferences": "Préférences..."
+  },
+  "view": {
+    "label": "Affichage",
+    "zoomIn": "Zoom avant",
+    "zoomOut": "Zoom arrière",
+    "resetZoom": "Réinitialiser le zoom",
+    "toggleSidebar": "Afficher/masquer la barre latérale",
+    "editorOnly": "Éditeur uniquement",
+    "splitView": "Vue partagée",
+    "previewOnly": "Aperçu uniquement",
+    "fullscreen": "Plein écran",
+    "devTools": "Outils de développement"
+  },
+  "insert": {
+    "label": "Insertion",
+    "heading1": "Titre 1",
+    "heading2": "Titre 2",
+    "heading3": "Titre 3",
+    "bold": "Gras",
+    "italic": "Italique",
+    "code": "Code",
+    "link": "Lien",
+    "image": "Image",
+    "codeBlock": "Bloc de code",
+    "blockquote": "Citation",
+    "horizontalRule": "Ligne horizontale",
+    "bulletList": "Liste à puces",
+    "numberedList": "Liste numérotée",
+    "taskList": "Liste de tâches",
+    "table": "Tableau",
+    "aiContextBlock": "Bloc de contexte IA",
+    "componentDirective": "Directive de composant"
+  },
+  "help": {
+    "label": "Aide",
+    "shortcuts": "Raccourcis clavier",
+    "documentation": "Documentation",
+    "about": "À propos de MD++"
+  }
+}

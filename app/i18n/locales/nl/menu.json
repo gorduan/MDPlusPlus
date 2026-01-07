@@ -1,0 +1,64 @@
+{
+  "file": {
+    "label": "Bestand",
+    "new": "Nieuw",
+    "open": "Openen...",
+    "openRecent": "Recent geopend",
+    "clearRecent": "Lijst wissen",
+    "save": "Opslaan",
+    "saveAs": "Opslaan als...",
+    "exportHtml": "Exporteren als HTML...",
+    "exportPdf": "Exporteren als PDF...",
+    "exit": "Afsluiten"
+  },
+  "edit": {
+    "label": "Bewerken",
+    "undo": "Ongedaan maken",
+    "redo": "Opnieuw",
+    "cut": "Knippen",
+    "copy": "Kopiëren",
+    "paste": "Plakken",
+    "selectAll": "Alles selecteren",
+    "find": "Zoeken...",
+    "replace": "Vervangen...",
+    "preferences": "Voorkeuren..."
+  },
+  "view": {
+    "label": "Weergave",
+    "zoomIn": "Inzoomen",
+    "zoomOut": "Uitzoomen",
+    "resetZoom": "Zoom herstellen",
+    "toggleSidebar": "Zijbalk wisselen",
+    "editorOnly": "Alleen editor",
+    "splitView": "Gesplitste weergave",
+    "previewOnly": "Alleen voorbeeld",
+    "fullscreen": "Volledig scherm",
+    "devTools": "Ontwikkelaarstools"
+  },
+  "insert": {
+    "label": "Invoegen",
+    "heading1": "Kop 1",
+    "heading2": "Kop 2",
+    "heading3": "Kop 3",
+    "bold": "Vet",
+    "italic": "Cursief",
+    "code": "Code",
+    "link": "Link",
+    "image": "Afbeelding",
+    "codeBlock": "Codeblok",
+    "blockquote": "Citaat",
+    "horizontalRule": "Horizontale lijn",
+    "bulletList": "Opsomming",
+    "numberedList": "Genummerde lijst",
+    "taskList": "Takenlijst",
+    "table": "Tabel",
+    "aiContextBlock": "AI-contextblok",
+    "componentDirective": "Component-richtlijn"
+  },
+  "help": {
+    "label": "Help",
+    "shortcuts": "Sneltoetsen",
+    "documentation": "Documentatie",
+    "about": "Over MD++"
+  }
+}

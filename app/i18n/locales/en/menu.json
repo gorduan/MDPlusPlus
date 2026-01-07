@@ -1,0 +1,64 @@
+{
+  "file": {
+    "label": "File",
+    "new": "New",
+    "open": "Open...",
+    "openRecent": "Open Recent",
+    "clearRecent": "Clear Recent",
+    "save": "Save",
+    "saveAs": "Save As...",
+    "exportHtml": "Export as HTML...",
+    "exportPdf": "Export as PDF...",
+    "exit": "Exit"
+  },
+  "edit": {
+    "label": "Edit",
+    "undo": "Undo",
+    "redo": "Redo",
+    "cut": "Cut",
+    "copy": "Copy",
+    "paste": "Paste",
+    "selectAll": "Select All",
+    "find": "Find...",
+    "replace": "Replace...",
+    "preferences": "Preferences..."
+  },
+  "view": {
+    "label": "View",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "resetZoom": "Reset Zoom",
+    "toggleSidebar": "Toggle Sidebar",
+    "editorOnly": "Editor Only",
+    "splitView": "Split View",
+    "previewOnly": "Preview Only",
+    "fullscreen": "Toggle Fullscreen",
+    "devTools": "Developer Tools"
+  },
+  "insert": {
+    "label": "Insert",
+    "heading1": "Heading 1",
+    "heading2": "Heading 2",
+    "heading3": "Heading 3",
+    "bold": "Bold",
+    "italic": "Italic",
+    "code": "Code",
+    "link": "Link",
+    "image": "Image",
+    "codeBlock": "Code Block",
+    "blockquote": "Blockquote",
+    "horizontalRule": "Horizontal Rule",
+    "bulletList": "Bullet List",
+    "numberedList": "Numbered List",
+    "taskList": "Task List",
+    "table": "Table",
+    "aiContextBlock": "AI Context Block",
+    "componentDirective": "Component Directive"
+  },
+  "help": {
+    "label": "Help",
+    "shortcuts": "Keyboard Shortcuts",
+    "documentation": "Documentation",
+    "about": "About MD++"
+  }
+}

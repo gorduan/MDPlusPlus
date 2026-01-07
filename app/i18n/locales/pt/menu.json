@@ -1,0 +1,64 @@
+{
+  "file": {
+    "label": "Ficheiro",
+    "new": "Novo",
+    "open": "Abrir...",
+    "openRecent": "Abrir recente",
+    "clearRecent": "Limpar lista",
+    "save": "Guardar",
+    "saveAs": "Guardar como...",
+    "exportHtml": "Exportar como HTML...",
+    "exportPdf": "Exportar como PDF...",
+    "exit": "Sair"
+  },
+  "edit": {
+    "label": "Editar",
+    "undo": "Desfazer",
+    "redo": "Refazer",
+    "cut": "Cortar",
+    "copy": "Copiar",
+    "paste": "Colar",
+    "selectAll": "Selecionar tudo",
+    "find": "Procurar...",
+    "replace": "Substituir...",
+    "preferences": "Preferências..."
+  },
+  "view": {
+    "label": "Ver",
+    "zoomIn": "Aumentar zoom",
+    "zoomOut": "Diminuir zoom",
+    "resetZoom": "Repor zoom",
+    "toggleSidebar": "Alternar barra lateral",
+    "editorOnly": "Apenas editor",
+    "splitView": "Vista dividida",
+    "previewOnly": "Apenas pré-visualização",
+    "fullscreen": "Ecrã inteiro",
+    "devTools": "Ferramentas de desenvolvimento"
+  },
+  "insert": {
+    "label": "Inserir",
+    "heading1": "Título 1",
+    "heading2": "Título 2",
+    "heading3": "Título 3",
+    "bold": "Negrito",
+    "italic": "Itálico",
+    "code": "Código",
+    "link": "Ligação",
+    "image": "Imagem",
+    "codeBlock": "Bloco de código",
+    "blockquote": "Citação",
+    "horizontalRule": "Linha horizontal",
+    "bulletList": "Lista com marcadores",
+    "numberedList": "Lista numerada",
+    "taskList": "Lista de tarefas",
+    "table": "Tabela",
+    "aiContextBlock": "Bloco de contexto IA",
+    "componentDirective": "Diretiva de componente"
+  },
+  "help": {
+    "label": "Ajuda",
+    "shortcuts": "Atalhos de teclado",
+    "documentation": "Documentação",
+    "about": "Sobre MD++"
+  }
+}

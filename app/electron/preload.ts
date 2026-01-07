@@ -268,6 +268,16 @@ const electronAPI = {
 
   saveSettings: (key: string, data: unknown): Promise<boolean> =>
     ipcRenderer.invoke('save-settings', key, data),
+
+  // Language/i18n
+  getLanguage: (): Promise<string> =>
+    ipcRenderer.invoke('get-language'),
+
+  getSupportedLanguages: (): Promise<Array<{ code: string; name: string; nativeName: string }>> =>
+    ipcRenderer.invoke('get-supported-languages'),
+
+  setLanguage: (language: string): Promise<string> =>
+    ipcRenderer.invoke('set-language', language),
 };
 
 // Plugin data type
@@ -280,6 +290,8 @@ export interface PluginData {
   css?: string[];
   js?: string[];
   components: Record<string, unknown>;
+  /** Plugin translations loaded from plugin's i18n/ subdirectory */
+  i18n?: Record<string, unknown>;
 }
 
 // Expose to renderer

@@ -1,0 +1,29 @@
+{
+  "name": "Avisos",
+  "description": "Caixas de aviso para notas, dicas, alertas e mais",
+  "toolbar": {
+    "group": "Avisos",
+    "note": "Nota",
+    "noteTooltip": "Inserir aviso de nota",
+    "tip": "Dica",
+    "tipTooltip": "Inserir aviso de dica",
+    "warning": "Aviso",
+    "warningTooltip": "Inserir aviso de alerta",
+    "danger": "Perigo",
+    "dangerTooltip": "Inserir aviso de perigo",
+    "success": "Sucesso",
+    "successTooltip": "Inserir aviso de sucesso",
+    "question": "Pergunta",
+    "questionTooltip": "Inserir aviso de pergunta",
+    "info": "Info",
+    "infoTooltip": "Inserir aviso de info",
+    "quote": "Citação",
+    "quoteTooltip": "Inserir aviso de citação",
+    "example": "Exemplo",
+    "exampleTooltip": "Inserir aviso de exemplo",
+    "bug": "Erro",
+    "bugTooltip": "Inserir aviso de erro",
+    "abstract": "Resumo",
+    "abstractTooltip": "Inserir aviso de resumo"
+  }
+}

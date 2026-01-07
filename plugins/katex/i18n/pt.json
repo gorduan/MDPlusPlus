@@ -1,0 +1,18 @@
+{
+  "name": "Matemática KaTeX",
+  "description": "Renderização matemática LaTeX com KaTeX",
+  "toolbar": {
+    "group": "Matemática",
+    "inlineMath": "Fórmula em linha",
+    "inlineMathTooltip": "Inserir fórmula em linha ($...$)",
+    "displayMath": "Fórmula em bloco",
+    "displayMathTooltip": "Inserir fórmula em bloco ($$...$$)"
+  },
+  "settings": {
+    "displayMode": "Renderizar equações em modo bloco (centrado, maior) por predefinição",
+    "throwOnError": "Gerar erro em LaTeX inválido (caso contrário mostra mensagem de erro)",
+    "strict": "Ativar modo estrito para melhores mensagens de erro",
+    "trust": "Confiar na entrada (permite \\url, \\href, etc.)",
+    "macros": "Macros LaTeX personalizadas"
+  }
+}

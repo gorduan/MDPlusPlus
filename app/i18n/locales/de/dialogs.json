@@ -1,0 +1,64 @@
+{
+  "unsavedChanges": {
+    "title": "Ungespeicherte Änderungen",
+    "message": "Möchten Sie die Änderungen vor dem Schließen speichern?",
+    "save": "Speichern",
+    "dontSave": "Nicht speichern",
+    "cancel": "Abbrechen"
+  },
+  "saveInstance": {
+    "title": "Instanz speichern?",
+    "message": "Soll diese Instanz beim nächsten Start wiederhergestellt werden?",
+    "detail": "Bei \"Instanz speichern\" werden alle Tabs und die Fensterposition gespeichert.\nBei \"Instanz verwerfen\" wird diese Instanz dauerhaft gelöscht.",
+    "save": "Instanz speichern",
+    "discard": "Instanz verwerfen",
+    "cancel": "Abbrechen"
+  },
+  "restoreInstances": {
+    "title": "Weitere Instanzen gefunden",
+    "message": "Es wurden {{count}} weitere geschlossene Instanz(en) erkannt.\nSollen sie alle geöffnet werden?",
+    "message_one": "Es wurde 1 weitere geschlossene Instanz erkannt.\nSoll sie geöffnet werden?",
+    "message_other": "Es wurden {{count}} weitere geschlossene Instanzen erkannt.\nSollen sie alle geöffnet werden?",
+    "detail": "{{instances}}",
+    "openAll": "Alle öffnen",
+    "no": "Nein",
+    "unnamed": "Unbenannt"
+  },
+  "export": {
+    "title": "Exportieren",
+    "selectTheme": "Welches Theme soll für den Export verwendet werden?",
+    "lightTheme": "Helles Theme",
+    "darkTheme": "Dunkles Theme",
+    "currentTheme": "Aktuelles Theme"
+  },
+  "fileFilters": {
+    "markdown": "Markdown-Dateien",
+    "mdpp": "MD++-Dateien",
+    "markdownScript": "MarkdownScript-Dateien",
+    "allFiles": "Alle Dateien",
+    "htmlFiles": "HTML-Dateien",
+    "pdfFiles": "PDF-Dateien"
+  },
+  "errors": {
+    "loadFailed": "Laden fehlgeschlagen: {{description}}",
+    "saveFailed": "Speichern fehlgeschlagen",
+    "exportFailed": "Export fehlgeschlagen"
+  },
+  "profile": {
+    "createTitle": "Profil erstellen",
+    "editTitle": "Profil bearbeiten",
+    "deleteTitle": "Profil löschen",
+    "deleteMessage": "Möchten Sie das Profil \"{{name}}\" wirklich löschen?",
+    "nameLabel": "Profilname",
+    "namePlaceholder": "Profilnamen eingeben"
+  },
+  "theme": {
+    "createTitle": "Theme erstellen",
+    "editTitle": "Theme bearbeiten",
+    "deleteTitle": "Theme löschen",
+    "deleteMessage": "Möchten Sie das Theme \"{{name}}\" wirklich löschen?",
+    "exportTitle": "Theme exportieren",
+    "nameLabel": "Theme-Name",
+    "namePlaceholder": "Theme-Namen eingeben"
+  }
+}

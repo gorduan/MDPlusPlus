@@ -1,0 +1,18 @@
+{
+  "name": "KaTeX Math",
+  "description": "LaTeX math rendering with KaTeX",
+  "toolbar": {
+    "group": "Math",
+    "inlineMath": "Inline Math",
+    "inlineMathTooltip": "Insert inline math ($...$)",
+    "displayMath": "Display Math",
+    "displayMathTooltip": "Insert display math ($$...$$)"
+  },
+  "settings": {
+    "displayMode": "Render equations in display mode (centered, larger) by default",
+    "throwOnError": "Throw an error on invalid LaTeX (otherwise shows error message in output)",
+    "strict": "Enable strict mode for better error messages",
+    "trust": "Trust the input (allows \\url, \\href, etc.)",
+    "macros": "Custom LaTeX macros"
+  }
+}

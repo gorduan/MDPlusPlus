@@ -1,0 +1,9 @@
+{
+  "name": "Diagramas Mermaid",
+  "description": "Criar diagramas com sintaxe Mermaid",
+  "toolbar": {
+    "group": "Inserir",
+    "diagram": "Diagrama",
+    "diagramTooltip": "Inserir diagrama Mermaid"
+  }
+}

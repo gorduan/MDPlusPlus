@@ -8,6 +8,7 @@ import { join, dirname, resolve, basename } from 'path';
 import { readFile, writeFile, stat, readdir, rm, rename } from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
 import { homedir } from 'os';
+import { initMainI18n, t, changeMainLanguage, normalizeLanguageCode, SUPPORTED_LANGUAGES } from '../i18n/main';
 
 // ============================================
 // Session & Recovery Types
@@ -85,6 +86,8 @@ const SESSIONS_DIR = join(APP_DATA_PATH, 'sessions');
 const INSTANCES_INDEX_FILE = join(SESSIONS_DIR, 'instances.json');
 const RECOVERY_DIR = join(APP_DATA_PATH, 'recovery');
 const APP_WELCOME_FILE = join(APP_DATA_PATH, 'welcome.md');
+const SETTINGS_DIR = join(APP_DATA_PATH, 'settings');
+const LANGUAGE_FILE = join(SETTINGS_DIR, 'language.json');
 
 // Force software rendering to fix GPU crashes on Windows
 app.disableHardwareAcceleration();
@@ -178,6 +181,51 @@ function ensureAppDataDirs(): void {
   }
   if (!existsSync(SESSIONS_DIR)) {
     mkdirSync(SESSIONS_DIR, { recursive: true });
+  }
+  if (!existsSync(SETTINGS_DIR)) {
+    mkdirSync(SETTINGS_DIR, { recursive: true });
+  }
+}
+
+// ============================================
+// Language Settings
+// ============================================
+
+/**
+ * Load saved language or detect from system
+ */
+function loadLanguageSetting(): string {
+  try {
+    if (existsSync(LANGUAGE_FILE)) {
+      const content = require('fs').readFileSync(LANGUAGE_FILE, 'utf-8');
+      const data = JSON.parse(content);
+      if (data.language && SUPPORTED_LANGUAGES.includes(data.language)) {
+        console.log(`[i18n] Loaded language from settings: ${data.language}`);
+        return data.language;
+      }
+    }
+  } catch (error) {
+    console.error('[i18n] Failed to load language setting:', error);
+  }
+
+  // Detect from system
+  const systemLocale = app.getLocale();
+  const normalizedLang = normalizeLanguageCode(systemLocale);
+  console.log(`[i18n] Using system language: ${systemLocale} -> ${normalizedLang}`);
+  return normalizedLang;
+}
+
+/**
+ * Save language setting
+ */
+async function saveLanguageSetting(language: string): Promise<void> {
+  try {
+    ensureAppDataDirs();
+    const data = { language, updatedAt: new Date().toISOString() };
+    await writeFile(LANGUAGE_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    console.log(`[i18n] Saved language setting: ${language}`);
+  } catch (error) {
+    console.error('[i18n] Failed to save language setting:', error);
   }
 }
 
@@ -534,13 +582,12 @@ async function showRestoreInstancesDialog(
   if (closedInstances.length === 0) return false;
 
   const instanceCount = closedInstances.length;
-  const instanceWord = instanceCount === 1 ? 'Instanz' : 'Instanzen';
 
   // Build detail message with instance info
   const details = closedInstances
     .map((inst) => {
       const date = new Date(inst.info.lastOpened);
-      const dateStr = date.toLocaleDateString('de-DE', {
+      const dateStr = date.toLocaleDateString(undefined, {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
@@ -548,17 +595,20 @@ async function showRestoreInstancesDialog(
         minute: '2-digit',
       });
       const tabWord = inst.info.tabCount === 1 ? 'Tab' : 'Tabs';
-      return `• ${inst.info.displayName || 'Unbenannt'} (${inst.info.tabCount} ${tabWord}, zuletzt: ${dateStr})`;
+      return `• ${inst.info.displayName || t('dialogs:restoreInstances.unnamed')} (${inst.info.tabCount} ${tabWord}, ${dateStr})`;
     })
     .join('\n');
 
+  // Use pluralization key based on count
+  const messageKey = instanceCount === 1 ? 'dialogs:restoreInstances.message_one' : 'dialogs:restoreInstances.message_other';
+
   const result = await dialog.showMessageBox(mainWindow!, {
     type: 'question',
-    buttons: ['Alle öffnen', 'Nein'],
+    buttons: [t('dialogs:restoreInstances.openAll'), t('dialogs:restoreInstances.no')],
     defaultId: 0,
     cancelId: 1,
-    title: 'Weitere Instanzen gefunden',
-    message: `Es wurden ${instanceCount} weitere geschlossene ${instanceWord} erkannt.\nSollen sie alle geöffnet werden?`,
+    title: t('dialogs:restoreInstances.title'),
+    message: t(messageKey, { count: instanceCount }),
     detail: details,
   });
 
@@ -1030,11 +1080,11 @@ async function createWindow(): Promise<void> {
       e.preventDefault();
       const result = await dialog.showMessageBox(mainWindow!, {
         type: 'warning',
-        buttons: ['Speichern', 'Nicht speichern', 'Abbrechen'],
+        buttons: [t('dialogs:unsavedChanges.save'), t('dialogs:unsavedChanges.dontSave'), t('dialogs:unsavedChanges.cancel')],
         defaultId: 0,
         cancelId: 2,
-        title: 'Ungespeicherte Änderungen',
-        message: 'Möchten Sie die Änderungen vor dem Schließen speichern?',
+        title: t('dialogs:unsavedChanges.title'),
+        message: t('dialogs:unsavedChanges.message'),
       });
 
       if (result.response === 0) {
@@ -1056,12 +1106,12 @@ async function createWindow(): Promise<void> {
 
     const instanceResult = await dialog.showMessageBox(mainWindow!, {
       type: 'question',
-      buttons: ['Instanz speichern', 'Instanz verwerfen', 'Abbrechen'],
+      buttons: [t('dialogs:saveInstance.save'), t('dialogs:saveInstance.discard'), t('dialogs:saveInstance.cancel')],
       defaultId: 0,
       cancelId: 2,
-      title: 'Instanz speichern?',
-      message: 'Soll diese Instanz beim nächsten Start wiederhergestellt werden?',
-      detail: 'Bei "Instanz speichern" werden alle Tabs und die Fensterposition gespeichert.\nBei "Instanz verwerfen" wird diese Instanz dauerhaft gelöscht.',
+      title: t('dialogs:saveInstance.title'),
+      message: t('dialogs:saveInstance.message'),
+      detail: t('dialogs:saveInstance.detail'),
     });
 
     if (instanceResult.response === 0) {
@@ -1095,7 +1145,7 @@ async function createWindow(): Promise<void> {
 
   mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
     console.error('Failed to load:', errorCode, errorDescription);
-    dialog.showErrorBox('Load Error', `Failed to load: ${errorDescription}`);
+    dialog.showErrorBox(t('dialogs:errors.loadFailed', { description: errorDescription }), errorDescription);
   });
 
   mainWindow.webContents.on('did-finish-load', () => {
@@ -1183,192 +1233,201 @@ function updateWindowTitle(): void {
 function createMenu(): void {
   const template: Electron.MenuItemConstructorOptions[] = [
     {
-      label: 'File',
+      label: t('menu:file.label'),
       submenu: [
         {
-          label: 'New',
+          label: t('menu:file.new'),
           accelerator: 'CmdOrCtrl+N',
           click: () => newFile(),
         },
         {
-          label: 'Open...',
+          label: t('menu:file.open'),
           accelerator: 'CmdOrCtrl+O',
           click: () => openFile(),
         },
         {
-          label: 'Open Recent',
-          submenu: recentFiles.map((file) => ({
-            label: file,
-            click: () => openFilePath(file),
-          })),
+          label: t('menu:file.openRecent'),
+          submenu: recentFiles.length > 0
+            ? [
+                ...recentFiles.map((file) => ({
+                  label: file,
+                  click: () => openFilePath(file),
+                })),
+                { type: 'separator' as const },
+                {
+                  label: t('menu:file.clearRecent'),
+                  click: () => clearRecentFiles(),
+                },
+              ]
+            : [{ label: '-', enabled: false }],
         },
         { type: 'separator' },
         {
-          label: 'Save',
+          label: t('menu:file.save'),
           accelerator: 'CmdOrCtrl+S',
           click: () => saveFile(),
         },
         {
-          label: 'Save As...',
+          label: t('menu:file.saveAs'),
           accelerator: 'CmdOrCtrl+Shift+S',
           click: () => saveFileAs(),
         },
         { type: 'separator' },
         {
-          label: 'Export as HTML...',
+          label: t('menu:file.exportHtml'),
           accelerator: 'CmdOrCtrl+E',
           click: () => exportAsHTML(),
         },
         {
-          label: 'Export as PDF...',
+          label: t('menu:file.exportPdf'),
           accelerator: 'CmdOrCtrl+Shift+E',
           click: () => exportAsPDF(),
         },
         { type: 'separator' },
         {
-          label: 'Exit',
+          label: t('menu:file.exit'),
           accelerator: 'Alt+F4',
           click: () => app.quit(),
         },
       ],
     },
     {
-      label: 'Edit',
+      label: t('menu:edit.label'),
       submenu: [
-        { role: 'undo' },
-        { role: 'redo' },
+        { label: t('menu:edit.undo'), role: 'undo' },
+        { label: t('menu:edit.redo'), role: 'redo' },
         { type: 'separator' },
-        { role: 'cut' },
-        { role: 'copy' },
-        { role: 'paste' },
-        { role: 'selectAll' },
+        { label: t('menu:edit.cut'), role: 'cut' },
+        { label: t('menu:edit.copy'), role: 'copy' },
+        { label: t('menu:edit.paste'), role: 'paste' },
+        { label: t('menu:edit.selectAll'), role: 'selectAll' },
         { type: 'separator' },
         {
-          label: 'Find',
+          label: t('menu:edit.find'),
           accelerator: 'CmdOrCtrl+F',
           click: () => mainWindow?.webContents.send('menu-action', 'find'),
         },
         {
-          label: 'Replace',
+          label: t('menu:edit.replace'),
           accelerator: 'CmdOrCtrl+H',
           click: () => mainWindow?.webContents.send('menu-action', 'replace'),
         },
       ],
     },
     {
-      label: 'View',
+      label: t('menu:view.label'),
       submenu: [
         {
-          label: 'Editor Only',
+          label: t('menu:view.editorOnly'),
           accelerator: 'CmdOrCtrl+1',
           click: () => mainWindow?.webContents.send('view-mode', 'editor'),
         },
         {
-          label: 'Preview Only',
+          label: t('menu:view.previewOnly'),
           accelerator: 'CmdOrCtrl+2',
           click: () => mainWindow?.webContents.send('view-mode', 'preview'),
         },
         {
-          label: 'Split View',
+          label: t('menu:view.splitView'),
           accelerator: 'CmdOrCtrl+3',
           click: () => mainWindow?.webContents.send('view-mode', 'split'),
         },
         { type: 'separator' },
         {
-          label: 'Toggle AI Context',
+          label: t('menu:view.toggleSidebar'),
           accelerator: 'CmdOrCtrl+Shift+A',
           click: () => mainWindow?.webContents.send('menu-action', 'toggle-ai-context'),
         },
         { type: 'separator' },
-        { role: 'toggleDevTools' },
+        { label: t('menu:view.devTools'), role: 'toggleDevTools' },
         { type: 'separator' },
-        { role: 'resetZoom' },
-        { role: 'zoomIn' },
-        { role: 'zoomOut' },
+        { label: t('menu:view.resetZoom'), role: 'resetZoom' },
+        { label: t('menu:view.zoomIn'), role: 'zoomIn' },
+        { label: t('menu:view.zoomOut'), role: 'zoomOut' },
         { type: 'separator' },
-        { role: 'togglefullscreen' },
+        { label: t('menu:view.fullscreen'), role: 'togglefullscreen' },
       ],
     },
     {
-      label: 'Insert',
+      label: t('menu:insert.label'),
       submenu: [
         {
-          label: 'Heading 1',
+          label: t('menu:insert.heading1'),
           accelerator: 'CmdOrCtrl+Alt+1',
           click: () => mainWindow?.webContents.send('insert', '# '),
         },
         {
-          label: 'Heading 2',
+          label: t('menu:insert.heading2'),
           accelerator: 'CmdOrCtrl+Alt+2',
           click: () => mainWindow?.webContents.send('insert', '## '),
         },
         {
-          label: 'Heading 3',
+          label: t('menu:insert.heading3'),
           accelerator: 'CmdOrCtrl+Alt+3',
           click: () => mainWindow?.webContents.send('insert', '### '),
         },
         { type: 'separator' },
         {
-          label: 'Bold',
+          label: t('menu:insert.bold'),
           accelerator: 'CmdOrCtrl+B',
           click: () => mainWindow?.webContents.send('insert-wrap', '**'),
         },
         {
-          label: 'Italic',
+          label: t('menu:insert.italic'),
           accelerator: 'CmdOrCtrl+I',
           click: () => mainWindow?.webContents.send('insert-wrap', '*'),
         },
         {
-          label: 'Code',
+          label: t('menu:insert.code'),
           accelerator: 'CmdOrCtrl+`',
           click: () => mainWindow?.webContents.send('insert-wrap', '`'),
         },
         { type: 'separator' },
         {
-          label: 'Link',
+          label: t('menu:insert.link'),
           accelerator: 'CmdOrCtrl+K',
           click: () => mainWindow?.webContents.send('insert', '[](url)'),
         },
         {
-          label: 'Image',
+          label: t('menu:insert.image'),
           accelerator: 'CmdOrCtrl+Shift+I',
           click: () => mainWindow?.webContents.send('insert', '![alt](url)'),
         },
         { type: 'separator' },
         {
-          label: 'Code Block',
+          label: t('menu:insert.codeBlock'),
           click: () => mainWindow?.webContents.send('insert', '```\n\n```'),
         },
         {
-          label: 'AI Context Block',
+          label: t('menu:insert.aiContextBlock'),
           click: () => mainWindow?.webContents.send('insert', ':::ai-context\n\n:::'),
         },
         {
-          label: 'Component Directive',
+          label: t('menu:insert.componentDirective'),
           click: () => mainWindow?.webContents.send('insert', '::component{}\n\n::'),
         },
         { type: 'separator' },
         {
-          label: 'Table...',
+          label: t('menu:insert.table'),
           click: () => mainWindow?.webContents.send('menu-action', 'insert-table'),
         },
       ],
     },
     {
-      label: 'Help',
+      label: t('menu:help.label'),
       submenu: [
         {
           label: 'Welcome',
           click: () => mainWindow?.webContents.send('menu-action', 'open-welcome'),
         },
         {
-          label: 'Keyboard Shortcuts',
+          label: t('menu:help.shortcuts'),
           accelerator: 'F1',
           click: () => mainWindow?.webContents.send('menu-action', 'show-help'),
         },
         { type: 'separator' },
         {
-          label: 'MD++ Documentation',
+          label: t('menu:help.documentation'),
           click: () => shell.openExternal('https://github.com/gorduan/MDPlusPlus'),
         },
         {
@@ -1377,7 +1436,7 @@ function createMenu(): void {
         },
         { type: 'separator' },
         {
-          label: 'About MD++',
+          label: t('menu:help.about'),
           click: () => showAboutDialog(),
         },
       ],
@@ -1407,11 +1466,11 @@ async function newFile(): Promise<void> {
   if (isModified) {
     const result = await dialog.showMessageBox(mainWindow!, {
       type: 'warning',
-      buttons: ['Save', "Don't Save", 'Cancel'],
+      buttons: [t('dialogs:unsavedChanges.save'), t('dialogs:unsavedChanges.dontSave'), t('dialogs:unsavedChanges.cancel')],
       defaultId: 0,
       cancelId: 2,
-      title: 'Unsaved Changes',
-      message: 'Do you want to save the changes?',
+      title: t('dialogs:unsavedChanges.title'),
+      message: t('dialogs:unsavedChanges.message'),
     });
 
     if (result.response === 0) {
@@ -1435,8 +1494,8 @@ async function openFile(): Promise<void> {
   const result = await dialog.showOpenDialog(mainWindow!, {
     properties: ['openFile'],
     filters: [
-      { name: 'Markdown Files', extensions: ['md', 'mdpp', 'mdsc', 'markdown'] },
-      { name: 'All Files', extensions: ['*'] },
+      { name: t('dialogs:fileFilters.markdown'), extensions: ['md', 'mdpp', 'mdsc', 'markdown'] },
+      { name: t('dialogs:fileFilters.allFiles'), extensions: ['*'] },
     ],
   });
 
@@ -1457,7 +1516,7 @@ async function openFilePath(filePath: string): Promise<void> {
     addToRecentFiles(filePath);
     mainWindow?.webContents.send('file-opened', { path: filePath, content });
   } catch (error) {
-    dialog.showErrorBox('Error', `Failed to open file: ${error}`);
+    dialog.showErrorBox(t('dialogs:errors.loadFailed', { description: '' }), String(error));
   }
 }
 
@@ -1478,7 +1537,7 @@ async function saveFile(): Promise<boolean> {
         mainWindow?.webContents.send('file-saved', currentFilePath);
         resolve(true);
       } catch (error) {
-        dialog.showErrorBox('Error', `Failed to save file: ${error}`);
+        dialog.showErrorBox(t('dialogs:errors.saveFailed'), String(error));
         resolve(false);
       }
     });
@@ -1561,24 +1620,24 @@ async function saveFileAs(): Promise<boolean> {
   let filters;
   if (format === 'mdsc') {
     filters = [
-      { name: 'MarkdownScript Files', extensions: ['mdsc'] },
-      { name: 'MD++ Files', extensions: ['mdpp'] },
-      { name: 'Markdown Files', extensions: ['md'] },
-      { name: 'All Files', extensions: ['*'] },
+      { name: t('dialogs:fileFilters.markdownScript'), extensions: ['mdsc'] },
+      { name: t('dialogs:fileFilters.mdpp'), extensions: ['mdpp'] },
+      { name: t('dialogs:fileFilters.markdown'), extensions: ['md'] },
+      { name: t('dialogs:fileFilters.allFiles'), extensions: ['*'] },
     ];
   } else if (format === 'mdpp') {
     filters = [
-      { name: 'MD++ Files', extensions: ['mdpp'] },
-      { name: 'MarkdownScript Files', extensions: ['mdsc'] },
-      { name: 'Markdown Files', extensions: ['md'] },
-      { name: 'All Files', extensions: ['*'] },
+      { name: t('dialogs:fileFilters.mdpp'), extensions: ['mdpp'] },
+      { name: t('dialogs:fileFilters.markdownScript'), extensions: ['mdsc'] },
+      { name: t('dialogs:fileFilters.markdown'), extensions: ['md'] },
+      { name: t('dialogs:fileFilters.allFiles'), extensions: ['*'] },
     ];
   } else {
     filters = [
-      { name: 'Markdown Files', extensions: ['md'] },
-      { name: 'MD++ Files', extensions: ['mdpp'] },
-      { name: 'MarkdownScript Files', extensions: ['mdsc'] },
-      { name: 'All Files', extensions: ['*'] },
+      { name: t('dialogs:fileFilters.markdown'), extensions: ['md'] },
+      { name: t('dialogs:fileFilters.mdpp'), extensions: ['mdpp'] },
+      { name: t('dialogs:fileFilters.markdownScript'), extensions: ['mdsc'] },
+      { name: t('dialogs:fileFilters.allFiles'), extensions: ['*'] },
     ];
   }
 
@@ -1597,7 +1656,7 @@ async function saveFileAs(): Promise<boolean> {
       mainWindow?.webContents.send('file-saved', currentFilePath);
       return true;
     } catch (error) {
-      dialog.showErrorBox('Error', `Failed to save file: ${error}`);
+      dialog.showErrorBox(t('dialogs:errors.saveFailed'), String(error));
       return false;
     }
   }
@@ -1613,7 +1672,7 @@ async function exportAsHTML(): Promise<void> {
   if (!theme) return; // User cancelled
 
   const result = await dialog.showSaveDialog(mainWindow!, {
-    filters: [{ name: 'HTML Files', extensions: ['html'] }],
+    filters: [{ name: t('dialogs:fileFilters.htmlFiles'), extensions: ['html'] }],
     defaultPath: currentFilePath?.replace(/\.(md|mdpp|markdown)$/, '.html') || 'export.html',
   });
 
@@ -1631,7 +1690,7 @@ async function exportAsPDF(): Promise<void> {
   if (!theme) return; // User cancelled
 
   const result = await dialog.showSaveDialog(mainWindow!, {
-    filters: [{ name: 'PDF Files', extensions: ['pdf'] }],
+    filters: [{ name: t('dialogs:fileFilters.pdfFiles'), extensions: ['pdf'] }],
     defaultPath: currentFilePath?.replace(/\.(md|mdpp|markdown)$/, '.pdf') || 'export.pdf',
   });
 
@@ -1646,12 +1705,11 @@ async function exportAsPDF(): Promise<void> {
 async function showExportThemeDialog(): Promise<'dark' | 'light' | null> {
   const result = await dialog.showMessageBox(mainWindow!, {
     type: 'question',
-    buttons: ['Light Theme', 'Dark Theme', 'Cancel'],
+    buttons: [t('dialogs:export.lightTheme'), t('dialogs:export.darkTheme'), t('dialogs:unsavedChanges.cancel')],
     defaultId: 0,
     cancelId: 2,
-    title: 'Export Theme',
-    message: 'Which theme should be used for the export?',
-    detail: 'Light theme is recommended for printing and PDF export.',
+    title: t('dialogs:export.title'),
+    message: t('dialogs:export.selectTheme'),
   });
 
   if (result.response === 0) return 'light';
@@ -1694,8 +1752,8 @@ ipcMain.handle('open-file-dialog', async () => {
   const result = await dialog.showOpenDialog(mainWindow!, {
     properties: ['openFile'],
     filters: [
-      { name: 'Markdown Files', extensions: ['md', 'mdpp', 'mdsc', 'markdown'] },
-      { name: 'All Files', extensions: ['*'] },
+      { name: t('dialogs:fileFilters.markdown'), extensions: ['md', 'mdpp', 'mdsc', 'markdown'] },
+      { name: t('dialogs:fileFilters.allFiles'), extensions: ['*'] },
     ],
   });
 
@@ -1871,6 +1929,7 @@ ipcMain.handle('load-plugins', async () => {
     css?: string[];
     js?: string[];
     components: Record<string, unknown>;
+    i18n?: Record<string, unknown>;
   }> = [];
 
   try {
@@ -1887,11 +1946,15 @@ ipcMain.handle('load-plugins', async () => {
           const filePath = join(pluginsPath, file);
           const content = await readFile(filePath, 'utf-8');
           const pluginData = JSON.parse(content);
+          const pluginId = basename(file, '.json');
 
           // Validate plugin structure
           if (pluginData.framework && pluginData.components) {
+            // Load i18n translations if available
+            const i18n = await loadPluginI18n(pluginsPath, pluginId);
+
             plugins.push({
-              id: basename(file, '.json'),
+              id: pluginId,
               framework: pluginData.framework,
               version: pluginData.version || '1.0.0',
               author: pluginData.author,
@@ -1899,6 +1962,7 @@ ipcMain.handle('load-plugins', async () => {
               css: pluginData.css,
               js: pluginData.js,
               components: pluginData.components,
+              i18n,
             });
           }
         } catch (error) {
@@ -1914,6 +1978,36 @@ ipcMain.handle('load-plugins', async () => {
     return plugins;
   }
 });
+
+/**
+ * Load i18n translations for a plugin from its i18n/ subdirectory
+ */
+async function loadPluginI18n(pluginsPath: string, pluginId: string): Promise<Record<string, unknown> | undefined> {
+  const i18nPath = join(pluginsPath, pluginId, 'i18n');
+  const translations: Record<string, unknown> = {};
+
+  try {
+    if (!existsSync(i18nPath)) {
+      return undefined;
+    }
+
+    const files = await readdir(i18nPath);
+
+    for (const file of files) {
+      if (file.endsWith('.json')) {
+        const lang = basename(file, '.json');
+        const filePath = join(i18nPath, file);
+        const content = await readFile(filePath, 'utf-8');
+        translations[lang] = JSON.parse(content);
+      }
+    }
+
+    return Object.keys(translations).length > 0 ? translations : undefined;
+  } catch (error) {
+    console.error(`Failed to load i18n for plugin ${pluginId}:`, error);
+    return undefined;
+  }
+}
 
 ipcMain.handle('get-plugin-path', () => {
   return getPluginsPath();
@@ -2028,8 +2122,6 @@ ipcMain.handle('get-welcome-path', () => {
 // Settings Storage IPC Handlers (JSON files)
 // ============================================
 
-const SETTINGS_DIR = join(APP_DATA_PATH, 'settings');
-
 /**
  * Ensure settings directory exists
  */
@@ -2113,6 +2205,28 @@ ipcMain.handle('save-settings', async (_, key: string, data: unknown) => {
   }
 });
 
+// ============================================
+// Language IPC Handlers
+// ============================================
+
+ipcMain.handle('get-language', () => {
+  return loadLanguageSetting();
+});
+
+ipcMain.handle('get-supported-languages', () => {
+  return SUPPORTED_LANGUAGES;
+});
+
+ipcMain.handle('set-language', async (_, language: string) => {
+  const normalizedLang = normalizeLanguageCode(language);
+  changeMainLanguage(normalizedLang);
+  await saveLanguageSetting(normalizedLang);
+  // Rebuild menu with new language
+  createMenu();
+  console.log(`[i18n] Language changed to: ${normalizedLang}`);
+  return normalizedLang;
+});
+
 /**
  * Get the path to the plugins directory
  */
@@ -2134,6 +2248,11 @@ function getPluginsPath(): string {
 
 // App lifecycle
 app.whenReady().then(() => {
+  // Initialize i18n with saved or detected language
+  const initialLanguage = loadLanguageSetting();
+  initMainI18n(initialLanguage);
+  console.log(`[i18n] Initialized with language: ${initialLanguage}`);
+
   createWindow();
 
   app.on('activate', () => {

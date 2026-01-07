@@ -1,0 +1,64 @@
+{
+  "unsavedChanges": {
+    "title": "Niet-opgeslagen wijzigingen",
+    "message": "Wilt u de wijzigingen opslaan voordat u sluit?",
+    "save": "Opslaan",
+    "dontSave": "Niet opslaan",
+    "cancel": "Annuleren"
+  },
+  "saveInstance": {
+    "title": "Instantie opslaan?",
+    "message": "Moet deze instantie worden hersteld bij de volgende start?",
+    "detail": "\"Instantie opslaan\" bewaart alle tabbladen en vensterpositie.\n\"Instantie verwijderen\" verwijdert deze instantie permanent.",
+    "save": "Instantie opslaan",
+    "discard": "Instantie verwijderen",
+    "cancel": "Annuleren"
+  },
+  "restoreInstances": {
+    "title": "Andere instanties gevonden",
+    "message": "Er zijn {{count}} andere gesloten instantie(s) gevonden.\nWilt u ze allemaal openen?",
+    "message_one": "Er is 1 andere gesloten instantie gevonden.\nWilt u deze openen?",
+    "message_other": "Er zijn {{count}} andere gesloten instanties gevonden.\nWilt u ze allemaal openen?",
+    "detail": "{{instances}}",
+    "openAll": "Alles openen",
+    "no": "Nee",
+    "unnamed": "Naamloos"
+  },
+  "export": {
+    "title": "Exporteren",
+    "selectTheme": "Welk thema moet worden gebruikt voor de export?",
+    "lightTheme": "Licht thema",
+    "darkTheme": "Donker thema",
+    "currentTheme": "Huidig thema"
+  },
+  "fileFilters": {
+    "markdown": "Markdown-bestanden",
+    "mdpp": "MD++-bestanden",
+    "markdownScript": "MarkdownScript-bestanden",
+    "allFiles": "Alle bestanden",
+    "htmlFiles": "HTML-bestanden",
+    "pdfFiles": "PDF-bestanden"
+  },
+  "errors": {
+    "loadFailed": "Laden mislukt: {{description}}",
+    "saveFailed": "Opslaan mislukt",
+    "exportFailed": "Export mislukt"
+  },
+  "profile": {
+    "createTitle": "Profiel maken",
+    "editTitle": "Profiel bewerken",
+    "deleteTitle": "Profiel verwijderen",
+    "deleteMessage": "Weet u zeker dat u het profiel \"{{name}}\" wilt verwijderen?",
+    "nameLabel": "Profielnaam",
+    "namePlaceholder": "Voer profielnaam in"
+  },
+  "theme": {
+    "createTitle": "Thema maken",
+    "editTitle": "Thema bewerken",
+    "deleteTitle": "Thema verwijderen",
+    "deleteMessage": "Weet u zeker dat u het thema \"{{name}}\" wilt verwijderen?",
+    "exportTitle": "Thema exporteren",
+    "nameLabel": "Themanaam",
+    "namePlaceholder": "Voer themanaam in"
+  }
+}

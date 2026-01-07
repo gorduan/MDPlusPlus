@@ -1,0 +1,18 @@
+{
+  "name": "KaTeX Wiskunde",
+  "description": "LaTeX wiskundige rendering met KaTeX",
+  "toolbar": {
+    "group": "Wiskunde",
+    "inlineMath": "Inline formule",
+    "inlineMathTooltip": "Inline formule invoegen ($...$)",
+    "displayMath": "Blok formule",
+    "displayMathTooltip": "Blok formule invoegen ($$...$$)"
+  },
+  "settings": {
+    "displayMode": "Vergelijkingen standaard in weergavemodus renderen (gecentreerd, groter)",
+    "throwOnError": "Fout genereren bij ongeldige LaTeX (anders toont foutmelding in uitvoer)",
+    "strict": "Strikte modus inschakelen voor betere foutmeldingen",
+    "trust": "Invoer vertrouwen (staat \\url, \\href, etc. toe)",
+    "macros": "Aangepaste LaTeX macro's"
+  }
+}

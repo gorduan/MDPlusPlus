@@ -1,0 +1,29 @@
+{
+  "name": "Waarschuwingen",
+  "description": "Waarschuwingsboxen voor notities, tips, waarschuwingen en meer",
+  "toolbar": {
+    "group": "Oproepen",
+    "note": "Notitie",
+    "noteTooltip": "Notitie-oproep invoegen",
+    "tip": "Tip",
+    "tipTooltip": "Tip-oproep invoegen",
+    "warning": "Waarschuwing",
+    "warningTooltip": "Waarschuwings-oproep invoegen",
+    "danger": "Gevaar",
+    "dangerTooltip": "Gevaar-oproep invoegen",
+    "success": "Succes",
+    "successTooltip": "Succes-oproep invoegen",
+    "question": "Vraag",
+    "questionTooltip": "Vraag-oproep invoegen",
+    "info": "Info",
+    "infoTooltip": "Info-oproep invoegen",
+    "quote": "Citaat",
+    "quoteTooltip": "Citaat-oproep invoegen",
+    "example": "Voorbeeld",
+    "exampleTooltip": "Voorbeeld-oproep invoegen",
+    "bug": "Bug",
+    "bugTooltip": "Bug-oproep invoegen",
+    "abstract": "Samenvatting",
+    "abstractTooltip": "Samenvatting-oproep invoegen"
+  }
+}

@@ -414,18 +414,28 @@ export default function App() {
     try {
       const loadedPlugins = await window.electronAPI.loadPlugins();
 
+      // Import addPluginTranslations dynamically to register plugin i18n
+      const { addPluginTranslations } = await import('../../i18n');
+
       // Convert PluginData to PluginInfo with enabled state
-      const pluginInfos: PluginInfo[] = loadedPlugins.map((p: PluginData) => ({
-        id: p.id,
-        framework: p.framework,
-        version: p.version,
-        author: p.author,
-        description: p.description,
-        css: p.css,
-        js: p.js,
-        components: p.components as Record<string, ComponentInfo>,
-        enabled: settings.enabledPlugins.includes(p.id),
-      }));
+      const pluginInfos: PluginInfo[] = loadedPlugins.map((p: PluginData) => {
+        // Register plugin translations if available
+        if (p.i18n) {
+          addPluginTranslations(p.id, p.i18n as Record<string, { name: string; description: string }>);
+        }
+
+        return {
+          id: p.id,
+          framework: p.framework,
+          version: p.version,
+          author: p.author,
+          description: p.description,
+          css: p.css,
+          js: p.js,
+          components: p.components as Record<string, ComponentInfo>,
+          enabled: settings.enabledPlugins.includes(p.id),
+        };
+      });
 
       setPlugins(pluginInfos);
       console.log(`Loaded ${pluginInfos.length} plugins`);

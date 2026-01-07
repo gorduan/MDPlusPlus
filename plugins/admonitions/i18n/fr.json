@@ -1,0 +1,29 @@
+{
+  "name": "Avertissements",
+  "description": "Boîtes d'avertissement pour notes, conseils, alertes et plus",
+  "toolbar": {
+    "group": "Avertissements",
+    "note": "Note",
+    "noteTooltip": "Insérer un avertissement de note",
+    "tip": "Conseil",
+    "tipTooltip": "Insérer un avertissement de conseil",
+    "warning": "Avertissement",
+    "warningTooltip": "Insérer un avertissement d'alerte",
+    "danger": "Danger",
+    "dangerTooltip": "Insérer un avertissement de danger",
+    "success": "Succès",
+    "successTooltip": "Insérer un avertissement de succès",
+    "question": "Question",
+    "questionTooltip": "Insérer un avertissement de question",
+    "info": "Info",
+    "infoTooltip": "Insérer un avertissement d'info",
+    "quote": "Citation",
+    "quoteTooltip": "Insérer un avertissement de citation",
+    "example": "Exemple",
+    "exampleTooltip": "Insérer un avertissement d'exemple",
+    "bug": "Bug",
+    "bugTooltip": "Insérer un avertissement de bug",
+    "abstract": "Résumé",
+    "abstractTooltip": "Insérer un avertissement de résumé"
+  }
+}

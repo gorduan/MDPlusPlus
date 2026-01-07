@@ -1,0 +1,114 @@
+{
+  "app": {
+    "title": "MD++ Editor",
+    "untitled": "Untitled"
+  },
+  "toolbar": {
+    "closeSidebar": "Close Sidebar",
+    "openSidebar": "Open Sidebar",
+    "editorOnly": "Editor Only",
+    "splitView": "Split View",
+    "previewOnly": "Preview Only",
+    "toggleAiContext": "Toggle AI Context Visibility",
+    "lightMode": "Switch to Light Mode",
+    "darkMode": "Switch to Dark Mode",
+    "themeEditor": "Theme Editor",
+    "pluginManager": "Plugin Manager",
+    "settings": "Settings",
+    "newTab": "New Tab"
+  },
+  "sidebar": {
+    "file": "File",
+    "newFile": "New File",
+    "open": "Open...",
+    "markdownScript": "MarkdownScript",
+    "mdppEnhanced": "MD++ Enhanced",
+    "markdown": "Markdown"
+  },
+  "status": {
+    "unsaved": "Unsaved changes",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "editor": "Editor",
+    "preview": "Preview",
+    "split": "Split"
+  },
+  "search": {
+    "find": "Find",
+    "replace": "Replace",
+    "replaceAll": "Replace All",
+    "matchCase": "Match Case",
+    "wholeWord": "Whole Word",
+    "useRegex": "Use Regular Expression",
+    "noResults": "No results",
+    "resultsCount": "{{current}} of {{total}}"
+  },
+  "tabs": {
+    "close": "Close",
+    "closeOthers": "Close Others",
+    "closeAll": "Close All",
+    "closeSaved": "Close Saved"
+  },
+  "dropzone": {
+    "dropFileHere": "Drop file here"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "appearance": "Appearance",
+    "defaultTheme": "Default Theme",
+    "defaultThemeDescription": "The default theme for this profile. Open Theme Editor for customization.",
+    "features": "Features",
+    "coreFeatures": "Core Features",
+    "mdppFeatures": "MD++ Features",
+    "gfm": "GitHub Flavored Markdown",
+    "gfmMasterSwitch": "Enable GFM (Master Switch)",
+    "tables": "Tables",
+    "taskLists": "Task Lists (Checkboxes)",
+    "strikethrough": "Strikethrough (~~text~~)",
+    "autolinks": "Autolinks",
+    "footnotes": "Footnotes",
+    "syntaxHighlighting": "Syntax Highlighting",
+    "lineNumbers": "Line Numbers in Code Blocks",
+    "mathKatex": "Math (KaTeX)",
+    "mermaidDiagrams": "Mermaid Diagrams",
+    "aiContextBlocks": "AI Context Blocks",
+    "componentDirectives": "Component Directives",
+    "frontmatter": "Frontmatter (YAML)",
+    "emoji": "Emoji Support (:emoji:)",
+    "smartQuotes": "Smart Quotes",
+    "tableOfContents": "Table of Contents",
+    "subscript": "Subscript",
+    "superscript": "Superscript",
+    "highlightedText": "Highlighted Text",
+    "abbreviations": "Abbreviations",
+    "definitionLists": "Definition Lists"
+  },
+  "plugins": {
+    "title": "Plugin Manager",
+    "parser": "Parser",
+    "components": "Components",
+    "hybrid": "Hybrid",
+    "theme": "Theme",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "dependencyIssues": "Has dependency issues"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "ok": "OK",
+    "yes": "Yes",
+    "no": "No",
+    "apply": "Apply",
+    "reset": "Reset",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "rename": "Rename",
+    "duplicate": "Duplicate",
+    "export": "Export",
+    "import": "Import"
+  }
+}

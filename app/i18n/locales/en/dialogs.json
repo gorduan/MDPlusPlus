@@ -1,0 +1,64 @@
+{
+  "unsavedChanges": {
+    "title": "Unsaved Changes",
+    "message": "Do you want to save the changes before closing?",
+    "save": "Save",
+    "dontSave": "Don't Save",
+    "cancel": "Cancel"
+  },
+  "saveInstance": {
+    "title": "Save Instance?",
+    "message": "Should this instance be restored on next startup?",
+    "detail": "\"Save Instance\" will preserve all tabs and window position.\n\"Discard Instance\" will permanently delete this instance.",
+    "save": "Save Instance",
+    "discard": "Discard Instance",
+    "cancel": "Cancel"
+  },
+  "restoreInstances": {
+    "title": "Other Instances Found",
+    "message": "{{count}} other closed instance(s) were found.\nDo you want to open them all?",
+    "message_one": "1 other closed instance was found.\nDo you want to open it?",
+    "message_other": "{{count}} other closed instances were found.\nDo you want to open them all?",
+    "detail": "{{instances}}",
+    "openAll": "Open All",
+    "no": "No",
+    "unnamed": "Unnamed"
+  },
+  "export": {
+    "title": "Export",
+    "selectTheme": "Which theme should be used for the export?",
+    "lightTheme": "Light Theme",
+    "darkTheme": "Dark Theme",
+    "currentTheme": "Current Theme"
+  },
+  "fileFilters": {
+    "markdown": "Markdown Files",
+    "mdpp": "MD++ Files",
+    "markdownScript": "MarkdownScript Files",
+    "allFiles": "All Files",
+    "htmlFiles": "HTML Files",
+    "pdfFiles": "PDF Files"
+  },
+  "errors": {
+    "loadFailed": "Failed to load: {{description}}",
+    "saveFailed": "Failed to save file",
+    "exportFailed": "Export failed"
+  },
+  "profile": {
+    "createTitle": "Create Profile",
+    "editTitle": "Edit Profile",
+    "deleteTitle": "Delete Profile",
+    "deleteMessage": "Are you sure you want to delete the profile \"{{name}}\"?",
+    "nameLabel": "Profile Name",
+    "namePlaceholder": "Enter profile name"
+  },
+  "theme": {
+    "createTitle": "Create Theme",
+    "editTitle": "Edit Theme",
+    "deleteTitle": "Delete Theme",
+    "deleteMessage": "Are you sure you want to delete the theme \"{{name}}\"?",
+    "exportTitle": "Export Theme",
+    "nameLabel": "Theme Name",
+    "namePlaceholder": "Enter theme name"
+  }
+}

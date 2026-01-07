@@ -1,0 +1,18 @@
+{
+  "name": "KaTeX Mathematik",
+  "description": "LaTeX-Mathematik-Rendering mit KaTeX",
+  "toolbar": {
+    "group": "Mathematik",
+    "inlineMath": "Inline-Formel",
+    "inlineMathTooltip": "Inline-Formel einfügen ($...$)",
+    "displayMath": "Block-Formel",
+    "displayMathTooltip": "Block-Formel einfügen ($$...$$)"
+  },
+  "settings": {
+    "displayMode": "Gleichungen standardmäßig im Anzeigemodus (zentriert, größer) rendern",
+    "throwOnError": "Fehler bei ungültigem LaTeX auslösen (ansonsten wird Fehlermeldung in der Ausgabe angezeigt)",
+    "strict": "Strikten Modus für bessere Fehlermeldungen aktivieren",
+    "trust": "Eingabe vertrauen (erlaubt \\url, \\href, etc.)",
+    "macros": "Benutzerdefinierte LaTeX-Makros"
+  }
+}

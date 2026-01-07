@@ -2,12 +2,14 @@
  * MD++ Settings Dialog Component
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import ProfileSelector from './ProfileSelector';
 import ProfileModificationDialog from './ProfileModificationDialog';
 import ThemeSelector from './ThemeSelector';
 import type { Profile, ProfileModificationAction } from '../types/profiles';
 import type { Theme } from '../types/themes';
+import { SUPPORTED_LANGUAGES } from '../../../i18n';
 
 export type ScriptSecurityLevel = 'strict' | 'standard' | 'permissive';
 
@@ -97,9 +99,26 @@ export default function SettingsDialog({
   activeTheme,
   onSelectDefaultTheme,
 }: SettingsDialogProps) {
+  const { t, i18n } = useTranslation('common');
+
   // State for profile modification dialog
   const [showModificationDialog, setShowModificationDialog] = useState(false);
   const [pendingSettings, setPendingSettings] = useState<ParserSettings | null>(null);
+  const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
+
+  // Handle language change
+  const handleLanguageChange = async (newLanguage: string) => {
+    try {
+      // Update renderer i18n
+      await i18n.changeLanguage(newLanguage);
+      setCurrentLanguage(newLanguage);
+
+      // Notify main process to update menus and save setting
+      await window.electronAPI.setLanguage(newLanguage);
+    } catch (error) {
+      console.error('Failed to change language:', error);
+    }
+  };
 
   // Check if profile management is enabled
   const hasProfileSupport = !!(
@@ -144,7 +163,7 @@ export default function SettingsDialog({
     <div className="settings-overlay" onClick={onClose}>
       <div className="settings-dialog" onClick={e => e.stopPropagation()}>
         <div className="settings-header">
-          <h2>Settings</h2>
+          <h2>{t('settings.title')}</h2>
           <button className="settings-close" onClick={onClose}>×</button>
         </div>
 
@@ -165,33 +184,50 @@ export default function SettingsDialog({
             </section>
           )}
 
+          {/* Language Selector */}
+          <section className="settings-section">
+            <h3>{t('settings.language')}</h3>
+            <label className="settings-select">
+              <select
+                value={currentLanguage}
+                onChange={(e) => handleLanguageChange(e.target.value)}
+              >
+                {SUPPORTED_LANGUAGES.map((lang) => (
+                  <option key={lang.code} value={lang.code}>
+                    {lang.nativeName} ({lang.name})
+                  </option>
+                ))}
+              </select>
+            </label>
+          </section>
+
           {/* Default Theme Selector (simple mode - selection only) */}
           {themes && activeTheme && onSelectDefaultTheme && (
             <section className="settings-section">
-              <h3>Appearance</h3>
+              <h3>{t('settings.appearance')}</h3>
               <ThemeSelector
                 themes={themes}
                 activeTheme={activeTheme}
                 onSelectTheme={onSelectDefaultTheme}
-                label="Default Theme:"
+                label={`${t('settings.defaultTheme')}:`}
                 simpleMode
               />
               <p className="settings-hint">
-                The default theme for this profile. Open Theme Editor for customization.
+                {t('settings.defaultThemeDescription')}
               </p>
             </section>
           )}
 
           {/* GFM Section */}
           <section className="settings-section">
-            <h3>GitHub Flavored Markdown</h3>
+            <h3>{t('settings.gfm')}</h3>
             <label className="settings-toggle">
               <input
                 type="checkbox"
                 checked={settings.enableGfm}
                 onChange={() => handleToggle('enableGfm')}
               />
-              <span>Enable GFM (Master Switch)</span>
+              <span>{t('settings.gfmMasterSwitch')}</span>
             </label>
             <div className={`settings-subsection ${!settings.enableGfm ? 'disabled' : ''}`}>
               <label className="settings-toggle">
@@ -201,7 +237,7 @@ export default function SettingsDialog({
                   onChange={() => handleToggle('enableTables')}
                   disabled={!settings.enableGfm}
                 />
-                <span>Tables</span>
+                <span>{t('settings.tables')}</span>
               </label>
               <label className="settings-toggle">
                 <input
@@ -210,7 +246,7 @@ export default function SettingsDialog({
                   onChange={() => handleToggle('enableTaskLists')}
                   disabled={!settings.enableGfm}
                 />
-                <span>Task Lists (Checkboxes)</span>
+                <span>{t('settings.taskLists')}</span>
               </label>
               <label className="settings-toggle">
                 <input
@@ -219,7 +255,7 @@ export default function SettingsDialog({
                   onChange={() => handleToggle('enableStrikethrough')}
                   disabled={!settings.enableGfm}
                 />
-                <span>Strikethrough (~~text~~)</span>
+                <span>{t('settings.strikethrough')}</span>
               </label>
               <label className="settings-toggle">
                 <input
@@ -228,7 +264,7 @@ export default function SettingsDialog({
                   onChange={() => handleToggle('enableAutolinks')}
                   disabled={!settings.enableGfm}
                 />
-                <span>Autolinks</span>
+                <span>{t('settings.autolinks')}</span>
               </label>
               <label className="settings-toggle">
                 <input
@@ -237,14 +273,14 @@ export default function SettingsDialog({
                   onChange={() => handleToggle('enableFootnotes')}
                   disabled={!settings.enableGfm}
                 />
-                <span>Footnotes</span>
+                <span>{t('settings.footnotes')}</span>
               </label>
             </div>
           </section>
 
           {/* Core Features Section */}
           <section className="settings-section">
-            <h3>Core Features</h3>
+            <h3>{t('settings.coreFeatures')}</h3>
             <label className="settings-toggle">
               <input
                 type="checkbox"
@@ -254,20 +290,20 @@ export default function SettingsDialog({
               <span>Heading Anchors</span>
             </label>
             <p className="settings-hint" style={{ marginTop: '12px' }}>
-              Math, Mermaid, and Callouts are now managed via <strong>Plugins</strong>.
+              {t('settings.mathKatex')}, {t('settings.mermaidDiagrams')}, Callouts → <strong>{t('plugins.title')}</strong>
             </p>
           </section>
 
           {/* MD++ Features Section */}
           <section className="settings-section">
-            <h3>MD++ Features</h3>
+            <h3>{t('settings.mdppFeatures')}</h3>
             <label className="settings-toggle">
               <input
                 type="checkbox"
                 checked={settings.enableDirectives}
                 onChange={() => handleToggle('enableDirectives')}
               />
-              <span>Component Directives (:::plugin:component)</span>
+              <span>{t('settings.componentDirectives')} (:::plugin:component)</span>
             </label>
             <label className="settings-toggle">
               <input
@@ -275,7 +311,7 @@ export default function SettingsDialog({
                 checked={settings.enableAIContext}
                 onChange={() => handleToggle('enableAIContext')}
               />
-              <span>AI Context Blocks</span>
+              <span>{t('settings.aiContextBlocks')}</span>
             </label>
           </section>
 
@@ -314,9 +350,9 @@ export default function SettingsDialog({
 
           {/* Plugins Section - Link to Plugin Manager */}
           <section className="settings-section">
-            <h3>Plugins</h3>
+            <h3>{t('plugins.title')}</h3>
             <p className="settings-hint">
-              {settings.enabledPlugins.length} plugins enabled
+              {settings.enabledPlugins.length} {t('plugins.enabled').toLowerCase()}
             </p>
             {onOpenPluginManager && (
               <button
@@ -327,7 +363,7 @@ export default function SettingsDialog({
                 }}
                 style={{ marginTop: '8px' }}
               >
-                Open Plugin Manager
+                {t('plugins.title')}
               </button>
             )}
           </section>
@@ -335,10 +371,10 @@ export default function SettingsDialog({
 
         <div className="settings-footer">
           <button className="settings-btn secondary" onClick={() => handleSettingsChange(DEFAULT_SETTINGS)}>
-            Reset to Defaults
+            {t('common.reset')}
           </button>
           <button className="settings-btn primary" onClick={onClose}>
-            Done
+            {t('common.close')}
           </button>
         </div>
       </div>

@@ -1,0 +1,114 @@
+{
+  "app": {
+    "title": "MD++ Editor",
+    "untitled": "Sem título"
+  },
+  "toolbar": {
+    "closeSidebar": "Fechar barra lateral",
+    "openSidebar": "Abrir barra lateral",
+    "editorOnly": "Apenas editor",
+    "splitView": "Vista dividida",
+    "previewOnly": "Apenas pré-visualização",
+    "toggleAiContext": "Mostrar/ocultar contexto IA",
+    "lightMode": "Mudar para modo claro",
+    "darkMode": "Mudar para modo escuro",
+    "themeEditor": "Editor de temas",
+    "pluginManager": "Gestor de plugins",
+    "settings": "Definições",
+    "newTab": "Novo separador"
+  },
+  "sidebar": {
+    "file": "Ficheiro",
+    "newFile": "Novo ficheiro",
+    "open": "Abrir...",
+    "markdownScript": "MarkdownScript",
+    "mdppEnhanced": "MD++ Melhorado",
+    "markdown": "Markdown"
+  },
+  "status": {
+    "unsaved": "Alterações não guardadas",
+    "saving": "A guardar...",
+    "saved": "Guardado",
+    "editor": "Editor",
+    "preview": "Pré-visualização",
+    "split": "Dividido"
+  },
+  "search": {
+    "find": "Procurar",
+    "replace": "Substituir",
+    "replaceAll": "Substituir tudo",
+    "matchCase": "Diferenciar maiúsculas",
+    "wholeWord": "Palavra inteira",
+    "useRegex": "Expressão regular",
+    "noResults": "Sem resultados",
+    "resultsCount": "{{current}} de {{total}}"
+  },
+  "tabs": {
+    "close": "Fechar",
+    "closeOthers": "Fechar outros",
+    "closeAll": "Fechar todos",
+    "closeSaved": "Fechar guardados"
+  },
+  "dropzone": {
+    "dropFileHere": "Largar ficheiro aqui"
+  },
+  "settings": {
+    "title": "Definições",
+    "language": "Idioma",
+    "appearance": "Aparência",
+    "defaultTheme": "Tema predefinido",
+    "defaultThemeDescription": "O tema predefinido para este perfil. Abrir editor de temas para personalizar.",
+    "features": "Funcionalidades",
+    "coreFeatures": "Funcionalidades principais",
+    "mdppFeatures": "Funcionalidades MD++",
+    "gfm": "GitHub Flavored Markdown",
+    "gfmMasterSwitch": "Ativar GFM (Interruptor principal)",
+    "tables": "Tabelas",
+    "taskLists": "Listas de tarefas (Caixas de verificação)",
+    "strikethrough": "Riscado (~~texto~~)",
+    "autolinks": "Ligações automáticas",
+    "footnotes": "Notas de rodapé",
+    "syntaxHighlighting": "Realce de sintaxe",
+    "lineNumbers": "Números de linha em blocos de código",
+    "mathKatex": "Matemática (KaTeX)",
+    "mermaidDiagrams": "Diagramas Mermaid",
+    "aiContextBlocks": "Blocos de contexto IA",
+    "componentDirectives": "Diretivas de componentes",
+    "frontmatter": "Frontmatter (YAML)",
+    "emoji": "Suporte de emoji (:emoji:)",
+    "smartQuotes": "Aspas tipográficas",
+    "tableOfContents": "Índice",
+    "subscript": "Subscrito",
+    "superscript": "Sobrescrito",
+    "highlightedText": "Texto destacado",
+    "abbreviations": "Abreviaturas",
+    "definitionLists": "Listas de definições"
+  },
+  "plugins": {
+    "title": "Gestor de plugins",
+    "parser": "Analisador",
+    "components": "Componentes",
+    "hybrid": "Híbrido",
+    "theme": "Tema",
+    "enabled": "Ativado",
+    "disabled": "Desativado",
+    "dependencyIssues": "Tem problemas de dependências"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "ok": "OK",
+    "yes": "Sim",
+    "no": "Não",
+    "apply": "Aplicar",
+    "reset": "Repor",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Criar",
+    "rename": "Renomear",
+    "duplicate": "Duplicar",
+    "export": "Exportar",
+    "import": "Importar"
+  }
+}

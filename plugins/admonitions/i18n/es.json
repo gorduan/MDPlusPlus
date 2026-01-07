@@ -1,0 +1,29 @@
+{
+  "name": "Avisos",
+  "description": "Cajas de aviso para notas, consejos, advertencias y más",
+  "toolbar": {
+    "group": "Avisos",
+    "note": "Nota",
+    "noteTooltip": "Insertar aviso de nota",
+    "tip": "Consejo",
+    "tipTooltip": "Insertar aviso de consejo",
+    "warning": "Advertencia",
+    "warningTooltip": "Insertar aviso de advertencia",
+    "danger": "Peligro",
+    "dangerTooltip": "Insertar aviso de peligro",
+    "success": "Éxito",
+    "successTooltip": "Insertar aviso de éxito",
+    "question": "Pregunta",
+    "questionTooltip": "Insertar aviso de pregunta",
+    "info": "Info",
+    "infoTooltip": "Insertar aviso de info",
+    "quote": "Cita",
+    "quoteTooltip": "Insertar aviso de cita",
+    "example": "Ejemplo",
+    "exampleTooltip": "Insertar aviso de ejemplo",
+    "bug": "Error",
+    "bugTooltip": "Insertar aviso de error",
+    "abstract": "Resumen",
+    "abstractTooltip": "Insertar aviso de resumen"
+  }
+}

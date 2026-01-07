@@ -1,0 +1,64 @@
+{
+  "file": {
+    "label": "Datei",
+    "new": "Neu",
+    "open": "Öffnen...",
+    "openRecent": "Zuletzt geöffnet",
+    "clearRecent": "Liste leeren",
+    "save": "Speichern",
+    "saveAs": "Speichern unter...",
+    "exportHtml": "Als HTML exportieren...",
+    "exportPdf": "Als PDF exportieren...",
+    "exit": "Beenden"
+  },
+  "edit": {
+    "label": "Bearbeiten",
+    "undo": "Rückgängig",
+    "redo": "Wiederherstellen",
+    "cut": "Ausschneiden",
+    "copy": "Kopieren",
+    "paste": "Einfügen",
+    "selectAll": "Alles auswählen",
+    "find": "Suchen...",
+    "replace": "Ersetzen...",
+    "preferences": "Einstellungen..."
+  },
+  "view": {
+    "label": "Ansicht",
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern",
+    "resetZoom": "Zoom zurücksetzen",
+    "toggleSidebar": "Seitenleiste umschalten",
+    "editorOnly": "Nur Editor",
+    "splitView": "Geteilte Ansicht",
+    "previewOnly": "Nur Vorschau",
+    "fullscreen": "Vollbild umschalten",
+    "devTools": "Entwicklertools"
+  },
+  "insert": {
+    "label": "Einfügen",
+    "heading1": "Überschrift 1",
+    "heading2": "Überschrift 2",
+    "heading3": "Überschrift 3",
+    "bold": "Fett",
+    "italic": "Kursiv",
+    "code": "Code",
+    "link": "Link",
+    "image": "Bild",
+    "codeBlock": "Codeblock",
+    "blockquote": "Zitat",
+    "horizontalRule": "Horizontale Linie",
+    "bulletList": "Aufzählung",
+    "numberedList": "Nummerierung",
+    "taskList": "Aufgabenliste",
+    "table": "Tabelle",
+    "aiContextBlock": "AI-Kontextblock",
+    "componentDirective": "Komponenten-Direktive"
+  },
+  "help": {
+    "label": "Hilfe",
+    "shortcuts": "Tastenkürzel",
+    "documentation": "Dokumentation",
+    "about": "Über MD++"
+  }
+}

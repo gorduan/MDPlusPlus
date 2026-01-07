@@ -1,0 +1,64 @@
+{
+  "unsavedChanges": {
+    "title": "Alterações não guardadas",
+    "message": "Deseja guardar as alterações antes de fechar?",
+    "save": "Guardar",
+    "dontSave": "Não guardar",
+    "cancel": "Cancelar"
+  },
+  "saveInstance": {
+    "title": "Guardar instância?",
+    "message": "Esta instância deve ser restaurada no próximo arranque?",
+    "detail": "\"Guardar instância\" preservará todos os separadores e a posição da janela.\n\"Descartar instância\" eliminará esta instância permanentemente.",
+    "save": "Guardar instância",
+    "discard": "Descartar instância",
+    "cancel": "Cancelar"
+  },
+  "restoreInstances": {
+    "title": "Outras instâncias encontradas",
+    "message": "Foram encontradas {{count}} outra(s) instância(s) fechada(s).\nDeseja abri-las todas?",
+    "message_one": "Foi encontrada 1 outra instância fechada.\nDeseja abri-la?",
+    "message_other": "Foram encontradas {{count}} outras instâncias fechadas.\nDeseja abri-las todas?",
+    "detail": "{{instances}}",
+    "openAll": "Abrir todas",
+    "no": "Não",
+    "unnamed": "Sem nome"
+  },
+  "export": {
+    "title": "Exportar",
+    "selectTheme": "Que tema deve ser usado para a exportação?",
+    "lightTheme": "Tema claro",
+    "darkTheme": "Tema escuro",
+    "currentTheme": "Tema atual"
+  },
+  "fileFilters": {
+    "markdown": "Ficheiros Markdown",
+    "mdpp": "Ficheiros MD++",
+    "markdownScript": "Ficheiros MarkdownScript",
+    "allFiles": "Todos os ficheiros",
+    "htmlFiles": "Ficheiros HTML",
+    "pdfFiles": "Ficheiros PDF"
+  },
+  "errors": {
+    "loadFailed": "Falha ao carregar: {{description}}",
+    "saveFailed": "Falha ao guardar",
+    "exportFailed": "Falha na exportação"
+  },
+  "profile": {
+    "createTitle": "Criar perfil",
+    "editTitle": "Editar perfil",
+    "deleteTitle": "Eliminar perfil",
+    "deleteMessage": "Tem a certeza de que deseja eliminar o perfil \"{{name}}\"?",
+    "nameLabel": "Nome do perfil",
+    "namePlaceholder": "Introduza o nome do perfil"
+  },
+  "theme": {
+    "createTitle": "Criar tema",
+    "editTitle": "Editar tema",
+    "deleteTitle": "Eliminar tema",
+    "deleteMessage": "Tem a certeza de que deseja eliminar o tema \"{{name}}\"?",
+    "exportTitle": "Exportar tema",
+    "nameLabel": "Nome do tema",
+    "namePlaceholder": "Introduza o nome do tema"
+  }
+}

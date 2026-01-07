@@ -1,0 +1,29 @@
+{
+  "name": "Admonitions",
+  "description": "Callout boxes for notes, tips, warnings, and more",
+  "toolbar": {
+    "group": "Callouts",
+    "note": "Note",
+    "noteTooltip": "Insert Note Callout",
+    "tip": "Tip",
+    "tipTooltip": "Insert Tip Callout",
+    "warning": "Warning",
+    "warningTooltip": "Insert Warning Callout",
+    "danger": "Danger",
+    "dangerTooltip": "Insert Danger Callout",
+    "success": "Success",
+    "successTooltip": "Insert Success Callout",
+    "question": "Question",
+    "questionTooltip": "Insert Question Callout",
+    "info": "Info",
+    "infoTooltip": "Insert Info Callout",
+    "quote": "Quote",
+    "quoteTooltip": "Insert Quote Callout",
+    "example": "Example",
+    "exampleTooltip": "Insert Example Callout",
+    "bug": "Bug",
+    "bugTooltip": "Insert Bug Callout",
+    "abstract": "Abstract",
+    "abstractTooltip": "Insert Abstract Callout"
+  }
+}

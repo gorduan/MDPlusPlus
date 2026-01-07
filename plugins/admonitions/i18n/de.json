@@ -1,0 +1,29 @@
+{
+  "name": "Hinweisboxen",
+  "description": "Hinweisboxen für Notizen, Tipps, Warnungen und mehr",
+  "toolbar": {
+    "group": "Hinweise",
+    "note": "Notiz",
+    "noteTooltip": "Notiz-Hinweis einfügen",
+    "tip": "Tipp",
+    "tipTooltip": "Tipp-Hinweis einfügen",
+    "warning": "Warnung",
+    "warningTooltip": "Warnungs-Hinweis einfügen",
+    "danger": "Gefahr",
+    "dangerTooltip": "Gefahren-Hinweis einfügen",
+    "success": "Erfolg",
+    "successTooltip": "Erfolgs-Hinweis einfügen",
+    "question": "Frage",
+    "questionTooltip": "Frage-Hinweis einfügen",
+    "info": "Info",
+    "infoTooltip": "Info-Hinweis einfügen",
+    "quote": "Zitat",
+    "quoteTooltip": "Zitat-Hinweis einfügen",
+    "example": "Beispiel",
+    "exampleTooltip": "Beispiel-Hinweis einfügen",
+    "bug": "Fehler",
+    "bugTooltip": "Fehler-Hinweis einfügen",
+    "abstract": "Zusammenfassung",
+    "abstractTooltip": "Zusammenfassungs-Hinweis einfügen"
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "app": {
+    "title": "MD++ Editor",
+    "untitled": "Naamloos"
+  },
+  "toolbar": {
+    "closeSidebar": "Zijbalk sluiten",
+    "openSidebar": "Zijbalk openen",
+    "editorOnly": "Alleen editor",
+    "splitView": "Gesplitste weergave",
+    "previewOnly": "Alleen voorbeeld",
+    "toggleAiContext": "AI-context in-/uitschakelen",
+    "lightMode": "Schakel naar lichte modus",
+    "darkMode": "Schakel naar donkere modus",
+    "themeEditor": "Thema-editor",
+    "pluginManager": "Plugin-beheer",
+    "settings": "Instellingen",
+    "newTab": "Nieuw tabblad"
+  },
+  "sidebar": {
+    "file": "Bestand",
+    "newFile": "Nieuw bestand",
+    "open": "Openen...",
+    "markdownScript": "MarkdownScript",
+    "mdppEnhanced": "MD++ Uitgebreid",
+    "markdown": "Markdown"
+  },
+  "status": {
+    "unsaved": "Niet-opgeslagen wijzigingen",
+    "saving": "Opslaan...",
+    "saved": "Opgeslagen",
+    "editor": "Editor",
+    "preview": "Voorbeeld",
+    "split": "Gesplitst"
+  },
+  "search": {
+    "find": "Zoeken",
+    "replace": "Vervangen",
+    "replaceAll": "Alles vervangen",
+    "matchCase": "Hoofdlettergevoelig",
+    "wholeWord": "Heel woord",
+    "useRegex": "Reguliere expressie",
+    "noResults": "Geen resultaten",
+    "resultsCount": "{{current}} van {{total}}"
+  },
+  "tabs": {
+    "close": "Sluiten",
+    "closeOthers": "Andere sluiten",
+    "closeAll": "Alles sluiten",
+    "closeSaved": "Opgeslagen sluiten"
+  },
+  "dropzone": {
+    "dropFileHere": "Bestand hier neerzetten"
+  },
+  "settings": {
+    "title": "Instellingen",
+    "language": "Taal",
+    "appearance": "Uiterlijk",
+    "defaultTheme": "Standaard thema",
+    "defaultThemeDescription": "Het standaard thema voor dit profiel. Open Thema-editor voor aanpassingen.",
+    "features": "Functies",
+    "coreFeatures": "Kernfuncties",
+    "mdppFeatures": "MD++ Functies",
+    "gfm": "GitHub Flavored Markdown",
+    "gfmMasterSwitch": "GFM inschakelen (Hoofdschakelaar)",
+    "tables": "Tabellen",
+    "taskLists": "Takenlijsten (Selectievakjes)",
+    "strikethrough": "Doorgestreept (~~tekst~~)",
+    "autolinks": "Automatische links",
+    "footnotes": "Voetnoten",
+    "syntaxHighlighting": "Syntaxismarkering",
+    "lineNumbers": "Regelnummers in codeblokken",
+    "mathKatex": "Wiskunde (KaTeX)",
+    "mermaidDiagrams": "Mermaid-diagrammen",
+    "aiContextBlocks": "AI-contextblokken",
+    "componentDirectives": "Component-richtlijnen",
+    "frontmatter": "Frontmatter (YAML)",
+    "emoji": "Emoji-ondersteuning (:emoji:)",
+    "smartQuotes": "Slimme aanhalingstekens",
+    "tableOfContents": "Inhoudsopgave",
+    "subscript": "Subscript",
+    "superscript": "Superscript",
+    "highlightedText": "Gemarkeerde tekst",
+    "abbreviations": "Afkortingen",
+    "definitionLists": "Definitielijsten"
+  },
+  "plugins": {
+    "title": "Plugin-beheer",
+    "parser": "Parser",
+    "components": "Componenten",
+    "hybrid": "Hybride",
+    "theme": "Thema",
+    "enabled": "Ingeschakeld",
+    "disabled": "Uitgeschakeld",
+    "dependencyIssues": "Heeft afhankelijkheidsproblemen"
+  },
+  "common": {
+    "save": "Opslaan",
+    "cancel": "Annuleren",
+    "close": "Sluiten",
+    "ok": "OK",
+    "yes": "Ja",
+    "no": "Nee",
+    "apply": "Toepassen",
+    "reset": "Herstellen",
+    "delete": "Verwijderen",
+    "edit": "Bewerken",
+    "create": "Maken",
+    "rename": "Hernoemen",
+    "duplicate": "Dupliceren",
+    "export": "Exporteren",
+    "import": "Importeren"
+  }
+}
