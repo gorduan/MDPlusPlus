@@ -278,6 +278,10 @@ const electronAPI = {
 
   setLanguage: (language: string): Promise<string> =>
     ipcRenderer.invoke('set-language', language),
+
+  // Dialogs
+  confirmCloseTab: (tabTitle: string): Promise<'save' | 'discard' | 'cancel'> =>
+    ipcRenderer.invoke('confirm-close-tab', tabTitle),
 };
 
 // Plugin data type

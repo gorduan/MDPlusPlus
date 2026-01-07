@@ -1472,30 +1472,12 @@ function showAboutDialog(): void {
 }
 
 /**
- * Create new file
+ * Create new file (opens in a new tab)
+ * Since MD++ supports multiple tabs, we don't need to ask about saving changes.
+ * The save dialog will only appear when closing a tab with unsaved changes.
  */
 async function newFile(): Promise<void> {
-  if (isModified) {
-    const result = await dialog.showMessageBox(mainWindow!, {
-      type: 'warning',
-      buttons: [t('dialogs:unsavedChanges.save'), t('dialogs:unsavedChanges.dontSave'), t('dialogs:unsavedChanges.cancel')],
-      defaultId: 0,
-      cancelId: 2,
-      title: t('dialogs:unsavedChanges.title'),
-      message: t('dialogs:unsavedChanges.message'),
-    });
-
-    if (result.response === 0) {
-      const saved = await saveFile();
-      if (!saved) return;
-    } else if (result.response === 2) {
-      return;
-    }
-  }
-
-  currentFilePath = null;
-  isModified = false;
-  updateWindowTitle();
+  // Simply send the event to create a new tab - no dialog needed
   mainWindow?.webContents.send('file-new');
 }
 
@@ -2238,6 +2220,27 @@ ipcMain.handle('set-language', async (_, language: string) => {
   createMenu();
   console.log(`[i18n] Language changed to: ${normalizedLang}`);
   return normalizedLang;
+});
+
+/**
+ * Show confirmation dialog when closing a tab with unsaved changes
+ * Returns: 'save' | 'discard' | 'cancel'
+ */
+ipcMain.handle('confirm-close-tab', async (_, tabTitle: string): Promise<'save' | 'discard' | 'cancel'> => {
+  if (!mainWindow) return 'cancel';
+
+  const result = await dialog.showMessageBox(mainWindow, {
+    type: 'warning',
+    buttons: [t('dialogs:unsavedChanges.save'), t('dialogs:unsavedChanges.dontSave'), t('dialogs:unsavedChanges.cancel')],
+    defaultId: 0,
+    cancelId: 2,
+    title: t('dialogs:unsavedChanges.title'),
+    message: t('dialogs:unsavedChanges.messageTab', { tabName: tabTitle }),
+  });
+
+  if (result.response === 0) return 'save';
+  if (result.response === 1) return 'discard';
+  return 'cancel';
 });
 
 /**

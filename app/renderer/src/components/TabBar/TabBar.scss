@@ -1,23 +1,27 @@
 /**
  * TabBar Styles
- * Multi-document tab interface styling
+ * Bootstrap-style card tabs without bottom gap
  */
 
 @use '../../scss/abstracts' as *;
 
 .tab-bar {
   display: flex;
-  align-items: center;
+  align-items: flex-end; // Align tabs to bottom
   background-color: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
-  height: 36px;
-  min-height: 36px;
+  height: 38px;
+  min-height: 38px;
+  padding-left: 4px;
   user-select: none;
   -webkit-app-region: no-drag;
+  position: relative;
 
   &__tabs {
     display: flex;
+    align-items: flex-end; // Align tabs to bottom
     flex: 1;
+    height: 100%;
     overflow-x: auto;
     overflow-y: hidden;
     scroll-behavior: smooth;
@@ -38,6 +42,7 @@
     width: 32px;
     height: 32px;
     margin: 0 4px;
+    margin-bottom: 3px; // Align with tabs
     padding: 0;
     background: transparent;
     border: none;
@@ -68,21 +73,26 @@
   align-items: center;
   gap: 6px;
   padding: 0 12px;
-  height: 100%;
+  height: 32px; // Fixed height for all tabs
   min-width: 100px;
   max-width: 200px;
-  background: transparent;
-  border: none;
-  border-right: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  border: 1px solid transparent;
+  border-bottom: none; // No bottom border - connects to content
+  border-radius: 6px 6px 0 0; // Rounded top corners only
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s ease;
   position: relative;
   flex-shrink: 0;
+  margin-right: 2px;
+  margin-bottom: -1px; // Overlap the tab-bar border
 
   &:hover {
     background-color: var(--bg-hover);
     color: var(--text-primary);
+    border-color: var(--border-color);
+    border-bottom: none;
 
     .tab__close {
       opacity: 1;
@@ -92,17 +102,20 @@
   &--active {
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    border-bottom: 2px solid var(--accent);
+    border-color: var(--border-color);
+    border-bottom: 1px solid var(--bg-primary); // Hides the tab-bar border
+    z-index: 1;
 
-    // Active tab indicator
-    &::after {
+    // Accent line at top of active tab
+    &::before {
       content: '';
       position: absolute;
-      bottom: 0;
+      top: 0;
       left: 0;
       right: 0;
       height: 2px;
       background-color: var(--accent);
+      border-radius: 6px 6px 0 0;
     }
 
     .tab__close {

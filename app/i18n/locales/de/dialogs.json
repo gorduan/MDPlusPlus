@@ -2,6 +2,7 @@
   "unsavedChanges": {
     "title": "Ungespeicherte Änderungen",
     "message": "Möchten Sie die Änderungen vor dem Schließen speichern?",
+    "messageTab": "\"{{tabName}}\" hat ungespeicherte Änderungen. Möchten Sie diese speichern?",
     "save": "Speichern",
     "dontSave": "Nicht speichern",
     "cancel": "Abbrechen"

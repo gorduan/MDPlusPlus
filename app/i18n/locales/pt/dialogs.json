@@ -2,6 +2,7 @@
   "unsavedChanges": {
     "title": "Alterações não guardadas",
     "message": "Deseja guardar as alterações antes de fechar?",
+    "messageTab": "\"{{tabName}}\" tem alterações não guardadas. Deseja guardá-las?",
     "save": "Guardar",
     "dontSave": "Não guardar",
     "cancel": "Cancelar"

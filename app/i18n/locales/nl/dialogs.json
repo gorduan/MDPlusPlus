@@ -2,6 +2,7 @@
   "unsavedChanges": {
     "title": "Niet-opgeslagen wijzigingen",
     "message": "Wilt u de wijzigingen opslaan voordat u sluit?",
+    "messageTab": "\"{{tabName}}\" heeft niet-opgeslagen wijzigingen. Wilt u deze opslaan?",
     "save": "Opslaan",
     "dontSave": "Niet opslaan",
     "cancel": "Annuleren"

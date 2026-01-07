@@ -2,6 +2,7 @@
   "unsavedChanges": {
     "title": "Modifications non enregistrées",
     "message": "Voulez-vous enregistrer les modifications avant de fermer ?",
+    "messageTab": "\"{{tabName}}\" a des modifications non enregistrées. Voulez-vous les enregistrer ?",
     "save": "Enregistrer",
     "dontSave": "Ne pas enregistrer",
     "cancel": "Annuler"

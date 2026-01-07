@@ -2,6 +2,7 @@
   "unsavedChanges": {
     "title": "Cambios sin guardar",
     "message": "¿Desea guardar los cambios antes de cerrar?",
+    "messageTab": "\"{{tabName}}\" tiene cambios sin guardar. ¿Desea guardarlos?",
     "save": "Guardar",
     "dontSave": "No guardar",
     "cancel": "Cancelar"

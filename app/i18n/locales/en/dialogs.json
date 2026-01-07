@@ -2,6 +2,7 @@
   "unsavedChanges": {
     "title": "Unsaved Changes",
     "message": "Do you want to save the changes before closing?",
+    "messageTab": "\"{{tabName}}\" has unsaved changes. Do you want to save them?",
     "save": "Save",
     "dontSave": "Don't Save",
     "cancel": "Cancel"
