@@ -77,6 +77,10 @@
   flex: 1;
   overflow: auto;
   padding: map.get($spacing, 4);
+  // Background and text color use CSS variables, which can be overridden
+  // by inline styles from themeColors prop for Theme Editor support
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .wysiwyg-content {

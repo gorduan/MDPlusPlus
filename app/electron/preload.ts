@@ -282,6 +282,10 @@ const electronAPI = {
   // Dialogs
   confirmCloseTab: (tabTitle: string): Promise<'save' | 'discard' | 'cancel'> =>
     ipcRenderer.invoke('confirm-close-tab', tabTitle),
+
+  // SASS Compilation (for custom-styles plugin)
+  compileSass: (source: string, options?: { syntax?: 'scss' | 'sass' | 'indented' }): Promise<{ success: boolean; css?: string; error?: string }> =>
+    ipcRenderer.invoke('compile-sass', source, options),
 };
 
 // Plugin data type

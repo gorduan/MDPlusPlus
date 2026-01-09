@@ -1,6 +1,7 @@
 {
   "$schema": "https://mdplusplus.dev/schemas/plugin.json",
   "id": "admonitions",
+  "framework": "admonitions",
   "name": "Admonitions",
   "version": "1.0.0",
   "author": "MD++ Team",
@@ -143,64 +144,136 @@
   },
 
   "components": {
+    "admonition": {
+      "tag": "div",
+      "classes": ["admonition"],
+      "description": "Generic admonition with variant support",
+      "variants": {
+        "note": ["admonition-note"],
+        "info": ["admonition-info"],
+        "tip": ["admonition-tip"],
+        "hint": ["admonition-tip"],
+        "important": ["admonition-important"],
+        "warning": ["admonition-warning"],
+        "caution": ["admonition-caution"],
+        "danger": ["admonition-danger"],
+        "error": ["admonition-danger"],
+        "success": ["admonition-success"],
+        "question": ["admonition-question"],
+        "quote": ["admonition-quote"],
+        "example": ["admonition-example"],
+        "abstract": ["admonition-abstract"],
+        "bug": ["admonition-bug"]
+      }
+    },
     "note": {
       "tag": "div",
       "classes": ["admonition", "admonition-note"],
+      "icon": "info-circle",
+      "title": "Note",
       "description": "Informational note",
-      "aiVisible": true
-    },
-    "tip": {
-      "tag": "div",
-      "classes": ["admonition", "admonition-tip"],
-      "description": "Helpful tip or best practice",
-      "aiVisible": true
-    },
-    "warning": {
-      "tag": "div",
-      "classes": ["admonition", "admonition-warning"],
-      "description": "Warning message",
-      "aiVisible": true
-    },
-    "danger": {
-      "tag": "div",
-      "classes": ["admonition", "admonition-danger"],
-      "description": "Danger or critical warning",
       "aiVisible": true
     },
     "info": {
       "tag": "div",
       "classes": ["admonition", "admonition-info"],
+      "icon": "info-circle",
+      "title": "Info",
       "description": "General information"
+    },
+    "tip": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-tip"],
+      "icon": "lightbulb",
+      "title": "Tip",
+      "description": "Helpful tip or best practice",
+      "aiVisible": true
+    },
+    "hint": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-tip"],
+      "icon": "lightbulb",
+      "title": "Hint",
+      "description": "Helpful hint (alias for tip)"
+    },
+    "important": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-important"],
+      "icon": "exclamation-circle",
+      "title": "Important",
+      "description": "Important information"
+    },
+    "warning": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-warning"],
+      "icon": "exclamation-triangle",
+      "title": "Warning",
+      "description": "Warning message",
+      "aiVisible": true
+    },
+    "caution": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-caution"],
+      "icon": "exclamation-triangle",
+      "title": "Caution",
+      "description": "Caution message (alias for warning)"
+    },
+    "danger": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-danger"],
+      "icon": "times-circle",
+      "title": "Danger",
+      "description": "Danger or critical warning",
+      "aiVisible": true
+    },
+    "error": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-danger"],
+      "icon": "times-circle",
+      "title": "Error",
+      "description": "Error message (alias for danger)"
     },
     "success": {
       "tag": "div",
       "classes": ["admonition", "admonition-success"],
+      "icon": "check-circle",
+      "title": "Success",
       "description": "Success message"
     },
     "question": {
       "tag": "div",
       "classes": ["admonition", "admonition-question"],
+      "icon": "question-circle",
+      "title": "Question",
       "description": "Question or FAQ"
     },
     "quote": {
       "tag": "div",
       "classes": ["admonition", "admonition-quote"],
+      "icon": "quote-left",
+      "title": "Quote",
       "description": "Quotation block"
     },
     "example": {
       "tag": "div",
       "classes": ["admonition", "admonition-example"],
+      "icon": "list",
+      "title": "Example",
       "description": "Example block"
-    },
-    "bug": {
-      "tag": "div",
-      "classes": ["admonition", "admonition-bug"],
-      "description": "Bug or known issue"
     },
     "abstract": {
       "tag": "div",
       "classes": ["admonition", "admonition-abstract"],
+      "icon": "clipboard-list",
+      "title": "Abstract",
       "description": "Abstract or summary"
+    },
+    "bug": {
+      "tag": "div",
+      "classes": ["admonition", "admonition-bug"],
+      "icon": "bug",
+      "title": "Bug",
+      "description": "Bug or known issue"
     }
   },
 

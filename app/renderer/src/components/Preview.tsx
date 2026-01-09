@@ -17,14 +17,16 @@ import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import hljs from 'highlight.js';
 
-// Import plugins directly
-import bootstrapPlugin from '../../../../plugins/bootstrap.json';
-import admonitionsPlugin from '../../../../plugins/admonitions.json';
+// Import plugins directly (folder-based format)
+import bootstrapPlugin from '../../../../plugins/bootstrap/plugin.json';
+import admonitionsPlugin from '../../../../plugins/admonitions/plugin.json';
+import customStylesPlugin from '../../../../plugins/custom-styles/plugin.json';
 
 // Available plugins map
 const PLUGINS: Record<string, PluginDefinition> = {
   bootstrap: bootstrapPlugin as PluginDefinition,
   admonitions: admonitionsPlugin as PluginDefinition,
+  'custom-styles': customStylesPlugin as PluginDefinition,
 };
 
 type Theme = 'dark' | 'light';
@@ -290,6 +292,106 @@ export default function Preview({ content, showAIContext = false, settings, them
     const isMermaidEnabled = enabledPluginNames.includes('mermaid');
     const isKatexEnabled = enabledPluginNames.includes('katex');
     const isAdmonitionsEnabled = enabledPluginNames.includes('admonitions');
+    const isCustomStylesEnabled = enabledPluginNames.includes('custom-styles');
+
+    // Process custom styles (CSS/SCSS code blocks)
+    const processCustomStyles = async () => {
+      if (!previewRef.current) return;
+
+      // Find CSS/SCSS/SASS code blocks
+      const styleBlocks = previewRef.current.querySelectorAll(
+        'pre code.language-css, pre code.language-scss, pre code.language-sass'
+      );
+
+      // Remove any previously injected style tags
+      const existingStyles = previewRef.current.querySelectorAll('style[data-mdpp-custom-style]');
+      existingStyles.forEach((el) => el.remove());
+
+      for (const block of Array.from(styleBlocks)) {
+        const code = block.textContent || '';
+        if (!code.trim()) continue;
+
+        const language = block.classList.contains('language-scss')
+          ? 'scss'
+          : block.classList.contains('language-sass')
+            ? 'sass'
+            : 'css';
+
+        let css = code;
+
+        // Compile SCSS/SASS if needed
+        if (language === 'scss' || language === 'sass') {
+          try {
+            const result = await window.electronAPI.compileSass(code, {
+              syntax: language === 'sass' ? 'indented' : 'scss',
+            });
+            if (result.success && result.css) {
+              css = result.css;
+            } else {
+              console.error('[custom-styles] SASS compilation error:', result.error);
+              // Add error indicator to the code block
+              const pre = block.closest('pre');
+              if (pre && !pre.classList.contains('mdpp-style-error')) {
+                pre.classList.add('mdpp-style-error');
+                pre.setAttribute('data-error', result.error || 'Compilation failed');
+              }
+              continue;
+            }
+          } catch (error) {
+            console.error('[custom-styles] SASS compilation error:', error);
+            continue;
+          }
+        }
+
+        // Scope styles to preview container to prevent leaking
+        // Prefix all selectors with .preview-content
+        const scopedCss = css.replace(
+          /([^{}]+)(\{[^}]*\})/g,
+          (match, selectors: string, rules: string) => {
+            // Skip @-rules (media queries, keyframes, etc.)
+            if (selectors.trim().startsWith('@')) {
+              return match;
+            }
+            // Scope each selector
+            const scopedSelectors = selectors
+              .split(',')
+              .map((s: string) => `.preview-content ${s.trim()}`)
+              .join(', ');
+            return `${scopedSelectors}${rules}`;
+          }
+        );
+
+        // Inject style tag
+        const styleTag = document.createElement('style');
+        styleTag.setAttribute('data-mdpp-custom-style', 'true');
+        styleTag.setAttribute('data-source-language', language);
+        styleTag.textContent = scopedCss;
+        previewRef.current.appendChild(styleTag);
+
+        // Mark the source block as processed
+        const pre = block.closest('pre');
+        if (pre) {
+          pre.classList.add('mdpp-style-applied');
+          pre.classList.remove('mdpp-style-error');
+        }
+      }
+    };
+
+    // Reset custom styles (remove injected styles and visual markers)
+    const resetCustomStyles = () => {
+      if (!previewRef.current) return;
+
+      // Remove injected style tags
+      const existingStyles = previewRef.current.querySelectorAll('style[data-mdpp-custom-style]');
+      existingStyles.forEach((el) => el.remove());
+
+      // Remove visual markers from code blocks
+      const styledBlocks = previewRef.current.querySelectorAll('.mdpp-style-applied, .mdpp-style-error');
+      styledBlocks.forEach((el) => {
+        el.classList.remove('mdpp-style-applied', 'mdpp-style-error');
+        el.removeAttribute('data-error');
+      });
+    };
 
     // Reset Mermaid diagrams to source code if plugin is disabled
     const resetMermaid = () => {
@@ -317,6 +419,12 @@ export default function Preview({ content, showAIContext = false, settings, them
     }
     if (isKatexEnabled) {
       renderKaTeX();
+    }
+    if (isCustomStylesEnabled) {
+      processCustomStyles();
+    } else {
+      // Remove injected styles when plugin is disabled
+      resetCustomStyles();
     }
     renderHighlight();
 

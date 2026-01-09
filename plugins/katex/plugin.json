@@ -1,6 +1,7 @@
 {
   "$schema": "https://mdplusplus.dev/schemas/plugin.json",
   "id": "katex",
+  "framework": "katex",
   "name": "KaTeX Math",
   "version": "1.0.0",
   "author": "MD++ Team",
@@ -8,6 +9,17 @@
   "license": "MIT",
 
   "type": "parser",
+
+  "assets": {
+    "css": [
+      "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+    ],
+    "js": [
+      "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js",
+      "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    ],
+    "init": "renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }] });"
+  },
 
   "dependencies": {
     "plugins": [],

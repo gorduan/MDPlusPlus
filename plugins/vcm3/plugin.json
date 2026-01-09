@@ -1,13 +1,21 @@
 {
+  "$schema": "https://mdplusplus.dev/schemas/plugin.json",
+  "id": "vcm3",
   "framework": "vcm3",
+  "name": "VCM3 Components",
   "version": "1.0.0",
   "author": "VCM3 Team",
   "description": "VCM3 native components for vibecoding",
+  "license": "MIT",
+
+  "type": "components",
+
   "components": {
     "card": {
       "tag": "div",
       "classes": ["vcm3-card", "rounded-lg", "border", "p-4", "shadow-sm", "bg-card"],
       "allowNesting": true,
+      "description": "VCM3 card component",
       "structure": {
         "header": {
           "tag": "div",
@@ -26,6 +34,7 @@
     "alert": {
       "tag": "div",
       "classes": ["vcm3-alert", "rounded-md", "p-4", "flex", "items-start", "gap-3"],
+      "description": "VCM3 alert component",
       "variants": {
         "info": ["bg-blue-50", "text-blue-800", "border", "border-blue-200"],
         "success": ["bg-green-50", "text-green-800", "border", "border-green-200"],
@@ -37,6 +46,7 @@
     "callout": {
       "tag": "div",
       "classes": ["vcm3-callout", "border-l-4", "border-primary", "bg-primary/5", "p-4", "rounded-r-md"],
+      "description": "VCM3 callout component",
       "structure": {
         "title": {
           "tag": "p",
@@ -50,29 +60,35 @@
     },
     "code": {
       "tag": "div",
-      "classes": ["vcm3-code", "bg-zinc-900", "text-zinc-100", "rounded-md", "p-4", "font-mono", "text-sm", "overflow-x-auto"]
+      "classes": ["vcm3-code", "bg-zinc-900", "text-zinc-100", "rounded-md", "p-4", "font-mono", "text-sm", "overflow-x-auto"],
+      "description": "VCM3 code block"
     },
     "tabs": {
       "tag": "div",
       "classes": ["vcm3-tabs", "border", "rounded-lg"],
-      "allowNesting": true
+      "allowNesting": true,
+      "description": "VCM3 tabs container"
     },
     "tab": {
       "tag": "div",
-      "classes": ["vcm3-tab", "p-4"]
+      "classes": ["vcm3-tab", "p-4"],
+      "description": "VCM3 tab pane"
     },
     "accordion": {
       "tag": "div",
       "classes": ["vcm3-accordion", "border", "rounded-lg", "divide-y"],
-      "allowNesting": true
+      "allowNesting": true,
+      "description": "VCM3 accordion container"
     },
     "accordion-item": {
       "tag": "div",
-      "classes": ["vcm3-accordion-item"]
+      "classes": ["vcm3-accordion-item"],
+      "description": "VCM3 accordion item"
     },
     "badge": {
       "tag": "span",
       "classes": ["vcm3-badge", "inline-flex", "items-center", "px-2.5", "py-0.5", "rounded-full", "text-xs", "font-medium"],
+      "description": "VCM3 badge component",
       "variants": {
         "default": ["bg-primary", "text-primary-foreground"],
         "secondary": ["bg-secondary", "text-secondary-foreground"],
@@ -84,6 +100,7 @@
     "button": {
       "tag": "button",
       "classes": ["vcm3-button", "inline-flex", "items-center", "justify-center", "rounded-md", "px-4", "py-2", "text-sm", "font-medium", "transition-colors"],
+      "description": "VCM3 button component",
       "variants": {
         "default": ["bg-primary", "text-primary-foreground", "hover:bg-primary/90"],
         "secondary": ["bg-secondary", "text-secondary-foreground", "hover:bg-secondary/80"],
@@ -95,11 +112,13 @@
       "tag": "div",
       "classes": ["mdpp-ai-context"],
       "hidden": true,
-      "aiVisible": true
+      "aiVisible": true,
+      "description": "Hidden AI context block"
     },
     "feature": {
       "tag": "div",
       "classes": ["vcm3-feature", "p-6", "rounded-lg", "border", "bg-card", "hover:shadow-md", "transition-shadow"],
+      "description": "VCM3 feature card",
       "structure": {
         "icon": {
           "tag": "div",
@@ -118,11 +137,17 @@
     "grid": {
       "tag": "div",
       "classes": ["vcm3-grid", "grid", "gap-4"],
+      "description": "VCM3 grid layout",
       "variants": {
         "2": ["grid-cols-2"],
         "3": ["grid-cols-3"],
         "4": ["grid-cols-4"]
       }
     }
-  }
+  },
+
+  "categories": ["ui", "components"],
+  "keywords": ["vcm3", "vibecoding", "components", "ui"],
+
+  "minAppVersion": "1.0.0"
 }

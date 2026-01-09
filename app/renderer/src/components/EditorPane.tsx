@@ -7,6 +7,7 @@ import React, { forwardRef, useImperativeHandle, useRef, useCallback } from 'rea
 import Editor, { EditorRef } from './Editor';
 import WysiwygEditor, { WysiwygScrollInfo } from './WysiwygEditor';
 import type { editor } from 'monaco-editor';
+import type { ThemeColors } from '../types/themes';
 
 export type EditorMode = 'source' | 'wysiwyg';
 
@@ -17,6 +18,8 @@ interface EditorPaneProps {
   onChange: (content: string) => void;
   onCursorChange: (position: { line: number; column: number }) => void;
   theme?: Theme;
+  /** Theme colors from Theme Editor - applied to WYSIWYG content */
+  themeColors?: ThemeColors;
   /** Current editor mode (source or wysiwyg) - controlled from parent */
   editorMode: EditorMode;
   /** Called when Monaco editor is scrolled */
@@ -37,7 +40,7 @@ export interface EditorPaneRef {
 }
 
 const EditorPane = forwardRef<EditorPaneRef, EditorPaneProps>(
-  ({ content, onChange, onCursorChange, theme = 'dark', editorMode, onScroll, onWysiwygScroll, onEditorMount, onWysiwygMount, enabledPlugins = [] }, ref) => {
+  ({ content, onChange, onCursorChange, theme = 'dark', themeColors, editorMode, onScroll, onWysiwygScroll, onEditorMount, onWysiwygMount, enabledPlugins = [] }, ref) => {
     const monacoEditorRef = useRef<EditorRef | null>(null);
     const wysiwygWrapperRef = useRef<HTMLElement | null>(null);
     const monacoInstanceRef = useRef<editor.IStandaloneCodeEditor | null>(null);
@@ -208,6 +211,7 @@ const EditorPane = forwardRef<EditorPaneRef, EditorPaneProps>(
               content={content}
               onChange={handleContentChange}
               theme={theme}
+              themeColors={themeColors}
               enabledPlugins={enabledPlugins}
               onScroll={handleWysiwygScrollInternal}
               onContentMount={handleWysiwygContentMount}

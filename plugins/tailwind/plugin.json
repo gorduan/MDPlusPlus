@@ -1,15 +1,26 @@
 {
+  "$schema": "https://mdplusplus.dev/schemas/plugin.json",
+  "id": "tailwind",
   "framework": "tailwind",
+  "name": "Tailwind CSS Components",
   "version": "1.0.0",
   "author": "MD++ Team",
   "description": "Tailwind CSS utility-first components - Use :::tailwind:component syntax",
-  "css": [
-    "https://cdn.tailwindcss.com"
-  ],
+  "license": "MIT",
+
+  "type": "components",
+
+  "assets": {
+    "css": [
+      "https://cdn.tailwindcss.com"
+    ]
+  },
+
   "components": {
     "card": {
       "tag": "div",
       "classes": ["bg-white", "dark:bg-gray-800", "rounded-lg", "shadow-lg", "p-6", "mb-4"],
+      "description": "Tailwind card component",
       "structure": {
         "header": {
           "tag": "div",
@@ -26,6 +37,7 @@
     "alert": {
       "tag": "div",
       "classes": ["p-4", "rounded-lg", "mb-4"],
+      "description": "Tailwind alert component",
       "variants": {
         "info": ["bg-blue-100", "text-blue-800", "dark:bg-blue-900", "dark:text-blue-200"],
         "success": ["bg-green-100", "text-green-800", "dark:bg-green-900", "dark:text-green-200"],
@@ -37,6 +49,7 @@
     "badge": {
       "tag": "span",
       "classes": ["inline-flex", "items-center", "px-2.5", "py-0.5", "rounded-full", "text-xs", "font-medium"],
+      "description": "Tailwind badge component",
       "variants": {
         "primary": ["bg-blue-100", "text-blue-800"],
         "secondary": ["bg-gray-100", "text-gray-800"],
@@ -48,6 +61,7 @@
     "button": {
       "tag": "button",
       "classes": ["px-4", "py-2", "rounded-lg", "font-medium", "transition-colors", "duration-200"],
+      "description": "Tailwind button component",
       "variants": {
         "primary": ["bg-blue-600", "text-white", "hover:bg-blue-700"],
         "secondary": ["bg-gray-200", "text-gray-800", "hover:bg-gray-300"],
@@ -58,11 +72,13 @@
     },
     "container": {
       "tag": "div",
-      "classes": ["container", "mx-auto", "px-4"]
+      "classes": ["container", "mx-auto", "px-4"],
+      "description": "Tailwind container"
     },
     "grid": {
       "tag": "div",
       "classes": ["grid", "gap-4"],
+      "description": "Tailwind grid layout",
       "variants": {
         "cols-2": ["grid-cols-1", "md:grid-cols-2"],
         "cols-3": ["grid-cols-1", "md:grid-cols-2", "lg:grid-cols-3"],
@@ -72,6 +88,7 @@
     "flex": {
       "tag": "div",
       "classes": ["flex"],
+      "description": "Tailwind flex container",
       "variants": {
         "row": ["flex-row"],
         "col": ["flex-col"],
@@ -82,19 +99,28 @@
     },
     "divider": {
       "tag": "hr",
-      "classes": ["my-4", "border-gray-200", "dark:border-gray-700"]
+      "classes": ["my-4", "border-gray-200", "dark:border-gray-700"],
+      "description": "Tailwind horizontal divider"
     },
     "quote": {
       "tag": "blockquote",
-      "classes": ["border-l-4", "border-gray-300", "pl-4", "py-2", "italic", "text-gray-600", "dark:text-gray-400"]
+      "classes": ["border-l-4", "border-gray-300", "pl-4", "py-2", "italic", "text-gray-600", "dark:text-gray-400"],
+      "description": "Tailwind blockquote"
     },
     "code": {
       "tag": "div",
-      "classes": ["bg-gray-900", "text-gray-100", "rounded-lg", "p-4", "overflow-x-auto", "font-mono", "text-sm"]
+      "classes": ["bg-gray-900", "text-gray-100", "rounded-lg", "p-4", "overflow-x-auto", "font-mono", "text-sm"],
+      "description": "Tailwind code block"
     },
     "highlight": {
       "tag": "span",
-      "classes": ["bg-yellow-200", "dark:bg-yellow-800", "px-1", "rounded"]
+      "classes": ["bg-yellow-200", "dark:bg-yellow-800", "px-1", "rounded"],
+      "description": "Tailwind text highlight"
     }
-  }
+  },
+
+  "categories": ["ui", "css-framework"],
+  "keywords": ["tailwind", "css", "utility", "components", "responsive"],
+
+  "minAppVersion": "1.0.0"
 }

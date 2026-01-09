@@ -1,0 +1,136 @@
+{
+  "$schema": "https://mdplusplus.dev/schemas/plugin.json",
+  "id": "custom-styles",
+  "framework": "custom-styles",
+  "name": "Custom Styles",
+  "version": "1.0.0",
+  "author": "MD++ Team",
+  "description": "Embed CSS or SCSS/SASS directly in Markdown documents for custom styling. Styles are scoped to the preview and can use theme variables.",
+  "license": "MIT",
+
+  "type": "hybrid",
+
+  "activation": {
+    "enabledByDefault": false,
+    "enabledForExtensions": [".mdpp", ".mpsc"]
+  },
+
+  "dependencies": {
+    "plugins": []
+  },
+
+  "contributes": {
+    "parser": {
+      "entry": "./parser.ts",
+      "phase": "rehype",
+      "priority": 50,
+      "codeBlockLanguages": ["css", "scss", "sass"]
+    },
+
+    "toolbar": {
+      "entry": "./toolbar/items.ts",
+      "groups": [
+        {
+          "id": "styling",
+          "label": "Styling",
+          "priority": 55
+        }
+      ],
+      "items": [
+        {
+          "id": "insert-css",
+          "command": "insertStyleBlock",
+          "group": "styling",
+          "priority": 0,
+          "icon": "Palette",
+          "label": "CSS",
+          "tooltip": "Insert CSS Style Block",
+          "args": { "language": "css" }
+        },
+        {
+          "id": "insert-scss",
+          "command": "insertStyleBlock",
+          "group": "styling",
+          "priority": 1,
+          "icon": "Paintbrush",
+          "label": "SCSS",
+          "tooltip": "Insert SCSS Style Block",
+          "args": { "language": "scss" }
+        }
+      ]
+    },
+
+    "preview": {
+      "renderer": "./preview/renderer.ts",
+      "selectors": [".mdpp-style", "[data-type=\"style-block\"]", "pre.language-css", "pre.language-scss", "pre.language-sass"]
+    },
+
+    "help": {
+      "entries": [
+        {
+          "title": "CSS Styles",
+          "description": "Embed CSS styles directly in your document",
+          "syntax": "```css\n.custom-class {\n  color: var(--accent);\n}\n```",
+          "category": "styling",
+          "keywords": ["css", "style", "stylesheet", "custom"]
+        },
+        {
+          "title": "SCSS Styles",
+          "description": "Embed SCSS/SASS styles with variables and nesting",
+          "syntax": "```scss\n$primary: var(--accent);\n.container {\n  color: $primary;\n  .nested {\n    font-weight: bold;\n  }\n}\n```",
+          "category": "styling",
+          "keywords": ["scss", "sass", "style", "stylesheet", "variables", "nesting"]
+        },
+        {
+          "title": "Style Directive",
+          "description": "Use directive syntax for inline styles",
+          "syntax": ":::custom-styles:style{scoped}\nCSS or SCSS code here\n:::",
+          "category": "styling",
+          "keywords": ["directive", "style", "scoped", "inline"]
+        }
+      ]
+    }
+  },
+
+  "settings": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "defaultLanguage": {
+          "type": "string",
+          "enum": ["css", "scss"],
+          "default": "css",
+          "description": "Default language for new style blocks"
+        },
+        "enableSassCompilation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Compile SCSS/SASS to CSS (requires browser support)"
+        },
+        "scopeStyles": {
+          "type": "boolean",
+          "default": true,
+          "description": "Scope styles to preview container to prevent leaking"
+        }
+      }
+    },
+    "defaults": {
+      "defaultLanguage": "css",
+      "enableSassCompilation": true,
+      "scopeStyles": true
+    }
+  },
+
+  "components": {
+    "style": {
+      "tag": "style",
+      "classes": ["mdpp-style"],
+      "description": "Embedded style block for custom CSS/SCSS"
+    }
+  },
+
+  "categories": ["styling", "customization"],
+  "keywords": ["css", "scss", "sass", "styles", "stylesheet", "custom", "theming"],
+
+  "minAppVersion": "1.0.0"
+}

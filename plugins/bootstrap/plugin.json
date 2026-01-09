@@ -1,6 +1,7 @@
 {
   "$schema": "https://mdplusplus.dev/schemas/plugin.json",
   "id": "bootstrap",
+  "framework": "bootstrap",
   "name": "Bootstrap 5 Components",
   "version": "1.0.0",
   "author": "MD++ Team",
@@ -167,7 +168,8 @@
         "lg": ["modal-lg"],
         "sm": ["modal-sm"],
         "xl": ["modal-xl"],
-        "centered": ["modal-dialog-centered"]
+        "centered": ["modal-dialog-centered"],
+        "scrollable": ["modal-dialog-scrollable"]
       }
     },
     "modal-dialog": {
@@ -196,7 +198,8 @@
       "tag": "ul",
       "classes": ["nav", "nav-tabs"],
       "allowNesting": true,
-      "description": "Bootstrap tab navigation"
+      "description": "Bootstrap tab navigation",
+      "specialParser": "tabs"
     },
     "tab-content": {
       "tag": "div",
@@ -250,6 +253,122 @@
     "toast-body": {
       "tag": "div",
       "classes": ["toast-body"]
+    },
+    "navbar": {
+      "tag": "nav",
+      "classes": ["navbar"],
+      "allowNesting": true,
+      "description": "Bootstrap navigation bar",
+      "variants": {
+        "light": ["navbar-light", "bg-light"],
+        "dark": ["navbar-dark", "bg-dark"],
+        "expand-lg": ["navbar-expand-lg"],
+        "expand-md": ["navbar-expand-md"],
+        "fixed-top": ["fixed-top"],
+        "fixed-bottom": ["fixed-bottom"]
+      }
+    },
+    "navbar-brand": {
+      "tag": "a",
+      "classes": ["navbar-brand"],
+      "description": "Bootstrap navbar brand/logo"
+    },
+    "nav": {
+      "tag": "ul",
+      "classes": ["navbar-nav"],
+      "allowNesting": true,
+      "description": "Bootstrap nav list"
+    },
+    "nav-item": {
+      "tag": "li",
+      "classes": ["nav-item"],
+      "description": "Bootstrap nav item"
+    },
+    "nav-link": {
+      "tag": "a",
+      "classes": ["nav-link"],
+      "description": "Bootstrap nav link"
+    },
+    "carousel": {
+      "tag": "div",
+      "classes": ["carousel", "slide"],
+      "allowNesting": true,
+      "description": "Bootstrap carousel/slider",
+      "variants": {
+        "fade": ["carousel-fade"]
+      }
+    },
+    "carousel-inner": {
+      "tag": "div",
+      "classes": ["carousel-inner"],
+      "allowNesting": true
+    },
+    "carousel-item": {
+      "tag": "div",
+      "classes": ["carousel-item"],
+      "variants": {
+        "active": ["active"]
+      }
+    },
+    "breadcrumb": {
+      "tag": "nav",
+      "classes": [],
+      "allowNesting": true,
+      "description": "Bootstrap breadcrumb navigation"
+    },
+    "breadcrumb-list": {
+      "tag": "ol",
+      "classes": ["breadcrumb"]
+    },
+    "breadcrumb-item": {
+      "tag": "li",
+      "classes": ["breadcrumb-item"],
+      "variants": {
+        "active": ["active"]
+      }
+    },
+    "dropdown-toggle": {
+      "tag": "button",
+      "classes": ["btn", "dropdown-toggle"],
+      "description": "Bootstrap dropdown toggle button"
+    },
+    "form-group": {
+      "tag": "div",
+      "classes": ["mb-3"],
+      "description": "Bootstrap form group"
+    },
+    "form-control": {
+      "tag": "input",
+      "classes": ["form-control"],
+      "description": "Bootstrap form input",
+      "variants": {
+        "lg": ["form-control-lg"],
+        "sm": ["form-control-sm"]
+      }
+    },
+    "form-label": {
+      "tag": "label",
+      "classes": ["form-label"],
+      "description": "Bootstrap form label"
+    },
+    "offcanvas": {
+      "tag": "div",
+      "classes": ["offcanvas"],
+      "description": "Bootstrap offcanvas sidebar",
+      "variants": {
+        "start": ["offcanvas-start"],
+        "end": ["offcanvas-end"],
+        "top": ["offcanvas-top"],
+        "bottom": ["offcanvas-bottom"]
+      }
+    },
+    "offcanvas-header": {
+      "tag": "div",
+      "classes": ["offcanvas-header"]
+    },
+    "offcanvas-body": {
+      "tag": "div",
+      "classes": ["offcanvas-body"]
     }
   },
 

@@ -18,6 +18,7 @@ import {
   getAvailableLanguages,
   discoverAvailableLanguages,
 } from '../i18n/main';
+import * as sass from 'sass';
 
 // ============================================
 // Session & Recovery Types
@@ -1910,6 +1911,10 @@ ipcMain.handle('toggle-devtools', () => {
 
 /**
  * Load all plugins from the plugins directory
+ *
+ * Plugins must be in folder format: plugins/pluginname/plugin.json
+ * Each plugin folder contains a plugin.json with the plugin definition.
+ *
  * @see https://beyondco.de/blog/plugin-system-for-electron-apps-part-1
  */
 ipcMain.handle('load-plugins', async () => {
@@ -1932,35 +1937,40 @@ ipcMain.handle('load-plugins', async () => {
       return plugins;
     }
 
-    const files = await readdir(pluginsPath);
+    const entries = await readdir(pluginsPath, { withFileTypes: true });
 
-    for (const file of files) {
-      if (file.endsWith('.json')) {
-        try {
-          const filePath = join(pluginsPath, file);
-          const content = await readFile(filePath, 'utf-8');
-          const pluginData = JSON.parse(content);
-          const pluginId = basename(file, '.json');
+    for (const entry of entries) {
+      // Only folder-based plugins are supported: plugins/pluginname/plugin.json
+      if (entry.isDirectory()) {
+        const folderName = entry.name;
+        const pluginJsonPath = join(pluginsPath, folderName, 'plugin.json');
 
-          // Validate plugin structure
-          if (pluginData.framework && pluginData.components) {
-            // Load i18n translations if available
-            const i18n = await loadPluginI18n(pluginsPath, pluginId);
+        if (existsSync(pluginJsonPath)) {
+          try {
+            const content = await readFile(pluginJsonPath, 'utf-8');
+            const pluginData = JSON.parse(content);
+            const pluginId = pluginData.id || folderName;
 
-            plugins.push({
-              id: pluginId,
-              framework: pluginData.framework,
-              version: pluginData.version || '1.0.0',
-              author: pluginData.author,
-              description: pluginData.description,
-              css: pluginData.css,
-              js: pluginData.js,
-              components: pluginData.components,
-              i18n,
-            });
+            // Validate plugin structure (requires 'id' and either 'components' or 'type')
+            if (pluginData.id && (pluginData.components || pluginData.type)) {
+              // Load i18n translations from the folder
+              const i18n = await loadPluginI18n(pluginsPath, folderName);
+
+              plugins.push({
+                id: pluginId,
+                framework: pluginData.id,
+                version: pluginData.version || '1.0.0',
+                author: pluginData.author,
+                description: pluginData.description,
+                css: pluginData.assets?.css,
+                js: pluginData.assets?.js,
+                components: pluginData.components || {},
+                i18n,
+              });
+            }
+          } catch (error) {
+            console.error(`Failed to load plugin from ${folderName}/plugin.json:`, error);
           }
-        } catch (error) {
-          console.error(`Failed to load plugin ${file}:`, error);
         }
       }
     }
@@ -2241,6 +2251,24 @@ ipcMain.handle('confirm-close-tab', async (_, tabTitle: string): Promise<'save' 
   if (result.response === 0) return 'save';
   if (result.response === 1) return 'discard';
   return 'cancel';
+});
+
+/**
+ * Compile SCSS/SASS to CSS
+ * Used by the custom-styles plugin for embedded stylesheets
+ */
+ipcMain.handle('compile-sass', async (_, source: string, options?: { syntax?: 'scss' | 'sass' | 'indented' }): Promise<{ success: boolean; css?: string; error?: string }> => {
+  try {
+    const result = sass.compileString(source, {
+      syntax: options?.syntax === 'sass' || options?.syntax === 'indented' ? 'indented' : 'scss',
+      style: 'expanded',
+    });
+    return { success: true, css: result.css };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('[compile-sass] Error:', message);
+    return { success: false, error: message };
+  }
 });
 
 /**

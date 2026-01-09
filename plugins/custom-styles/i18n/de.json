@@ -1,0 +1,27 @@
+{
+  "name": "Eigene Stile",
+  "description": "CSS oder SCSS/SASS direkt in Markdown für eigene Formatierung einbetten",
+  "toolbar": {
+    "group": "Formatierung",
+    "css": "CSS",
+    "cssTooltip": "CSS-Stilblock einfügen",
+    "scss": "SCSS",
+    "scssTooltip": "SCSS-Stilblock einfügen"
+  },
+  "settings": {
+    "defaultLanguage": "Standardsprache",
+    "defaultLanguageDescription": "Standardsprache für neue Stilblöcke",
+    "enableSassCompilation": "SASS-Kompilierung aktivieren",
+    "enableSassCompilationDescription": "SCSS/SASS zu CSS kompilieren",
+    "scopeStyles": "Stile eingrenzen",
+    "scopeStylesDescription": "Stile auf Vorschau-Container begrenzen"
+  },
+  "help": {
+    "cssTitle": "CSS-Stile",
+    "cssDescription": "CSS-Stile direkt in Ihr Dokument einbetten",
+    "scssTitle": "SCSS-Stile",
+    "scssDescription": "SCSS/SASS-Stile mit Variablen und Verschachtelung einbetten",
+    "directiveTitle": "Stil-Direktive",
+    "directiveDescription": "Direktivsyntax für Inline-Stile verwenden"
+  }
+}

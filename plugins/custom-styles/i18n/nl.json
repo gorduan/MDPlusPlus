@@ -1,0 +1,27 @@
+{
+  "name": "Aangepaste Stijlen",
+  "description": "CSS of SCSS/SASS direct in Markdown insluiten voor aangepaste opmaak",
+  "toolbar": {
+    "group": "Stijlen",
+    "css": "CSS",
+    "cssTooltip": "CSS-stijlblok invoegen",
+    "scss": "SCSS",
+    "scssTooltip": "SCSS-stijlblok invoegen"
+  },
+  "settings": {
+    "defaultLanguage": "Standaardtaal",
+    "defaultLanguageDescription": "Standaardtaal voor nieuwe stijlblokken",
+    "enableSassCompilation": "SASS-compilatie inschakelen",
+    "enableSassCompilationDescription": "SCSS/SASS naar CSS compileren",
+    "scopeStyles": "Stijlen beperken",
+    "scopeStylesDescription": "Stijlen beperken tot voorbeeldcontainer"
+  },
+  "help": {
+    "cssTitle": "CSS-stijlen",
+    "cssDescription": "CSS-stijlen direct in uw document insluiten",
+    "scssTitle": "SCSS-stijlen",
+    "scssDescription": "SCSS/SASS-stijlen met variabelen en nesting insluiten",
+    "directiveTitle": "Stijl Directive",
+    "directiveDescription": "Directive-syntaxis gebruiken voor inline stijlen"
+  }
+}

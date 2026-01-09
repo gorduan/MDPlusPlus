@@ -17,6 +17,7 @@ import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
+import type { ThemeColors } from '../types/themes';
 
 // MD++ Core Extensions (always loaded)
 import { Frontmatter, AIContextBlock, MDPPDirective } from '../tiptap/extensions';
@@ -65,6 +66,8 @@ interface WysiwygEditorProps {
   content: string;
   onChange: (content: string) => void;
   theme?: Theme;
+  /** Theme colors from Theme Editor - applied to WYSIWYG content */
+  themeColors?: ThemeColors;
   /** List of enabled plugin IDs - controls which extensions are loaded */
   enabledPlugins?: string[];
   /** Called when editor is scrolled */
@@ -77,6 +80,7 @@ export default function WysiwygEditor({
   content,
   onChange,
   theme = 'dark',
+  themeColors,
   enabledPlugins = [],
   onScroll,
   onContentMount,
@@ -248,6 +252,25 @@ export default function WysiwygEditor({
     }
   }, [onContentMount]);
 
+  // Create style object with theme colors for WYSIWYG content styling
+  // These CSS custom properties are set on .wysiwyg-content-wrapper and cascade to editor content
+  // This ensures the WYSIWYG uses the Theme Editor colors, consistent with Preview
+  const contentStyle = useMemo((): React.CSSProperties | undefined => {
+    if (!themeColors) return undefined;
+
+    // Build style object with all theme color variables
+    const style: Record<string, string> = {};
+    Object.entries(themeColors).forEach(([variable, value]) => {
+      style[variable] = value;
+    });
+
+    // Also set color and background-color directly to ensure they're applied
+    style['backgroundColor'] = themeColors['--bg-primary'];
+    style['color'] = themeColors['--text-primary'];
+
+    return style as React.CSSProperties;
+  }, [themeColors]);
+
   if (!editor) {
     return <div className="wysiwyg-loading">Loading editor...</div>;
   }
@@ -265,6 +288,7 @@ export default function WysiwygEditor({
         className="wysiwyg-content-wrapper"
         ref={contentWrapperRefCallback}
         onScroll={handleScroll}
+        style={contentStyle}
       >
         <EditorContent editor={editor} />
       </div>

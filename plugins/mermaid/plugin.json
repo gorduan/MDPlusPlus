@@ -1,6 +1,7 @@
 {
   "$schema": "https://mdplusplus.dev/schemas/plugin.json",
   "id": "mermaid",
+  "framework": "mermaid",
   "name": "Mermaid Diagrams",
   "version": "1.0.0",
   "author": "MD++ Team",
@@ -8,6 +9,13 @@
   "license": "MIT",
 
   "type": "hybrid",
+
+  "assets": {
+    "js": [
+      "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"
+    ],
+    "init": "mermaid.initialize({ startOnLoad: true, theme: 'dark' });"
+  },
 
   "dependencies": {
     "plugins": []

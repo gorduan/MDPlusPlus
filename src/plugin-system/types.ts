@@ -74,6 +74,9 @@ export interface PluginManifest {
   /** Plugins that conflict with this one */
   conflicts?: string[];
 
+  /** Activation configuration */
+  activation?: ActivationConfig;
+
   /** Parser configuration (for 'parser' and 'hybrid' types) */
   parser?: ParserConfig;
 
@@ -117,6 +120,18 @@ export interface PluginDependencies {
 
   /** NPM packages required (for bundled plugins) */
   npm?: string[];
+}
+
+/**
+ * Plugin activation configuration
+ * Controls when the plugin is enabled by default
+ */
+export interface ActivationConfig {
+  /** Whether the plugin is enabled by default (default: true for most plugins) */
+  enabledByDefault?: boolean;
+
+  /** File extensions that enable this plugin automatically (e.g., [".mdpp", ".mpsc"]) */
+  enabledForExtensions?: string[];
 }
 
 /**

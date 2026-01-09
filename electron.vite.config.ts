@@ -10,7 +10,7 @@ export default defineConfig({
         input: {
           index: resolve(__dirname, 'app/electron/main.ts'),
         },
-        external: ['electron'],
+        external: ['electron', 'sass'],
       },
     },
   },

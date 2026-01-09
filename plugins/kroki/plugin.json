@@ -1,6 +1,7 @@
 {
   "$schema": "https://mdplusplus.dev/schemas/plugin.json",
   "id": "kroki",
+  "framework": "kroki",
   "name": "Kroki Diagrams",
   "version": "1.0.0",
   "author": "MD++ Team",

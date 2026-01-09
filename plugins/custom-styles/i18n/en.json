@@ -1,0 +1,27 @@
+{
+  "name": "Custom Styles",
+  "description": "Embed CSS or SCSS/SASS directly in Markdown for custom styling",
+  "toolbar": {
+    "group": "Styling",
+    "css": "CSS",
+    "cssTooltip": "Insert CSS Style Block",
+    "scss": "SCSS",
+    "scssTooltip": "Insert SCSS Style Block"
+  },
+  "settings": {
+    "defaultLanguage": "Default Language",
+    "defaultLanguageDescription": "Default language for new style blocks",
+    "enableSassCompilation": "Enable SASS Compilation",
+    "enableSassCompilationDescription": "Compile SCSS/SASS to CSS",
+    "scopeStyles": "Scope Styles",
+    "scopeStylesDescription": "Scope styles to preview container"
+  },
+  "help": {
+    "cssTitle": "CSS Styles",
+    "cssDescription": "Embed CSS styles directly in your document",
+    "scssTitle": "SCSS Styles",
+    "scssDescription": "Embed SCSS/SASS styles with variables and nesting",
+    "directiveTitle": "Style Directive",
+    "directiveDescription": "Use directive syntax for inline styles"
+  }
+}

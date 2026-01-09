@@ -307,4 +307,57 @@
   ::selection {
     background-color: var(--selection-bg);
   }
+
+  // Custom Styles Plugin - Visual indicators for CSS/SCSS code blocks
+  pre.mdpp-style-applied {
+    position: relative;
+    border-left: 3px solid var(--color-success, #22c55e);
+
+    &::before {
+      content: 'Applied';
+      position: absolute;
+      top: map.get($spacing, 2);
+      right: map.get($spacing, 2);
+      font-size: map.get($font-sizes, xs);
+      color: var(--color-success, #22c55e);
+      background-color: rgba(34, 197, 94, 0.1);
+      padding: 0.125em 0.5em;
+      border-radius: map.get($radii, sm);
+      font-weight: map.get($font-weights, medium);
+    }
+  }
+
+  pre.mdpp-style-error {
+    position: relative;
+    border-left: 3px solid var(--color-danger, #ef4444);
+
+    &::before {
+      content: 'Error';
+      position: absolute;
+      top: map.get($spacing, 2);
+      right: map.get($spacing, 2);
+      font-size: map.get($font-sizes, xs);
+      color: var(--color-danger, #ef4444);
+      background-color: rgba(239, 68, 68, 0.1);
+      padding: 0.125em 0.5em;
+      border-radius: map.get($radii, sm);
+      font-weight: map.get($font-weights, medium);
+    }
+
+    &::after {
+      content: attr(data-error);
+      display: block;
+      position: absolute;
+      bottom: map.get($spacing, 2);
+      left: map.get($spacing, 2);
+      right: map.get($spacing, 2);
+      font-size: map.get($font-sizes, xs);
+      color: var(--color-danger, #ef4444);
+      background-color: rgba(239, 68, 68, 0.1);
+      padding: map.get($spacing, 2);
+      border-radius: map.get($radii, sm);
+      max-height: 4em;
+      overflow: auto;
+    }
+  }
 }

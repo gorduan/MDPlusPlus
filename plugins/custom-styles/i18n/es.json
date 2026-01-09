@@ -1,0 +1,27 @@
+{
+  "name": "Estilos Personalizados",
+  "description": "Incrustar CSS o SCSS/SASS directamente en Markdown para estilos personalizados",
+  "toolbar": {
+    "group": "Estilos",
+    "css": "CSS",
+    "cssTooltip": "Insertar bloque de estilo CSS",
+    "scss": "SCSS",
+    "scssTooltip": "Insertar bloque de estilo SCSS"
+  },
+  "settings": {
+    "defaultLanguage": "Idioma predeterminado",
+    "defaultLanguageDescription": "Idioma predeterminado para nuevos bloques de estilo",
+    "enableSassCompilation": "Habilitar compilación SASS",
+    "enableSassCompilationDescription": "Compilar SCSS/SASS a CSS",
+    "scopeStyles": "Limitar estilos",
+    "scopeStylesDescription": "Limitar estilos al contenedor de vista previa"
+  },
+  "help": {
+    "cssTitle": "Estilos CSS",
+    "cssDescription": "Incrustar estilos CSS directamente en su documento",
+    "scssTitle": "Estilos SCSS",
+    "scssDescription": "Incrustar estilos SCSS/SASS con variables y anidación",
+    "directiveTitle": "Directiva de Estilo",
+    "directiveDescription": "Usar sintaxis de directiva para estilos en línea"
+  }
+}
