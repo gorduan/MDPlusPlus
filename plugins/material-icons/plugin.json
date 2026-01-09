@@ -17,11 +17,7 @@
 
   "assets": {
     "css": [
-      "https://fonts.googleapis.com/icon?family=Material+Icons",
-      "https://fonts.googleapis.com/icon?family=Material+Icons+Outlined",
-      "https://fonts.googleapis.com/icon?family=Material+Icons+Round",
-      "https://fonts.googleapis.com/icon?family=Material+Icons+Sharp",
-      "https://fonts.googleapis.com/icon?family=Material+Icons+Two+Tone"
+      "./vendor/material-icons.css"
     ]
   },
 

@@ -1910,10 +1910,39 @@ ipcMain.handle('toggle-devtools', () => {
 });
 
 /**
+ * Resolve plugin asset path (relative to plugin folder or CDN URL)
+ * Converts relative paths like "./vendor/file.js" to absolute file:// URLs
+ */
+function resolvePluginAssetPath(pluginFolder: string, assetPath: string): string {
+  // Keep CDN URLs unchanged (fallback for external resources)
+  if (assetPath.startsWith('http://') || assetPath.startsWith('https://')) {
+    return assetPath;
+  }
+
+  // Resolve relative paths to absolute file:// URLs
+  let absolutePath = assetPath;
+  if (assetPath.startsWith('./')) {
+    absolutePath = join(pluginFolder, assetPath.slice(2));
+  } else if (assetPath.startsWith('../')) {
+    absolutePath = resolve(pluginFolder, assetPath);
+  } else if (!assetPath.match(/^[a-zA-Z]:/)) {
+    // Relative path without ./
+    absolutePath = join(pluginFolder, assetPath);
+  }
+
+  // Convert to file:// URL (handle Windows paths)
+  return `file:///${absolutePath.replace(/\\/g, '/')}`;
+}
+
+/**
  * Load all plugins from the plugins directory
  *
  * Plugins must be in folder format: plugins/pluginname/plugin.json
  * Each plugin folder contains a plugin.json with the plugin definition.
+ *
+ * Asset paths in plugin.json can be:
+ * - Relative: "./vendor/file.js" (resolved to absolute file:// URL)
+ * - CDN URLs: "https://cdn.example.com/file.js" (used as-is)
  *
  * @see https://beyondco.de/blog/plugin-system-for-electron-apps-part-1
  */
@@ -1927,6 +1956,7 @@ ipcMain.handle('load-plugins', async () => {
     description?: string;
     css?: string[];
     js?: string[];
+    init?: string;
     components: Record<string, unknown>;
     i18n?: Record<string, unknown>;
   }> = [];
@@ -1943,7 +1973,8 @@ ipcMain.handle('load-plugins', async () => {
       // Only folder-based plugins are supported: plugins/pluginname/plugin.json
       if (entry.isDirectory()) {
         const folderName = entry.name;
-        const pluginJsonPath = join(pluginsPath, folderName, 'plugin.json');
+        const pluginFolder = join(pluginsPath, folderName);
+        const pluginJsonPath = join(pluginFolder, 'plugin.json');
 
         if (existsSync(pluginJsonPath)) {
           try {
@@ -1956,14 +1987,23 @@ ipcMain.handle('load-plugins', async () => {
               // Load i18n translations from the folder
               const i18n = await loadPluginI18n(pluginsPath, folderName);
 
+              // Resolve asset paths (convert relative paths to file:// URLs)
+              const resolvedCss = pluginData.assets?.css?.map(
+                (path: string) => resolvePluginAssetPath(pluginFolder, path)
+              );
+              const resolvedJs = pluginData.assets?.js?.map(
+                (path: string) => resolvePluginAssetPath(pluginFolder, path)
+              );
+
               plugins.push({
                 id: pluginId,
                 framework: pluginData.id,
                 version: pluginData.version || '1.0.0',
                 author: pluginData.author,
                 description: pluginData.description,
-                css: pluginData.assets?.css,
-                js: pluginData.assets?.js,
+                css: resolvedCss,
+                js: resolvedJs,
+                init: pluginData.assets?.init,
                 components: pluginData.components || {},
                 i18n,
               });

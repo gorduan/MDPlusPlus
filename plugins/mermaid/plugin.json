@@ -11,7 +11,7 @@
 
   "assets": {
     "js": [
-      "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"
+      "./vendor/mermaid.min.js"
     ],
     "init": "mermaid.initialize({ startOnLoad: true, theme: 'dark' });"
   },

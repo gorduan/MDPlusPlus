@@ -534,6 +534,51 @@ export default function App() {
     loadPlugins();
   }, [loadPlugins]);
 
+  // Load/unload plugin CSS assets based on enabled state
+  // This injects <link> tags for enabled plugins and removes them when disabled
+  useEffect(() => {
+    const enabledPlugins = plugins.filter((p) => p.enabled);
+
+    // Get currently injected plugin stylesheets
+    const existingStylesheets = document.querySelectorAll('link[data-plugin-css]');
+    const existingPluginIds = new Set<string>();
+    existingStylesheets.forEach((el) => {
+      existingPluginIds.add(el.getAttribute('data-plugin-css') || '');
+    });
+
+    // Inject CSS for newly enabled plugins
+    enabledPlugins.forEach((plugin) => {
+      if (!plugin.css || plugin.css.length === 0) return;
+
+      plugin.css.forEach((cssPath, index) => {
+        const linkId = `${plugin.id}-${index}`;
+        if (document.querySelector(`link[data-plugin-css="${linkId}"]`)) return;
+
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = cssPath;
+        link.setAttribute('data-plugin-css', linkId);
+        link.setAttribute('data-plugin-id', plugin.id);
+        document.head.appendChild(link);
+        console.log(`[Plugins] Loaded CSS: ${cssPath} for plugin ${plugin.id}`);
+      });
+    });
+
+    // Remove CSS for disabled plugins
+    existingStylesheets.forEach((el) => {
+      const pluginId = el.getAttribute('data-plugin-id');
+      if (pluginId && !enabledPlugins.find((p) => p.id === pluginId)) {
+        el.remove();
+        console.log(`[Plugins] Removed CSS for disabled plugin: ${pluginId}`);
+      }
+    });
+
+    // Cleanup function to remove all plugin stylesheets on unmount
+    return () => {
+      document.querySelectorAll('link[data-plugin-css]').forEach((el) => el.remove());
+    };
+  }, [plugins]);
+
   // Handle plugin toggle
   const handlePluginToggle = useCallback((pluginId: string) => {
     const enabledPlugins = settings.enabledPlugins.includes(pluginId)

@@ -297,6 +297,8 @@ export interface PluginData {
   description?: string;
   css?: string[];
   js?: string[];
+  /** Initialization script to run after loading JS assets */
+  init?: string;
   components: Record<string, unknown>;
   /** Plugin translations loaded from plugin's i18n/ subdirectory */
   i18n?: Record<string, unknown>;
