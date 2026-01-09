@@ -1,5 +1,4 @@
 {
-  "$schema": "https://mdplusplus.dev/schemas/plugin.json",
   "id": "material-icons",
   "framework": "material-icons",
   "name": "Material Design Icons",

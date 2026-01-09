@@ -1,5 +1,4 @@
 {
-  "$schema": "https://mdplusplus.dev/schemas/plugin.json",
   "id": "katex",
   "framework": "katex",
   "name": "KaTeX Math",

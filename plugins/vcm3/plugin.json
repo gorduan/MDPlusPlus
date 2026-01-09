@@ -1,5 +1,4 @@
 {
-  "$schema": "https://mdplusplus.dev/schemas/plugin.json",
   "id": "vcm3",
   "framework": "vcm3",
   "name": "VCM3 Components",

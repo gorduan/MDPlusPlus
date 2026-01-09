@@ -1,5 +1,4 @@
 {
-  "$schema": "https://mdplusplus.dev/schemas/plugin.json",
   "id": "mermaid",
   "framework": "mermaid",
   "name": "Mermaid Diagrams",

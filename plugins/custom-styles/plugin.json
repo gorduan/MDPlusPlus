@@ -1,5 +1,4 @@
 {
-  "$schema": "https://mdplusplus.dev/schemas/plugin.json",
   "id": "custom-styles",
   "framework": "custom-styles",
   "name": "Custom Styles",
