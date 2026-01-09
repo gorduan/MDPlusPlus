@@ -109,8 +109,11 @@ export class ProfileService {
       }
     } catch (error) {
       console.error('[ProfileService] Failed to load profiles, using defaults:', error);
+      // IMPORTANT: Do NOT save to file here - this would overwrite any existing
+      // profiles file with only built-in profiles, causing data loss!
+      // Just use defaults in memory for this session.
       this.state = createInitialState();
-      await this.saveToFile();
+      // The user can still create new profiles, which will be saved normally
     }
   }
 
@@ -139,8 +142,11 @@ export class ProfileService {
   static loadProfiles(): ProfilesState {
     if (!this.state) {
       // Return initial state if not initialized yet
-      console.warn('[ProfileService] loadProfiles called before initialization, using defaults');
-      this.state = createInitialState();
+      // NOTE: We do NOT set this.state here to prevent data loss!
+      // If loadProfiles is called before initialization, we return defaults
+      // but don't cache them to avoid overwriting the file later.
+      console.warn('[ProfileService] loadProfiles called before initialization, returning defaults (not cached)');
+      return createInitialState();
     }
     return this.state;
   }
@@ -149,6 +155,14 @@ export class ProfileService {
    * Save profiles - updates cache and persists to file
    */
   static saveProfiles(state: ProfilesState): void {
+    // IMPORTANT: Don't save if not initialized yet!
+    // This prevents overwriting the profiles file with default values
+    // if saveProfiles is called before the file has been loaded.
+    if (!this.initialized) {
+      console.warn('[ProfileService] saveProfiles called before initialization, ignoring to prevent data loss');
+      return;
+    }
+
     // Create a deep copy to ensure React detects state changes
     this.state = JSON.parse(JSON.stringify(state));
     this.notifyListeners();

@@ -117,6 +117,31 @@ export class ThemeService {
   }
 
   /**
+   * Refresh themes from file storage
+   * Use this to sync themes that may have been created by other instances
+   */
+  static async refresh(): Promise<void> {
+    if (!this.initialized) {
+      await this.initialize();
+      return;
+    }
+
+    // Remember current active theme ID
+    const currentActiveId = this.state?.activeThemeId;
+
+    await this.loadFromFile();
+
+    // If current active theme still exists, keep it active
+    if (currentActiveId && this.state?.themes[currentActiveId]) {
+      this.state.activeThemeId = currentActiveId;
+    }
+
+    // Notify listeners of the refresh
+    this.notifyListeners();
+    console.log('[ThemeService] Themes refreshed from file');
+  }
+
+  /**
    * Load themes from file storage via Electron IPC
    */
   private static async loadFromFile(): Promise<void> {
@@ -148,13 +173,17 @@ export class ThemeService {
 
         this.state = parsed;
       } else {
+        // No stored data - create initial state
         this.state = createInitialState();
         await this.saveToFile();
       }
     } catch (error) {
       console.error('[ThemeService] Failed to load themes, using defaults:', error);
+      // IMPORTANT: Do NOT save to file here - this would overwrite any existing
+      // themes file with only built-in themes, causing data loss!
+      // Just use defaults in memory for this session.
       this.state = createInitialState();
-      await this.saveToFile();
+      // The user can still create new themes, which will be saved normally
     }
   }
 
@@ -184,8 +213,11 @@ export class ThemeService {
     if (!this.state) {
       // Return initial state if not initialized yet
       // The async initialize() should be called first in App.tsx
-      console.warn('[ThemeService] loadThemes called before initialization, using defaults');
-      this.state = createInitialState();
+      // NOTE: We do NOT set this.state here to prevent data loss!
+      // If loadThemes is called before initialization, we return defaults
+      // but don't cache them to avoid overwriting the file later.
+      console.warn('[ThemeService] loadThemes called before initialization, returning defaults (not cached)');
+      return createInitialState();
     }
     return this.state;
   }
@@ -194,6 +226,14 @@ export class ThemeService {
    * Save themes - updates cache and persists to file
    */
   static saveThemes(state: ThemesState): void {
+    // IMPORTANT: Don't save if not initialized yet!
+    // This prevents overwriting the themes file with default values
+    // if saveThemes is called before the file has been loaded.
+    if (!this.initialized) {
+      console.warn('[ThemeService] saveThemes called before initialization, ignoring to prevent data loss');
+      return;
+    }
+
     // Create a deep copy to ensure React detects state changes
     this.state = JSON.parse(JSON.stringify(state));
     this.notifyListeners();

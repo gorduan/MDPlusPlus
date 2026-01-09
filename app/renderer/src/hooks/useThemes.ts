@@ -68,6 +68,9 @@ export interface UseThemesReturn {
 
   /** Import theme from CSS or JSON content */
   importTheme: (content: string, name: string) => Theme | null;
+
+  /** Refresh themes from file (to sync with other instances) */
+  refreshThemes: () => Promise<void>;
 }
 
 /**
@@ -239,6 +242,11 @@ export function useThemes(): UseThemesReturn {
     return ThemeService.importTheme(content, name);
   }, []);
 
+  const refreshThemes = useCallback(async (): Promise<void> => {
+    await ThemeService.refresh();
+    // State will be updated via the subscription
+  }, []);
+
   return {
     isLoading,
     themes,
@@ -259,6 +267,7 @@ export function useThemes(): UseThemesReturn {
     exportThemeAsCSS,
     exportThemeAsJSON,
     importTheme,
+    refreshThemes,
   };
 }
 

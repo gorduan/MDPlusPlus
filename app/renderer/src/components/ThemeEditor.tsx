@@ -68,6 +68,8 @@ interface ThemeEditorProps {
   isNameTaken: (name: string, excludeId?: string) => boolean;
   /** Called when preview colors change (for live preview in Preview component) */
   onPreviewColorsChange?: (colors: ThemeColors) => void;
+  /** Called when theme selector dropdown opens (for refreshing themes) */
+  onRefreshThemes?: () => void;
 }
 
 // ============================================
@@ -303,6 +305,7 @@ export default function ThemeEditor({
   onModificationAction,
   isNameTaken,
   onPreviewColorsChange,
+  onRefreshThemes,
 }: ThemeEditorProps) {
   const [selectedGroup, setSelectedGroup] = useState<string>('backgrounds');
   const [selectedToken, setSelectedToken] = useState<ColorToken | null>(null);
@@ -439,6 +442,7 @@ export default function ThemeEditor({
               onRenameTheme={onRenameTheme}
               isNameTaken={isNameTaken}
               label=""
+              onOpen={onRefreshThemes}
             />
           </div>
           <button className="theme-editor-close" onClick={handleClose}>

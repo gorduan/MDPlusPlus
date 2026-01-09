@@ -33,6 +33,8 @@ interface ThemeSelectorProps {
   label?: string;
   /** Whether to show in simple mode (no create/rename/delete) */
   simpleMode?: boolean;
+  /** Called when dropdown is opened (for refreshing themes from file) */
+  onOpen?: () => void;
 }
 
 type DialogMode = 'none' | 'create' | 'rename' | 'delete';
@@ -48,6 +50,7 @@ export default function ThemeSelector({
   isNameTaken,
   label = 'Theme:',
   simpleMode = false,
+  onOpen,
 }: ThemeSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<DialogMode>('none');
@@ -178,7 +181,13 @@ export default function ThemeSelector({
         <button
           ref={buttonRef}
           className="profile-dropdown-button"
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => {
+            const willOpen = !isOpen;
+            setIsOpen(willOpen);
+            if (willOpen && onOpen) {
+              onOpen();
+            }
+          }}
           type="button"
         >
           <span className="profile-name">{activeTheme.name}</span>

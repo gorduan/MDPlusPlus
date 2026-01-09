@@ -2,7 +2,7 @@
  * MD++ Editor - Main Application Component
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import EditorPane, { EditorPaneRef, EditorMode } from './components/EditorPane';
 import Preview from './components/Preview';
 import Toolbar, { Theme } from './components/Toolbar';
@@ -97,6 +97,7 @@ export default function App() {
     handleModificationAction: handleThemeModificationAction,
     isNameTaken: isThemeNameTaken,
     applyThemeTemporarily,
+    refreshThemes,
   } = useThemes();
 
   // UI state
@@ -201,6 +202,37 @@ export default function App() {
     // Also apply the Preview theme immediately
     selectTheme(themeId);
   }, [settings, updateSettings, selectTheme]);
+
+  // === FILE EXTENSION-BASED PLUGIN ACTIVATION ===
+  // Plugins with `activation.enabledForExtensions` are auto-enabled for matching file types
+  // Example: custom-styles plugin is disabled by default but enabled for .mdpp and .mpsc files
+
+  // Map of plugin IDs to their enabledForExtensions config
+  const extensionBasedPlugins: Record<string, string[]> = {
+    'custom-styles': ['.mdpp', '.mpsc'],
+  };
+
+  // Compute effective enabled plugins based on file extension
+  const effectiveEnabledPlugins = useMemo(() => {
+    const basePlugins = settings.enabledPlugins;
+    const currentExtension = filePath
+      ? '.' + filePath.split('.').pop()?.toLowerCase()
+      : null;
+
+    // Find plugins that should be auto-enabled for this file extension
+    const autoEnabledPlugins = Object.entries(extensionBasedPlugins)
+      .filter(([_, extensions]) => currentExtension && extensions.includes(currentExtension))
+      .map(([pluginId]) => pluginId);
+
+    // Combine user-enabled plugins with auto-enabled plugins (deduplicated)
+    return [...new Set([...basePlugins, ...autoEnabledPlugins])];
+  }, [settings.enabledPlugins, filePath]);
+
+  // Effective settings with file extension-based plugin activation
+  const effectiveSettings = useMemo(() => ({
+    ...settings,
+    enabledPlugins: effectiveEnabledPlugins,
+  }), [settings, effectiveEnabledPlugins]);
 
   // === TAB MANAGEMENT ===
 
@@ -1923,12 +1955,13 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
               onChange={handleContentChange}
               onCursorChange={setCursorPosition}
               theme={uiTheme}
+              themeColors={previewColorsOverride ?? activeTheme.colors}
               editorMode={editorMode}
               onScroll={handleEditorScroll}
               onWysiwygScroll={handleWysiwygScroll}
               onEditorMount={registerEditor}
               onWysiwygMount={registerWysiwygElement}
-              enabledPlugins={settings.enabledPlugins}
+              enabledPlugins={effectiveEnabledPlugins}
             />
           </div>
         )}
@@ -1937,7 +1970,7 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
             <Preview
               content={content}
               showAIContext={showAIContext}
-              settings={settings}
+              settings={effectiveSettings}
               theme={previewTheme}
               themeColors={previewColorsOverride ?? activeTheme.colors}
               filePath={filePath}
@@ -2020,6 +2053,7 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
         onModificationAction={handleThemeModificationAction}
         isNameTaken={isThemeNameTaken}
         onPreviewColorsChange={setPreviewColorsOverride}
+        onRefreshThemes={refreshThemes}
       />
       {isDragging && (
         <div className="drop-overlay">
