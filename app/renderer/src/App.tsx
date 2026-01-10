@@ -520,6 +520,7 @@ export default function App() {
           js: p.js,
           components: p.components as Record<string, ComponentInfo>,
           enabled: settings.enabledPlugins.includes(p.id),
+          docs: p.docs,
         };
       });
 
@@ -596,6 +597,34 @@ export default function App() {
       )
     );
   }, [settings, updateSettings]);
+
+  // Open a plugin documentation file in a new tab
+  const handleOpenPluginDoc = useCallback(async (filePath: string) => {
+    // Check if file is already open
+    const existingTab = tabs.find((t) => t.filePath === filePath);
+    if (existingTab) {
+      setActiveTabId(existingTab.id);
+      setPluginManagerOpen(false);
+      return;
+    }
+
+    // Read the file content
+    const result = await window.electronAPI?.readFile(filePath);
+    if (result?.success && result.content !== undefined) {
+      const newTab: TabData = {
+        id: generateTabId(),
+        filePath: filePath,
+        title: getFileName(filePath),
+        isModified: false,
+        content: result.content,
+      };
+      setTabs((prev) => [...prev, newTab]);
+      setActiveTabId(newTab.id);
+      setPluginManagerOpen(false);
+    } else {
+      console.error('Failed to open plugin doc:', result?.error);
+    }
+  }, [tabs]);
 
   // Auto-recovery functionality (saves to recovery folder, not original file)
   useEffect(() => {
@@ -2080,6 +2109,7 @@ ${document.querySelector('.preview-content')?.innerHTML || ''}
         plugins={plugins}
         onPluginToggle={handlePluginToggle}
         onRefreshPlugins={loadPlugins}
+        onOpenDocFile={handleOpenPluginDoc}
       />
       <ThemeEditor
         isOpen={themeEditorOpen}

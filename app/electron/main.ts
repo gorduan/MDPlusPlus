@@ -1959,6 +1959,7 @@ ipcMain.handle('load-plugins', async () => {
     init?: string;
     components: Record<string, unknown>;
     i18n?: Record<string, unknown>;
+    docs?: Array<{ name: string; path: string }>;
   }> = [];
 
   try {
@@ -1995,6 +1996,9 @@ ipcMain.handle('load-plugins', async () => {
                 (path: string) => resolvePluginAssetPath(pluginFolder, path)
               );
 
+              // Load docs files from plugin's docs/ subdirectory
+              const docs = await loadPluginDocs(pluginFolder);
+
               plugins.push({
                 id: pluginId,
                 framework: pluginData.id,
@@ -2006,6 +2010,7 @@ ipcMain.handle('load-plugins', async () => {
                 init: pluginData.assets?.init,
                 components: pluginData.components || {},
                 i18n,
+                docs,
               });
             }
           } catch (error) {
@@ -2049,6 +2054,36 @@ async function loadPluginI18n(pluginsPath: string, pluginId: string): Promise<Re
     return Object.keys(translations).length > 0 ? translations : undefined;
   } catch (error) {
     console.error(`Failed to load i18n for plugin ${pluginId}:`, error);
+    return undefined;
+  }
+}
+
+/**
+ * Load documentation files from a plugin's docs/ subdirectory
+ * Returns array of { name, path } objects for each .md file
+ */
+async function loadPluginDocs(pluginFolder: string): Promise<Array<{ name: string; path: string }> | undefined> {
+  const docsPath = join(pluginFolder, 'docs');
+  const docs: Array<{ name: string; path: string }> = [];
+
+  try {
+    if (!existsSync(docsPath)) {
+      return undefined;
+    }
+
+    const files = await readdir(docsPath);
+
+    for (const file of files) {
+      if (file.endsWith('.md')) {
+        const name = basename(file, '.md');
+        const filePath = join(docsPath, file);
+        docs.push({ name, path: filePath });
+      }
+    }
+
+    return docs.length > 0 ? docs : undefined;
+  } catch (error) {
+    console.error(`Failed to load docs from ${pluginFolder}:`, error);
     return undefined;
   }
 }

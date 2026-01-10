@@ -29,6 +29,8 @@ import {
   Link2,
   Code2,
   Layers,
+  FileText,
+  BookOpen,
 } from 'lucide-react';
 
 // Plugin definition type (matches src/types.ts)
@@ -54,6 +56,8 @@ export interface PluginInfo {
   priority?: number;
   /** Code block languages handled by this plugin */
   codeBlockLanguages?: string[];
+  /** Documentation files from plugin's docs/ subdirectory */
+  docs?: Array<{ name: string; path: string }>;
 }
 
 export interface ComponentInfo {
@@ -69,6 +73,8 @@ interface PluginManagerProps {
   plugins: PluginInfo[];
   onPluginToggle: (pluginId: string) => void;
   onRefreshPlugins?: () => void;
+  /** Callback to open a documentation file in a new tab */
+  onOpenDocFile?: (filePath: string) => void;
 }
 
 /**
@@ -99,12 +105,14 @@ function PluginCard({
   onToggle,
   isExpanded,
   onToggleExpand,
+  onOpenDocFile,
 }: {
   plugin: PluginInfo;
   allPlugins: PluginInfo[];
   onToggle: () => void;
   isExpanded: boolean;
   onToggleExpand: () => void;
+  onOpenDocFile?: (filePath: string) => void;
 }) {
   const componentCount = Object.keys(plugin.components).length;
   const variantCount = Object.values(plugin.components).reduce(
@@ -228,25 +236,31 @@ function PluginCard({
             JS
           </span>
         )}
+        {plugin.docs && plugin.docs.length > 0 && (
+          <span className="plugin-card__stat" title={`Documentation: ${plugin.docs.map(d => d.name).join(', ')}`}>
+            <BookOpen size={14} />
+            {plugin.docs.length} Doc{plugin.docs.length !== 1 ? 's' : ''}
+          </span>
+        )}
       </div>
 
-      {/* Expandable Component List */}
-      {componentCount > 0 && (
+      {/* Expandable Details - Show button if there are components, docs, or code block languages */}
+      {(componentCount > 0 || (plugin.docs && plugin.docs.length > 0) || (plugin.codeBlockLanguages && plugin.codeBlockLanguages.length > 0)) && (
         <>
           <button
             className="plugin-card__expand"
             onClick={onToggleExpand}
             aria-expanded={isExpanded}
-            aria-controls={`plugin-components-${plugin.id}`}
+            aria-controls={`plugin-details-${plugin.id}`}
           >
-            <span>Show Components</span>
+            <span>Show Details</span>
             {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
 
-          {isExpanded && (
+          {isExpanded && componentCount > 0 && (
             <div
               className="plugin-card__components"
-              id={`plugin-components-${plugin.id}`}
+              id={`plugin-details-${plugin.id}`}
             >
               <h5>Available Components</h5>
               <div className="plugin-card__component-list">
@@ -281,6 +295,29 @@ function PluginCard({
           </div>
         </div>
       )}
+
+      {/* Documentation files */}
+      {plugin.docs && plugin.docs.length > 0 && isExpanded && (
+        <div className="plugin-card__docs">
+          <h5>
+            <BookOpen size={14} />
+            Documentation
+          </h5>
+          <div className="plugin-card__docs-list">
+            {plugin.docs.map((doc) => (
+              <button
+                key={doc.path}
+                className="plugin-card__doc-link"
+                onClick={() => onOpenDocFile?.(doc.path)}
+                title={`Open ${doc.name}.md`}
+              >
+                <FileText size={14} />
+                <span>{doc.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -295,6 +332,7 @@ export default function PluginManager({
   plugins,
   onPluginToggle,
   onRefreshPlugins,
+  onOpenDocFile,
 }: PluginManagerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedPlugins, setExpandedPlugins] = useState<Set<string>>(new Set());
@@ -466,6 +504,7 @@ export default function PluginManager({
                   onToggle={() => onPluginToggle(plugin.id)}
                   isExpanded={expandedPlugins.has(plugin.id)}
                   onToggleExpand={() => handleToggleExpand(plugin.id)}
+                  onOpenDocFile={onOpenDocFile}
                 />
               ))}
             </div>

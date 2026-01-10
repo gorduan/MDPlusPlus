@@ -11,6 +11,13 @@ graph TD
 ```
 ````
 
+**Result:**
+
+```mermaid
+graph TD
+    A[Start] --> B[End]
+```
+
 ---
 
 ## Flowcharts
@@ -39,6 +46,17 @@ graph LR
 ```
 ````
 
+**Result:**
+
+```mermaid
+graph LR
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Action 1]
+    B -->|No| D[Action 2]
+    C --> E[End]
+    D --> E
+```
+
 ### Node Shapes
 
 | Syntax | Shape | Description |
@@ -57,6 +75,19 @@ graph LR
 | `A[/Text\]` | Trapezoid | Wider top |
 | `A[\Text/]` | Trapezoid Alt | Wider bottom |
 
+**Node Shapes Example:**
+
+```mermaid
+graph TB
+    A[Rectangle] --> B(Rounded)
+    B --> C([Stadium])
+    C --> D[[Subroutine]]
+    D --> E[(Cylinder)]
+    E --> F((Circle))
+    F --> G{Diamond}
+    G --> H{{Hexagon}}
+```
+
 ### Link Styles
 
 | Syntax | Description |
@@ -70,6 +101,17 @@ graph LR
 | `A --Text--> B` | Arrow with label |
 | `A -->|Text| B` | Arrow with label (alt) |
 | `A -.Text.-> B` | Dotted with label |
+
+**Link Styles Example:**
+
+```mermaid
+graph LR
+    A --> B
+    B --- C
+    C -.-> D
+    D ==> E
+    E -->|Label| F
+```
 
 ### Subgraphs
 
@@ -92,6 +134,23 @@ graph TB
 ```
 ````
 
+**Result:**
+
+```mermaid
+graph TB
+    subgraph Frontend
+        A[React App]
+        B[Vue App]
+    end
+    subgraph Backend
+        C[Node Server]
+        D[Database]
+    end
+    A --> C
+    B --> C
+    C --> D
+```
+
 ---
 
 ## Sequence Diagrams
@@ -109,6 +168,16 @@ sequenceDiagram
     B-->>A: Hi Alice!
 ```
 ````
+
+**Result:**
+
+```mermaid
+sequenceDiagram
+    participant A as Alice
+    participant B as Bob
+    A->>B: Hello Bob!
+    B-->>A: Hi Alice!
+```
 
 ### Arrow Types
 
@@ -133,6 +202,14 @@ sequenceDiagram
 ```
 ````
 
+**Result:**
+
+```mermaid
+sequenceDiagram
+    Alice->>+John: Request
+    John-->>-Alice: Response
+```
+
 ### Notes
 
 ````markdown
@@ -144,6 +221,16 @@ sequenceDiagram
     Note left of Alice: Alice waits
 ```
 ````
+
+**Result:**
+
+```mermaid
+sequenceDiagram
+    Alice->>Bob: Hello
+    Note over Alice,Bob: This is a note
+    Note right of Bob: Bob thinks
+    Note left of Alice: Alice waits
+```
 
 ### Loops and Conditionals
 
@@ -166,6 +253,25 @@ sequenceDiagram
 ```
 ````
 
+**Result:**
+
+```mermaid
+sequenceDiagram
+    loop Every minute
+        Alice->>Bob: Ping
+    end
+
+    alt is sick
+        Bob-->>Alice: Not feeling well
+    else is healthy
+        Bob-->>Alice: I'm fine!
+    end
+
+    opt Extra response
+        Bob-->>Alice: Thanks for asking
+    end
+```
+
 ### Parallel Actions
 
 ````markdown
@@ -178,6 +284,17 @@ sequenceDiagram
     end
 ```
 ````
+
+**Result:**
+
+```mermaid
+sequenceDiagram
+    par Alice to Bob
+        Alice->>Bob: Hello
+    and Alice to John
+        Alice->>John: Hello
+    end
+```
 
 ---
 
@@ -197,6 +314,17 @@ classDiagram
     }
 ```
 ````
+
+**Result:**
+
+```mermaid
+classDiagram
+    class Animal {
+        +String name
+        +int age
+        +makeSound() void
+    }
+```
 
 ### Visibility Modifiers
 
@@ -245,6 +373,29 @@ classDiagram
 ```
 ````
 
+**Result:**
+
+```mermaid
+classDiagram
+    Animal <|-- Duck
+    Animal <|-- Fish
+    Animal : +int age
+    Animal : +String gender
+    Animal: +isMammal() bool
+    Animal: +mate()
+
+    class Duck {
+        +String beakColor
+        +swim()
+        +quack()
+    }
+
+    class Fish {
+        -int sizeInFeet
+        -canEat()
+    }
+```
+
 ### Cardinality
 
 ````markdown
@@ -254,6 +405,14 @@ classDiagram
     Order "1" --> "1..*" LineItem : contains
 ```
 ````
+
+**Result:**
+
+```mermaid
+classDiagram
+    Customer "1" --> "*" Order : places
+    Order "1" --> "1..*" LineItem : contains
+```
 
 ---
 
@@ -274,6 +433,17 @@ stateDiagram-v2
 ```
 ````
 
+**Result:**
+
+```mermaid
+stateDiagram-v2
+    [*] --> Still
+    Still --> Moving
+    Moving --> Still
+    Moving --> Crash
+    Crash --> [*]
+```
+
 ### State Descriptions
 
 ````markdown
@@ -284,6 +454,15 @@ stateDiagram-v2
     s1 --> [*]
 ```
 ````
+
+**Result:**
+
+```mermaid
+stateDiagram-v2
+    state "This is a long state description" as s1
+    [*] --> s1
+    s1 --> [*]
+```
 
 ### Composite States
 
@@ -298,6 +477,18 @@ stateDiagram-v2
     }
 ```
 ````
+
+**Result:**
+
+```mermaid
+stateDiagram-v2
+    [*] --> First
+
+    state First {
+        [*] --> second
+        second --> Third
+    }
+```
 
 ### Forks and Joins
 
@@ -316,6 +507,21 @@ stateDiagram-v2
 ```
 ````
 
+**Result:**
+
+```mermaid
+stateDiagram-v2
+    state fork_state <<fork>>
+    [*] --> fork_state
+    fork_state --> State2
+    fork_state --> State3
+
+    state join_state <<join>>
+    State2 --> join_state
+    State3 --> join_state
+    join_state --> State4
+```
+
 ### Choice
 
 ````markdown
@@ -327,6 +533,16 @@ stateDiagram-v2
     if_state --> State2: if n >= 0
 ```
 ````
+
+**Result:**
+
+```mermaid
+stateDiagram-v2
+    state if_state <<choice>>
+    [*] --> if_state
+    if_state --> State1: if n < 0
+    if_state --> State2: if n >= 0
+```
 
 ---
 
@@ -344,6 +560,15 @@ erDiagram
     CUSTOMER }|..|{ DELIVERY-ADDRESS : uses
 ```
 ````
+
+**Result:**
+
+```mermaid
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ LINE-ITEM : contains
+    CUSTOMER }|..|{ DELIVERY-ADDRESS : uses
+```
 
 ### Cardinality Notation
 
@@ -373,6 +598,23 @@ erDiagram
 ```
 ````
 
+**Result:**
+
+```mermaid
+erDiagram
+    CUSTOMER {
+        string name
+        int customerNumber PK
+        string email UK
+    }
+    ORDER {
+        int orderNumber PK
+        date orderDate
+        int customerId FK
+    }
+    CUSTOMER ||--o{ ORDER : places
+```
+
 ---
 
 ## Gantt Charts
@@ -400,6 +642,25 @@ gantt
 ```
 ````
 
+**Result:**
+
+```mermaid
+gantt
+    title Project Schedule
+    dateFormat YYYY-MM-DD
+
+    section Planning
+    Research       :a1, 2024-01-01, 30d
+    Analysis       :after a1, 20d
+
+    section Development
+    Design         :2024-02-01, 25d
+    Implementation :2024-03-01, 45d
+
+    section Testing
+    Testing        :2024-04-15, 30d
+```
+
 ### Task Status
 
 | Keyword | Description |
@@ -424,6 +685,19 @@ gantt
 ```
 ````
 
+**Result:**
+
+```mermaid
+gantt
+    dateFormat YYYY-MM-DD
+
+    section Phase 1
+    Task 1 :done, t1, 2024-01-01, 10d
+    Task 2 :active, t2, after t1, 15d
+    Task 3 :crit, t3, after t2, 20d
+    Milestone :milestone, m1, after t3, 0d
+```
+
 ---
 
 ## Pie Charts
@@ -440,6 +714,16 @@ pie title Distribution of Sales
 ```
 ````
 
+**Result:**
+
+```mermaid
+pie title Distribution of Sales
+    "Product A" : 42.5
+    "Product B" : 27.3
+    "Product C" : 18.2
+    "Product D" : 12.0
+```
+
 ### With showData
 
 ````markdown
@@ -451,6 +735,16 @@ pie showData
     "Birds" : 150
 ```
 ````
+
+**Result:**
+
+```mermaid
+pie showData
+    title Pet Adoption
+    "Dogs" : 386
+    "Cats" : 285
+    "Birds" : 150
+```
 
 ---
 
@@ -472,22 +766,19 @@ gitGraph
 ```
 ````
 
-### Options
+**Result:**
 
-````markdown
 ```mermaid
 gitGraph
-    options
-    {
-        "nodeSpacing": 100,
-        "nodeRadius": 10
-    }
-    end
-    commit
+    commit id: "Initial"
     branch develop
-    commit
+    checkout develop
+    commit id: "Feature 1"
+    commit id: "Feature 2"
+    checkout main
+    merge develop id: "Merge develop"
+    commit id: "Hotfix"
 ```
-````
 
 ---
 
@@ -508,6 +799,20 @@ journey
         Sit down: 5: Me
 ```
 ````
+
+**Result:**
+
+```mermaid
+journey
+    title My Working Day
+    section Go to work
+        Make tea: 5: Me
+        Go upstairs: 3: Me
+        Do work: 1: Me, Cat
+    section Go home
+        Go downstairs: 5: Me
+        Sit down: 5: Me
+```
 
 The number represents satisfaction (1-5).
 
@@ -531,6 +836,21 @@ mindmap
         Branch 3
 ```
 ````
+
+**Result:**
+
+```mermaid
+mindmap
+    root((Central Topic))
+        Branch 1
+            Leaf 1.1
+            Leaf 1.2
+        Branch 2
+            Leaf 2.1
+            Leaf 2.2
+                Sub-leaf
+        Branch 3
+```
 
 ### Node Shapes
 
@@ -559,6 +879,17 @@ timeline
 ```
 ````
 
+**Result:**
+
+```mermaid
+timeline
+    title History of Technology
+    2000 : First smartphone
+    2007 : iPhone released
+    2010 : iPad launched
+    2020 : 5G rollout
+```
+
 ### Sections
 
 ````markdown
@@ -573,6 +904,19 @@ timeline
         2018 : International expansion
 ```
 ````
+
+**Result:**
+
+```mermaid
+timeline
+    title Company Milestones
+    section Foundation
+        2010 : Company founded
+        2011 : First product
+    section Growth
+        2015 : Series A funding
+        2018 : International expansion
+```
 
 ---
 
@@ -598,6 +942,24 @@ quadrantChart
 ```
 ````
 
+**Result:**
+
+```mermaid
+quadrantChart
+    title Priority Matrix
+    x-axis Low Urgency --> High Urgency
+    y-axis Low Impact --> High Impact
+    quadrant-1 Do First
+    quadrant-2 Schedule
+    quadrant-3 Delegate
+    quadrant-4 Eliminate
+
+    Task A: [0.8, 0.9]
+    Task B: [0.3, 0.7]
+    Task C: [0.7, 0.3]
+    Task D: [0.2, 0.2]
+```
+
 ---
 
 ## XY Charts
@@ -616,6 +978,16 @@ xychart-beta
 ```
 ````
 
+**Result:**
+
+```mermaid
+xychart-beta
+    title "Sales per Quarter"
+    x-axis [Q1, Q2, Q3, Q4]
+    y-axis "Revenue (thousands)" 0 --> 100
+    bar [30, 45, 60, 80]
+```
+
 ### Line Chart
 
 ````markdown
@@ -627,6 +999,16 @@ xychart-beta
     line [5, 8, 15, 20, 25]
 ```
 ````
+
+**Result:**
+
+```mermaid
+xychart-beta
+    title "Temperature Trend"
+    x-axis [Jan, Feb, Mar, Apr, May]
+    y-axis "Temperature (C)" -10 --> 30
+    line [5, 8, 15, 20, 25]
+```
 
 ### Combined
 
@@ -640,6 +1022,17 @@ xychart-beta
     line [30, 50, 65, 80]
 ```
 ````
+
+**Result:**
+
+```mermaid
+xychart-beta
+    title "Performance Overview"
+    x-axis [Jan, Feb, Mar, Apr]
+    y-axis 0 --> 100
+    bar [40, 55, 70, 85]
+    line [30, 50, 65, 80]
+```
 
 ---
 
@@ -655,6 +1048,14 @@ graph TD
 ```
 ````
 
+**Result:**
+
+```mermaid
+%%{init: {'theme': 'forest'}}%%
+graph TD
+    A --> B
+```
+
 Available themes: `default`, `dark`, `forest`, `neutral`, `base`
 
 ### Custom Styles
@@ -669,6 +1070,16 @@ graph TD
 ```
 ````
 
+**Result:**
+
+```mermaid
+graph TD
+    A[Start]:::green --> B[End]:::red
+
+    classDef green fill:#9f6,stroke:#333,stroke-width:2px
+    classDef red fill:#f66,stroke:#333,stroke-width:2px
+```
+
 ### Inline Styles
 
 ````markdown
@@ -679,6 +1090,15 @@ graph TD
     style B fill:#f9f,stroke:#f66
 ```
 ````
+
+**Result:**
+
+```mermaid
+graph TD
+    A[Start] --> B[End]
+    style A fill:#bbf,stroke:#333
+    style B fill:#f9f,stroke:#f66
+```
 
 ---
 
@@ -692,6 +1112,13 @@ graph TD
     A --> B
 :::
 ````
+
+**Result:**
+
+:::mermaid
+graph TD
+    A --> B
+:::
 
 With attributes:
 

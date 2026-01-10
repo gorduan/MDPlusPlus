@@ -8,6 +8,10 @@ Insert icons using image syntax with the `google:` prefix:
 ![](google:icon-name)
 ```
 
+**Result:**
+
+![](google:home)
+
 ### Examples
 
 ```markdown
@@ -16,6 +20,10 @@ Insert icons using image syntax with the `google:` prefix:
 ![](google:search)
 ![](google:favorite)
 ```
+
+**Result:**
+
+![](google:home) ![](google:settings) ![](google:search) ![](google:favorite)
 
 ---
 
@@ -31,6 +39,10 @@ The default style with solid filled icons:
 ![](google:check_circle)
 ```
 
+**Result:**
+
+![](google:home) ![](google:star) ![](google:check_circle)
+
 ### Outlined
 
 Use the `outlined` variant for stroke-style icons:
@@ -40,6 +52,10 @@ Use the `outlined` variant for stroke-style icons:
 ![](google:star:outlined)
 ![](google:check_circle:outlined)
 ```
+
+**Result:**
+
+![](google:home:outlined) ![](google:star:outlined) ![](google:check_circle:outlined)
 
 ### Rounded
 
@@ -51,6 +67,10 @@ Rounded corner style:
 ![](google:check_circle:round)
 ```
 
+**Result:**
+
+![](google:home:round) ![](google:star:round) ![](google:check_circle:round)
+
 ### Sharp
 
 Sharp corner style:
@@ -61,6 +81,10 @@ Sharp corner style:
 ![](google:check_circle:sharp)
 ```
 
+**Result:**
+
+![](google:home:sharp) ![](google:star:sharp) ![](google:check_circle:sharp)
+
 ### Two-Tone
 
 Two-color style with fill and stroke:
@@ -70,6 +94,10 @@ Two-color style with fill and stroke:
 ![](google:star:two-tone)
 ![](google:check_circle:two-tone)
 ```
+
+**Result:**
+
+![](google:home:two-tone) ![](google:star:two-tone) ![](google:check_circle:two-tone)
 
 ---
 
@@ -86,6 +114,10 @@ Add size after style (or directly after icon name):
 ![](google:home:x-large)        <!-- 48px -->
 ```
 
+**Result:**
+
+![](google:home:small) ![](google:home:medium) ![](google:home:large) ![](google:home:x-large)
+
 ### Combining Style and Size
 
 ```markdown
@@ -93,6 +125,10 @@ Add size after style (or directly after icon name):
 ![](google:settings:round:small)
 ![](google:favorite:sharp:x-large)
 ```
+
+**Result:**
+
+![](google:star:outlined:large) ![](google:settings:round:small) ![](google:favorite:sharp:x-large)
 
 ---
 
@@ -111,6 +147,13 @@ Add size after style (or directly after icon name):
 ![](google:check)               <!-- Check -->
 ![](google:close)               <!-- Close -->
 ![](google:menu)                <!-- Menu -->
+```
+
+**Result:**
+
+![](google:search) ![](google:home) ![](google:settings) ![](google:delete) ![](google:edit) ![](google:add) ![](google:remove) ![](google:check) ![](google:close) ![](google:menu)
+
+```markdown
 ![](google:more_vert)           <!-- Vertical dots -->
 ![](google:more_horiz)          <!-- Horizontal dots -->
 ![](google:refresh)             <!-- Refresh -->
@@ -123,6 +166,10 @@ Add size after style (or directly after icon name):
 ![](google:content_copy)        <!-- Copy -->
 ![](google:content_paste)       <!-- Paste -->
 ```
+
+**Result:**
+
+![](google:more_vert) ![](google:more_horiz) ![](google:refresh) ![](google:save) ![](google:print) ![](google:send) ![](google:download) ![](google:upload) ![](google:share) ![](google:content_copy) ![](google:content_paste)
 
 ### Navigation Icons
 
@@ -141,6 +188,10 @@ Add size after style (or directly after icon name):
 ![](google:navigate_next)       <!-- Navigate next -->
 ```
 
+**Result:**
+
+![](google:arrow_back) ![](google:arrow_forward) ![](google:arrow_upward) ![](google:arrow_downward) ![](google:chevron_left) ![](google:chevron_right) ![](google:expand_more) ![](google:expand_less) ![](google:first_page) ![](google:last_page) ![](google:navigate_before) ![](google:navigate_next)
+
 ### Status Icons
 
 ```markdown
@@ -156,6 +207,10 @@ Add size after style (or directly after icon name):
 ![](google:pending)             <!-- Pending -->
 ![](google:schedule)            <!-- Schedule -->
 ```
+
+**Result:**
+
+![](google:check_circle) ![](google:error) ![](google:warning) ![](google:info) ![](google:help) ![](google:cancel) ![](google:block) ![](google:done) ![](google:done_all) ![](google:pending) ![](google:schedule)
 
 ### Communication Icons
 
@@ -175,6 +230,10 @@ Add size after style (or directly after icon name):
 ![](google:contact_phone)       <!-- Contact phone -->
 ```
 
+**Result:**
+
+![](google:mail) ![](google:inbox) ![](google:send) ![](google:chat) ![](google:forum) ![](google:comment) ![](google:notifications) ![](google:phone) ![](google:call) ![](google:video_call) ![](google:message) ![](google:contact_mail) ![](google:contact_phone)
+
 ### Content Icons
 
 ```markdown
@@ -193,6 +252,10 @@ Add size after style (or directly after icon name):
 ![](google:bookmark)            <!-- Bookmark -->
 ![](google:bookmark_border)     <!-- Bookmark outline -->
 ```
+
+**Result:**
+
+![](google:add_circle) ![](google:remove_circle) ![](google:flag) ![](google:link) ![](google:link_off) ![](google:filter_list) ![](google:sort) ![](google:create) ![](google:report) ![](google:undo) ![](google:redo) ![](google:push_pin) ![](google:bookmark) ![](google:bookmark_border)
 
 ### Media Icons
 
@@ -217,6 +280,10 @@ Add size after style (or directly after icon name):
 ![](google:music_note)          <!-- Music -->
 ```
 
+**Result:**
+
+![](google:play_arrow) ![](google:pause) ![](google:stop) ![](google:skip_previous) ![](google:skip_next) ![](google:fast_forward) ![](google:fast_rewind) ![](google:replay) ![](google:volume_up) ![](google:volume_down) ![](google:volume_off) ![](google:mic) ![](google:mic_off) ![](google:image) ![](google:photo_camera) ![](google:videocam) ![](google:movie) ![](google:music_note)
+
 ### File Icons
 
 ```markdown
@@ -232,6 +299,10 @@ Add size after style (or directly after icon name):
 ![](google:cloud_done)          <!-- Cloud done -->
 ```
 
+**Result:**
+
+![](google:folder) ![](google:folder_open) ![](google:create_new_folder) ![](google:file_copy) ![](google:description) ![](google:attach_file) ![](google:cloud) ![](google:cloud_upload) ![](google:cloud_download) ![](google:cloud_done)
+
 ### User Icons
 
 ```markdown
@@ -245,6 +316,10 @@ Add size after style (or directly after icon name):
 ![](google:supervisor_account)  <!-- Admin -->
 ```
 
+**Result:**
+
+![](google:person) ![](google:people) ![](google:group) ![](google:account_circle) ![](google:face) ![](google:person_add) ![](google:person_remove) ![](google:supervisor_account)
+
 ### Security Icons
 
 ```markdown
@@ -257,6 +332,10 @@ Add size after style (or directly after icon name):
 ![](google:verified_user)       <!-- Verified -->
 ![](google:shield)              <!-- Shield -->
 ```
+
+**Result:**
+
+![](google:lock) ![](google:lock_open) ![](google:visibility) ![](google:visibility_off) ![](google:vpn_key) ![](google:security) ![](google:verified_user) ![](google:shield)
 
 ### Social Icons
 
@@ -272,6 +351,10 @@ Add size after style (or directly after icon name):
 ![](google:mood_bad)            <!-- Sad face -->
 ```
 
+**Result:**
+
+![](google:thumb_up) ![](google:thumb_down) ![](google:favorite) ![](google:favorite_border) ![](google:star) ![](google:star_border) ![](google:star_half) ![](google:mood) ![](google:mood_bad)
+
 ### Development Icons
 
 ```markdown
@@ -286,6 +369,10 @@ Add size after style (or directly after icon name):
 ![](google:api)                 <!-- API -->
 ![](google:data_object)         <!-- Data object -->
 ```
+
+**Result:**
+
+![](google:code) ![](google:terminal) ![](google:bug_report) ![](google:build) ![](google:extension) ![](google:settings_applications) ![](google:developer_mode) ![](google:integration_instructions) ![](google:api) ![](google:data_object)
 
 ### Editor Icons
 
@@ -306,6 +393,10 @@ Add size after style (or directly after icon name):
 ![](google:text_fields)         <!-- Text -->
 ```
 
+**Result:**
+
+![](google:format_bold) ![](google:format_italic) ![](google:format_underlined) ![](google:format_strikethrough) ![](google:format_list_bulleted) ![](google:format_list_numbered) ![](google:format_quote) ![](google:format_align_left) ![](google:format_align_center) ![](google:format_align_right) ![](google:format_indent_increase) ![](google:format_indent_decrease) ![](google:title) ![](google:text_fields)
+
 ### Misc Icons
 
 ```markdown
@@ -324,6 +415,10 @@ Add size after style (or directly after icon name):
 ![](google:brush)               <!-- Brush -->
 ```
 
+**Result:**
+
+![](google:lightbulb) ![](google:emoji_objects) ![](google:event) ![](google:today) ![](google:alarm) ![](google:timer) ![](google:hourglass_empty) ![](google:location_on) ![](google:language) ![](google:translate) ![](google:public) ![](google:palette) ![](google:brush)
+
 ---
 
 ## Inline Usage
@@ -338,6 +433,14 @@ Press ![](google:save) to save your document.
 The ![](google:warning) icon indicates a warning.
 ```
 
+**Result:**
+
+Click the ![](google:settings) icon to open settings.
+
+Press ![](google:save) to save your document.
+
+The ![](google:warning) icon indicates a warning.
+
 ---
 
 ## In Tables
@@ -351,6 +454,15 @@ The ![](google:warning) icon indicates a warning.
 | Share | ![](google:close) |
 ```
 
+**Result:**
+
+| Feature | Status |
+|---------|--------|
+| Save | ![](google:check_circle) |
+| Export | ![](google:check_circle) |
+| Print | ![](google:pending) |
+| Share | ![](google:close) |
+
 ---
 
 ## In Lists
@@ -360,6 +472,12 @@ The ![](google:warning) icon indicates a warning.
 - ![](google:schedule) Task pending
 - ![](google:close) Task cancelled
 ```
+
+**Result:**
+
+- ![](google:check) Task completed
+- ![](google:schedule) Task pending
+- ![](google:close) Task cancelled
 
 ---
 
@@ -376,6 +494,13 @@ The ![](google:warning) icon indicates a warning.
 - ![](google:support:large) **24/7 Support** - Always available
 ```
 
+**Result:**
+
+- ![](google:speed:large) **Fast** - Lightning-fast performance
+- ![](google:security:large) **Secure** - Enterprise-grade security
+- ![](google:devices:large) **Cross-platform** - Works everywhere
+- ![](google:support:large) **24/7 Support** - Always available
+
 ### Status Dashboard
 
 ```markdown
@@ -389,6 +514,15 @@ The ![](google:warning) icon indicates a warning.
 | Auth | ![](google:check_circle) Online |
 ```
 
+**Result:**
+
+| Service | Status |
+|---------|--------|
+| API | ![](google:check_circle) Online |
+| Database | ![](google:check_circle) Online |
+| CDN | ![](google:warning) Degraded |
+| Auth | ![](google:check_circle) Online |
+
 ### Navigation Menu
 
 ```markdown
@@ -398,6 +532,14 @@ The ![](google:warning) icon indicates a warning.
 - ![](google:settings) [Settings](#)
 - ![](google:help) [Help](#)
 ```
+
+**Result:**
+
+- ![](google:home) [Home](#)
+- ![](google:description) [Documents](#)
+- ![](google:image) [Gallery](#)
+- ![](google:settings) [Settings](#)
+- ![](google:help) [Help](#)
 
 ### Step-by-Step Guide
 
@@ -409,6 +551,13 @@ The ![](google:warning) icon indicates a warning.
 3. ![](google:login) Sign in to your account
 4. ![](google:check_circle) You're ready to go!
 ```
+
+**Result:**
+
+1. ![](google:download) Download the installer
+2. ![](google:launch) Run the setup wizard
+3. ![](google:login) Sign in to your account
+4. ![](google:check_circle) You're ready to go!
 
 ---
 

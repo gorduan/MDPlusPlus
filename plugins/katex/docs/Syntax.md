@@ -10,7 +10,7 @@ Wrap expressions with single dollar signs for inline math:
 The famous equation $E = mc^2$ changed physics forever.
 ```
 
-Result: The famous equation *E = mc²* changed physics forever.
+**Result:** The famous equation $E = mc^2$ changed physics forever.
 
 ### Display Math
 
@@ -22,6 +22,12 @@ $$
 $$
 ```
 
+**Result:**
+
+$$
+\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+$$
+
 ### Code Block Math
 
 Use fenced code blocks with `math`, `latex`, or `katex`:
@@ -31,6 +37,12 @@ Use fenced code blocks with `math`, `latex`, or `katex`:
 \sum_{i=1}^{n} i = \frac{n(n+1)}{2}
 ```
 ````
+
+**Result:**
+
+```math
+\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+```
 
 ---
 
@@ -60,6 +72,16 @@ $\frac{x+1}{x-1}$
 $a^{2n+1}$
 $x_1, x_2, \ldots, x_n$
 ```
+
+**Result:**
+
+$x^2 + y^2 = z^2$
+
+$\frac{x+1}{x-1}$
+
+$a^{2n+1}$
+
+$x_1, x_2, \ldots, x_n$
 
 ---
 
@@ -100,6 +122,14 @@ $\Delta x = x_2 - x_1$
 $\Sigma F = ma$
 ```
 
+**Result:**
+
+$\alpha + \beta = \gamma$
+
+$\Delta x = x_2 - x_1$
+
+$\Sigma F = ma$
+
 ---
 
 ## Fractions and Roots
@@ -113,17 +143,25 @@ $\frac{x+1}{x-1}$
 $\frac{\partial f}{\partial x}$
 ```
 
+**Result:**
+
+$\frac{1}{2}$, $\frac{x+1}{x-1}$, $\frac{\partial f}{\partial x}$
+
 ### Nested Fractions
 
 ```markdown
 $\frac{1}{1+\frac{1}{x}}$
 ```
 
+**Result:** $\frac{1}{1+\frac{1}{x}}$
+
 ### Display Style Fraction
 
 ```markdown
 $\displaystyle\frac{a}{b}$
 ```
+
+**Result:** $\displaystyle\frac{a}{b}$
 
 ### Roots
 
@@ -133,6 +171,10 @@ $\sqrt[3]{x}$        <!-- Cube root -->
 $\sqrt[n]{x}$        <!-- nth root -->
 $\sqrt{x^2 + y^2}$   <!-- Complex expression -->
 ```
+
+**Result:**
+
+$\sqrt{x}$, $\sqrt[3]{x}$, $\sqrt[n]{x}$, $\sqrt{x^2 + y^2}$
 
 ---
 
@@ -145,12 +187,24 @@ $\sum_{i=1}^{n} x_i$
 $$\sum_{i=1}^{n} i^2 = \frac{n(n+1)(2n+1)}{6}$$
 ```
 
+**Result:**
+
+$\sum_{i=1}^{n} x_i$
+
+$$\sum_{i=1}^{n} i^2 = \frac{n(n+1)(2n+1)}{6}$$
+
 ### Product
 
 ```markdown
 $\prod_{i=1}^{n} x_i$
 $$\prod_{i=1}^{n} i = n!$$
 ```
+
+**Result:**
+
+$\prod_{i=1}^{n} x_i$
+
+$$\prod_{i=1}^{n} i = n!$$
 
 ### Integrals
 
@@ -163,6 +217,12 @@ $\iiint f(x,y,z) dxdydz$            <!-- Triple -->
 $\oint_C F \cdot dr$                <!-- Contour -->
 ```
 
+**Result:**
+
+$\int f(x) dx$, $\int_a^b f(x) dx$, $\int_0^\infty e^{-x} dx$
+
+$\iint f(x,y) dxdy$, $\iiint f(x,y,z) dxdydz$, $\oint_C F \cdot dr$
+
 ### Limits
 
 ```markdown
@@ -170,6 +230,14 @@ $\lim_{x \to \infty} f(x)$
 $\lim_{x \to 0^+} \frac{1}{x} = \infty$
 $\lim_{n \to \infty} \left(1 + \frac{1}{n}\right)^n = e$
 ```
+
+**Result:**
+
+$\lim_{x \to \infty} f(x)$
+
+$$\lim_{x \to 0^+} \frac{1}{x} = \infty$$
+
+$$\lim_{n \to \infty} \left(1 + \frac{1}{n}\right)^n = e$$
 
 ---
 
@@ -212,6 +280,16 @@ $\log_{10} 100 = 2$
 $\max(a, b)$
 ```
 
+**Result:**
+
+$\sin^2 x + \cos^2 x = 1$
+
+$\ln(e^x) = x$
+
+$\log_{10} 100 = 2$
+
+$\max(a, b)$
+
 ---
 
 ## Brackets and Delimiters
@@ -240,12 +318,28 @@ $\left\{ \frac{1}{2} \right\}$
 $\left| \frac{a}{b} \right|$
 ```
 
+**Result:**
+
+$\left( \frac{a}{b} \right)$
+
+$\left[ \sum_{i=1}^{n} x_i \right]$
+
+$\left\{ \frac{1}{2} \right\}$
+
+$\left| \frac{a}{b} \right|$
+
 ### Manual Sizing
 
 ```markdown
 $\big( \Big( \bigg( \Bigg($
 $\big[ \Big[ \bigg[ \Bigg[$
 ```
+
+**Result:**
+
+$\big( \Big( \bigg( \Bigg($
+
+$\big[ \Big[ \bigg[ \Bigg[$
 
 ---
 
@@ -262,37 +356,70 @@ c & d
 $$
 ```
 
+**Result:**
+
+$$
+\begin{matrix}
+a & b \\
+c & d
+\end{matrix}
+$$
+
 ### Matrix with Brackets
 
 ```markdown
 $$
-\begin{pmatrix}    <!-- Parentheses -->
+\begin{pmatrix}
+a & b \\
+c & d
+\end{pmatrix}
+$$
+```
+
+**Result (parentheses):**
+
+$$
+\begin{pmatrix}
 a & b \\
 c & d
 \end{pmatrix}
 $$
 
+```markdown
 $$
-\begin{bmatrix}    <!-- Square brackets -->
+\begin{bmatrix}
+a & b \\
+c & d
+\end{bmatrix}
+$$
+```
+
+**Result (square brackets):**
+
+$$
+\begin{bmatrix}
 a & b \\
 c & d
 \end{bmatrix}
 $$
 
+```markdown
 $$
-\begin{vmatrix}    <!-- Vertical bars (determinant) -->
+\begin{vmatrix}
 a & b \\
 c & d
 \end{vmatrix}
 $$
+```
+
+**Result (determinant):**
 
 $$
-\begin{Bmatrix}    <!-- Curly braces -->
+\begin{vmatrix}
 a & b \\
 c & d
-\end{Bmatrix}
+\end{vmatrix}
 $$
-```
 
 ### Larger Matrix
 
@@ -306,6 +433,16 @@ $$
 $$
 ```
 
+**Result:**
+
+$$
+\begin{pmatrix}
+1 & 2 & 3 \\
+4 & 5 & 6 \\
+7 & 8 & 9
+\end{pmatrix}
+$$
+
 ### Augmented Matrix
 
 ```markdown
@@ -316,6 +453,15 @@ $$
 \end{array}\right]
 $$
 ```
+
+**Result:**
+
+$$
+\left[\begin{array}{cc|c}
+1 & 2 & 3 \\
+4 & 5 & 6
+\end{array}\right]
+$$
 
 ---
 
@@ -332,6 +478,15 @@ x + y &= 10 \\
 $$
 ```
 
+**Result:**
+
+$$
+\begin{aligned}
+x + y &= 10 \\
+2x - y &= 5
+\end{aligned}
+$$
+
 ### Multi-step Derivation
 
 ```markdown
@@ -344,6 +499,16 @@ $$
 $$
 ```
 
+**Result:**
+
+$$
+\begin{aligned}
+(a+b)^2 &= (a+b)(a+b) \\
+        &= a^2 + ab + ba + b^2 \\
+        &= a^2 + 2ab + b^2
+\end{aligned}
+$$
+
 ### Cases
 
 ```markdown
@@ -354,6 +519,15 @@ x^2 & \text{if } x \geq 0 \\
 \end{cases}
 $$
 ```
+
+**Result:**
+
+$$
+f(x) = \begin{cases}
+x^2 & \text{if } x \geq 0 \\
+-x^2 & \text{if } x < 0
+\end{cases}
+$$
 
 ---
 
@@ -393,6 +567,16 @@ $\{x \in \mathbb{R} : x > 0\}$
 $A \cap B = \emptyset$
 ```
 
+**Result:**
+
+$x \in \mathbb{R}$
+
+$A \cup B$
+
+$\{x \in \mathbb{R} : x > 0\}$
+
+$A \cap B = \emptyset$
+
 ---
 
 ## Logic Symbols
@@ -418,6 +602,14 @@ $\exists n \in \mathbb{N} : n > 100$
 $p \land q \Rightarrow r$
 ```
 
+**Result:**
+
+$\forall x \in \mathbb{R}, x^2 \geq 0$
+
+$\exists n \in \mathbb{N} : n > 100$
+
+$p \land q \Rightarrow r$
+
 ---
 
 ## Relations and Comparisons
@@ -437,6 +629,10 @@ $p \land q \Rightarrow r$
 | `\equiv` | ≡ | Equivalent |
 | `\propto` | ∝ | Proportional |
 
+**Examples:**
+
+$a \neq b$, $x \leq y$, $a \approx b$, $y \propto x$
+
 ---
 
 ## Arrows
@@ -454,6 +650,8 @@ $p \land q \Rightarrow r$
 | `\mapsto` | ↦ |
 | `\to` | → |
 
+**Example:** $f: A \to B$, $x \mapsto x^2$, $a \Rightarrow b$
+
 ---
 
 ## Calculus
@@ -470,37 +668,41 @@ $\dot{x}$                          <!-- Newton notation -->
 $\ddot{x}$                         <!-- Second derivative -->
 ```
 
+**Result:**
+
+$\frac{dy}{dx}$, $\frac{d^2y}{dx^2}$, $\frac{\partial f}{\partial x}$, $\nabla f$, $f'(x)$, $\dot{x}$, $\ddot{x}$
+
 ### Common Derivatives
 
 ```markdown
-$$
-\frac{d}{dx}(x^n) = nx^{n-1}
-$$
-
-$$
-\frac{d}{dx}(e^x) = e^x
-$$
-
-$$
-\frac{d}{dx}(\sin x) = \cos x
-$$
+$$\frac{d}{dx}(x^n) = nx^{n-1}$$
+$$\frac{d}{dx}(e^x) = e^x$$
+$$\frac{d}{dx}(\sin x) = \cos x$$
 ```
+
+**Result:**
+
+$$\frac{d}{dx}(x^n) = nx^{n-1}$$
+
+$$\frac{d}{dx}(e^x) = e^x$$
+
+$$\frac{d}{dx}(\sin x) = \cos x$$
 
 ### Integration Examples
 
 ```markdown
-$$
-\int x^n dx = \frac{x^{n+1}}{n+1} + C
-$$
-
-$$
-\int e^x dx = e^x + C
-$$
-
-$$
-\int_0^1 x^2 dx = \frac{1}{3}
-$$
+$$\int x^n dx = \frac{x^{n+1}}{n+1} + C$$
+$$\int e^x dx = e^x + C$$
+$$\int_0^1 x^2 dx = \frac{1}{3}$$
 ```
+
+**Result:**
+
+$$\int x^n dx = \frac{x^{n+1}}{n+1} + C$$
+
+$$\int e^x dx = e^x + C$$
+
+$$\int_0^1 x^2 dx = \frac{1}{3}$$
 
 ---
 
@@ -511,6 +713,14 @@ $x = 5 \text{ if } y > 0$
 $\text{Area} = \pi r^2$
 $f(x) \text{ is continuous}$
 ```
+
+**Result:**
+
+$x = 5 \text{ if } y > 0$
+
+$\text{Area} = \pi r^2$
+
+$f(x) \text{ is continuous}$
 
 ---
 
@@ -528,6 +738,10 @@ $\mathcal{CALLIGRAPHY}$ <!-- Calligraphic -->
 $\mathfrak{Fraktur}$   <!-- Fraktur -->
 ```
 
+**Result:**
+
+$\mathbf{bold}$, $\mathit{italic}$, $\mathrm{roman}$, $\mathsf{sans}$, $\mathtt{typewriter}$, $\mathcal{CALLIGRAPHY}$, $\mathfrak{Fraktur}$
+
 ### Spacing
 
 | Command | Description |
@@ -544,6 +758,10 @@ $a\,b$    <!-- Thin space -->
 $a\quad b$ <!-- Large space -->
 ```
 
+**Result:**
+
+$a\,b$ vs $a\quad b$
+
 ---
 
 ## Complete Examples
@@ -551,26 +769,32 @@ $a\quad b$ <!-- Large space -->
 ### Quadratic Formula
 
 ```markdown
-$$
-x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
-$$
+$$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$
 ```
+
+**Result:**
+
+$$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$
 
 ### Euler's Identity
 
 ```markdown
-$$
-e^{i\pi} + 1 = 0
-$$
+$$e^{i\pi} + 1 = 0$$
 ```
+
+**Result:**
+
+$$e^{i\pi} + 1 = 0$$
 
 ### Taylor Series
 
 ```markdown
-$$
-e^x = \sum_{n=0}^{\infty} \frac{x^n}{n!} = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \cdots
-$$
+$$e^x = \sum_{n=0}^{\infty} \frac{x^n}{n!} = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \cdots$$
 ```
+
+**Result:**
+
+$$e^x = \sum_{n=0}^{\infty} \frac{x^n}{n!} = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \cdots$$
 
 ### Maxwell's Equations
 
@@ -585,13 +809,26 @@ $$
 $$
 ```
 
+**Result:**
+
+$$
+\begin{aligned}
+\nabla \cdot \mathbf{E} &= \frac{\rho}{\varepsilon_0} \\
+\nabla \cdot \mathbf{B} &= 0 \\
+\nabla \times \mathbf{E} &= -\frac{\partial \mathbf{B}}{\partial t} \\
+\nabla \times \mathbf{B} &= \mu_0 \mathbf{J} + \mu_0 \varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}
+\end{aligned}
+$$
+
 ### Schrödinger Equation
 
 ```markdown
-$$
-i\hbar\frac{\partial}{\partial t}\Psi(\mathbf{r},t) = \hat{H}\Psi(\mathbf{r},t)
-$$
+$$i\hbar\frac{\partial}{\partial t}\Psi(\mathbf{r},t) = \hat{H}\Psi(\mathbf{r},t)$$
 ```
+
+**Result:**
+
+$$i\hbar\frac{\partial}{\partial t}\Psi(\mathbf{r},t) = \hat{H}\Psi(\mathbf{r},t)$$
 
 ---
 

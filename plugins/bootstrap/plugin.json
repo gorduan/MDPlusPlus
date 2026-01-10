@@ -23,12 +23,23 @@
       "tag": "div",
       "classes": ["card"],
       "allowNesting": true,
-      "description": "Bootstrap card container",
-      "structure": {
-        "header": { "tag": "div", "classes": ["card-header"] },
-        "body": { "tag": "div", "classes": ["card-body"] },
-        "footer": { "tag": "div", "classes": ["card-footer"] }
-      }
+      "description": "Bootstrap card container"
+    },
+    "card-header": {
+      "tag": "div",
+      "classes": ["card-header"],
+      "description": "Bootstrap card header"
+    },
+    "card-body": {
+      "tag": "div",
+      "classes": ["card-body"],
+      "allowNesting": true,
+      "description": "Bootstrap card body"
+    },
+    "card-footer": {
+      "tag": "div",
+      "classes": ["card-footer"],
+      "description": "Bootstrap card footer"
     },
     "alert": {
       "tag": "div",
@@ -149,6 +160,8 @@
       "tag": "div",
       "classes": ["progress-bar"],
       "description": "Bootstrap progress bar",
+      "wrapperTag": "div",
+      "wrapperClasses": ["progress"],
       "variants": {
         "success": ["bg-success"],
         "info": ["bg-info"],

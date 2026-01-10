@@ -302,6 +302,8 @@ export interface PluginData {
   components: Record<string, unknown>;
   /** Plugin translations loaded from plugin's i18n/ subdirectory */
   i18n?: Record<string, unknown>;
+  /** Documentation files from plugin's docs/ subdirectory */
+  docs?: Array<{ name: string; path: string }>;
 }
 
 // Expose to renderer

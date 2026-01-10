@@ -619,7 +619,24 @@ export class MDPlusPlus {
    */
   private preprocessDirectives(content: string): string {
     // Replace :::framework:component[...] with :::framework_component[...]
-    let processed = content.replace(/:::([\w-]+):([\w-]+)(\[|{|\s|$)/g, ':::$1_$2$3');
+    // Also handle ::framework:component (leaf directives), :framework:component (text directives)
+    // and ::::framework:component (nested containers with 4+ colons)
+    // BUT skip content inside code blocks (``` ... ```)
+
+    // First, extract and protect code blocks
+    const codeBlocks: string[] = [];
+    let processed = content.replace(/```[\s\S]*?```/g, (match) => {
+      codeBlocks.push(match);
+      return `\x00CODE_BLOCK_${codeBlocks.length - 1}\x00`;
+    });
+
+    // Now apply directive preprocessing
+    processed = processed.replace(/(:{1,})([\w-]+):([\w-]+)(\[|{|\s|$)/g, '$1$2_$3$4');
+
+    // Restore code blocks
+    processed = processed.replace(/\x00CODE_BLOCK_(\d+)\x00/g, (_, index) => {
+      return codeBlocks[parseInt(index, 10)];
+    });
 
     // Convert GitHub/Obsidian-style callouts to directives
     // > [!NOTE]        -> :::admonitions_note
@@ -887,6 +904,11 @@ export class MDPlusPlus {
   private processDirective(node: any): void {
     const { name, attributes = {}, children = [] } = node;
 
+    // Skip if no name (can happen with malformed directives)
+    if (!name) {
+      return;
+    }
+
     // Parse framework_component or framework:component from name
     let framework: string | undefined;
     let component: string;
@@ -948,8 +970,28 @@ export class MDPlusPlus {
 
     // Replace node data
     node.data = node.data || {};
-    node.data.hName = hast.tagName;
-    node.data.hProperties = hast.properties;
+
+    // If we have a wrapper, we need to handle it specially
+    if (hast.wrapperTag) {
+      // Create wrapper structure by modifying the node
+      // The wrapper becomes the outer element, and we nest the original inside
+      node.data.hName = hast.wrapperTag;
+      node.data.hProperties = hast.wrapperProperties;
+
+      // Wrap existing children in the inner element
+      const innerChildren = node.children || [];
+      node.children = [{
+        type: 'containerDirective',
+        data: {
+          hName: hast.tagName,
+          hProperties: hast.properties
+        },
+        children: innerChildren
+      }];
+    } else {
+      node.data.hName = hast.tagName;
+      node.data.hProperties = hast.properties;
+    }
   }
 
   /**
@@ -1140,7 +1182,7 @@ export class MDPlusPlus {
     node: any,
     componentDef: any,
     attributes: Record<string, any>
-  ): { tagName: string; properties: Record<string, any> } {
+  ): { tagName: string; properties: Record<string, any>; wrapperTag?: string; wrapperProperties?: Record<string, any> } {
     const tagName = componentDef?.tag || 'div';
 
     // Filter dangerous attributes first
@@ -1205,9 +1247,21 @@ export class MDPlusPlus {
     // This handles edge cases and normalizes attributes correctly
     const hastNode = h(tagName, hastAttrs);
 
-    return {
+    // Build result with optional wrapper
+    const result: { tagName: string; properties: Record<string, any>; wrapperTag?: string; wrapperProperties?: Record<string, any> } = {
       tagName,
       properties: hastNode.properties || {},
     };
+
+    // Handle wrapper element if defined
+    if (componentDef?.wrapperTag) {
+      result.wrapperTag = componentDef.wrapperTag;
+      result.wrapperProperties = {};
+      if (componentDef.wrapperClasses?.length > 0) {
+        result.wrapperProperties.className = [...componentDef.wrapperClasses];
+      }
+    }
+
+    return result;
   }
 }
