@@ -574,9 +574,68 @@ export default function App() {
       }
     });
 
-    // Cleanup function to remove all plugin stylesheets on unmount
+    // Get currently injected plugin scripts
+    const existingScripts = document.querySelectorAll('script[data-plugin-js]');
+    const existingScriptIds = new Set<string>();
+    existingScripts.forEach((el) => {
+      existingScriptIds.add(el.getAttribute('data-plugin-js') || '');
+    });
+
+    // Inject JS for newly enabled plugins
+    // Note: We need to temporarily hide AMD/define to prevent conflicts with Monaco's loader
+    // UMD bundles (Bootstrap, KaTeX, Mermaid) detect define() and try to use AMD, causing conflicts
+    enabledPlugins.forEach((plugin) => {
+      if (!plugin.js || plugin.js.length === 0) return;
+
+      plugin.js.forEach((jsPath, index) => {
+        const scriptId = `${plugin.id}-${index}`;
+        if (document.querySelector(`script[data-plugin-js="${scriptId}"]`)) return;
+
+        // Create inline script that temporarily hides AMD define before loading the plugin
+        const script = document.createElement('script');
+        script.setAttribute('data-plugin-js', scriptId);
+        script.setAttribute('data-plugin-id', plugin.id);
+
+        // Use fetch to load script content and execute without AMD detection
+        script.textContent = `
+          (function() {
+            var _define = window.define;
+            var _require = window.require;
+            window.define = undefined;
+            window.require = undefined;
+
+            var script = document.createElement('script');
+            script.src = '${jsPath}';
+            script.onload = function() {
+              window.define = _define;
+              window.require = _require;
+              console.log('[Plugins] Loaded JS (AMD-safe): ${jsPath} for plugin ${plugin.id}');
+            };
+            script.onerror = function() {
+              window.define = _define;
+              window.require = _require;
+              console.error('[Plugins] Failed to load JS: ${jsPath}');
+            };
+            document.head.appendChild(script);
+          })();
+        `;
+        document.body.appendChild(script);
+      });
+    });
+
+    // Remove JS for disabled plugins
+    existingScripts.forEach((el) => {
+      const pluginId = el.getAttribute('data-plugin-id');
+      if (pluginId && !enabledPlugins.find((p) => p.id === pluginId)) {
+        el.remove();
+        console.log(`[Plugins] Removed JS for disabled plugin: ${pluginId}`);
+      }
+    });
+
+    // Cleanup function to remove all plugin assets on unmount
     return () => {
       document.querySelectorAll('link[data-plugin-css]').forEach((el) => el.remove());
+      document.querySelectorAll('script[data-plugin-js]').forEach((el) => el.remove());
     };
   }, [plugins]);
 

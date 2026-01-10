@@ -1,4 +1,4 @@
-# Bootstrap Components Syntax Reference
+# Bootstrap 5 Components Syntax Reference
 
 ## Basic Directive Syntax
 
@@ -18,9 +18,87 @@ This is a Bootstrap component rendered in MD++
 
 ---
 
-## Important: Nesting Limitation
+## Nesting with Multiple Colons
 
-The current parser supports **single-level nesting only**. For complex layouts, use separate components or HTML directly.
+MD++ supports **deep nesting** using different colon counts. The outer container uses more colons than inner containers:
+
+```markdown
+::::bootstrap:card
+:::bootstrap:card-body
+Nested content inside card body
+:::
+::::
+```
+
+**Result:**
+
+::::bootstrap:card
+:::bootstrap:card-body
+Nested content inside card body
+:::
+::::
+
+### Deep Nesting Example
+
+```markdown
+::::::bootstrap:container
+:::::bootstrap:row
+::::bootstrap:col{variant="md-6"}
+:::bootstrap:card
+Card in first column
+:::
+::::
+
+::::bootstrap:col{variant="md-6"}
+:::bootstrap:card
+Card in second column
+:::
+::::
+:::::
+::::::
+```
+
+**Result:**
+
+::::::bootstrap:container
+:::::bootstrap:row
+::::bootstrap:col{variant="md-6"}
+:::bootstrap:card
+Card in first column
+:::
+::::
+
+::::bootstrap:col{variant="md-6"}
+:::bootstrap:card
+Card in second column
+:::
+::::
+:::::
+::::::
+
+---
+
+## Multi-Variant Support
+
+You can combine multiple variants with space-separated values:
+
+```markdown
+:::bootstrap:table{variant="striped hover bordered"}
+| Name | Email |
+|------|-------|
+| John | john@example.com |
+| Jane | jane@example.com |
+:::
+```
+
+**Result:**
+
+:::bootstrap:table{variant="striped hover bordered"}
+| Name | Email |
+|------|-------|
+| John | john@example.com |
+| Jane | jane@example.com |
+:::
 
 ---
 
@@ -28,31 +106,11 @@ The current parser supports **single-level nesting only**. For complex layouts, 
 
 ### Container
 
-Standard centered container with responsive max-widths.
-
 ```markdown
 :::bootstrap:container
 Content with responsive max-width
 :::
-```
 
-**Result:**
-
-:::bootstrap:container
-Content with responsive max-width
-:::
-
-#### Variants
-
-| Variant | Description |
-|---------|-------------|
-| `fluid` | Full-width container |
-| `sm` | 100% width until small breakpoint |
-| `md` | 100% width until medium breakpoint |
-| `lg` | 100% width until large breakpoint |
-| `xl` | 100% width until extra large breakpoint |
-
-```markdown
 :::bootstrap:container{variant="fluid"}
 Full-width content
 :::
@@ -60,209 +118,217 @@ Full-width content
 
 **Result:**
 
-:::bootstrap:container{variant="fluid"}
-Full-width content
+:::bootstrap:container
+Content with responsive max-width
 :::
+
+### Grid System
+
+```markdown
+::::bootstrap:row{variant="g-3"}
+:::bootstrap:col{variant="md-4"}
+Column 1 (4/12 on medium+)
+:::
+
+:::bootstrap:col{variant="md-4"}
+Column 2
+:::
+
+:::bootstrap:col{variant="md-4"}
+Column 3
+:::
+::::
+```
+
+**Result:**
+
+::::bootstrap:row{variant="g-3"}
+:::bootstrap:col{variant="md-4"}
+Column 1 (4/12 on medium+)
+:::
+
+:::bootstrap:col{variant="md-4"}
+Column 2
+:::
+
+:::bootstrap:col{variant="md-4"}
+Column 3
+:::
+::::
+
+### Responsive Columns
+
+Available column variants: `1`-`12`, `auto`, `sm-1` to `sm-12`, `md-1` to `md-12`, `lg-1` to `lg-12`, `xl-1` to `xl-12`, `xxl-1` to `xxl-12`
+
+```markdown
+:::bootstrap:col{variant="12 md-6 lg-4"}
+Full width on mobile, half on medium, third on large
+:::
+```
 
 ---
 
 ## Cards
 
-Flexible content container.
-
-### Simple Card
+### Complete Card Structure
 
 ```markdown
+:::::bootstrap:card
+::::bootstrap:card-header
+Featured
+::::
+
+::::bootstrap:card-body
+:::bootstrap:card-title
+Card Title
+:::
+
+:::bootstrap:card-text
+Some quick example text to build on the card title.
+:::
+::::
+
+::::bootstrap:card-footer
+Card footer
+::::
+:::::
+```
+
+**Result:**
+
+:::::bootstrap:card
+::::bootstrap:card-header
+Featured
+::::
+
+::::bootstrap:card-body
+:::bootstrap:card-title
+Card Title
+:::
+
+:::bootstrap:card-text
+Some quick example text to build on the card title.
+:::
+::::
+
+::::bootstrap:card-footer
+Card footer
+::::
+:::::
+
+### Card Group
+
+```markdown
+::::bootstrap:card-group
 :::bootstrap:card
-## Card Title
-
-This is the card content. Cards have styling for
-borders, shadows, and proper padding.
+First card
 :::
-```
-
-**Result:**
 
 :::bootstrap:card
-## Card Title
-
-This is the card content. Cards have styling for
-borders, shadows, and proper padding.
+Second card
 :::
 
-### Card Header
-
-```markdown
-:::bootstrap:card-header
-Card Header Text
+:::bootstrap:card
+Third card
 :::
+::::
 ```
 
 **Result:**
 
-:::bootstrap:card-header
-Card Header Text
+::::bootstrap:card-group
+:::bootstrap:card
+First card
 :::
 
-### Card Body
-
-```markdown
-:::bootstrap:card-body
-Card body content goes here.
-:::
-```
-
-**Result:**
-
-:::bootstrap:card-body
-Card body content goes here.
+:::bootstrap:card
+Second card
 :::
 
-### Card Footer
-
-```markdown
-:::bootstrap:card-footer
-Card Footer Text
+:::bootstrap:card
+Third card
 :::
-```
-
-**Result:**
-
-:::bootstrap:card-footer
-Card Footer Text
-:::
+::::
 
 ---
 
 ## Alerts
 
-Contextual feedback messages.
-
-### Basic Alert
-
-```markdown
-:::bootstrap:alert{variant="primary"}
-This is a primary alert.
-:::
-```
-
-**Result:**
-
-:::bootstrap:alert{variant="primary"}
-This is a primary alert.
-:::
-
 ### All Alert Variants
 
 ```markdown
 :::bootstrap:alert{variant="primary"}
-A primary alert - check it out!
-:::
-
-:::bootstrap:alert{variant="secondary"}
-A secondary alert - check it out!
+A primary alert
 :::
 
 :::bootstrap:alert{variant="success"}
-A success alert - well done!
+A success alert
 :::
 
 :::bootstrap:alert{variant="danger"}
-A danger alert - be careful!
+A danger alert
 :::
 
 :::bootstrap:alert{variant="warning"}
-A warning alert - pay attention!
+A warning alert
 :::
 
 :::bootstrap:alert{variant="info"}
-An info alert - for your information.
-:::
-
-:::bootstrap:alert{variant="light"}
-A light alert - subtle message.
-:::
-
-:::bootstrap:alert{variant="dark"}
-A dark alert - serious message.
+An info alert
 :::
 ```
 
 **Result:**
 
 :::bootstrap:alert{variant="primary"}
-A primary alert - check it out!
-:::
-
-:::bootstrap:alert{variant="secondary"}
-A secondary alert - check it out!
+A primary alert
 :::
 
 :::bootstrap:alert{variant="success"}
-A success alert - well done!
+A success alert
 :::
 
 :::bootstrap:alert{variant="danger"}
-A danger alert - be careful!
+A danger alert
 :::
 
 :::bootstrap:alert{variant="warning"}
-A warning alert - pay attention!
+A warning alert
 :::
 
 :::bootstrap:alert{variant="info"}
-An info alert - for your information.
+An info alert
 :::
 
-:::bootstrap:alert{variant="light"}
-A light alert - subtle message.
-:::
-
-:::bootstrap:alert{variant="dark"}
-A dark alert - serious message.
-:::
-
-### Alert with Markdown Content
+### Alert with Heading
 
 ```markdown
-:::bootstrap:alert{variant="success"}
-## Success!
-
-Your file was saved successfully.
-
-**Next steps:**
-1. Review the changes
-2. Share with your team
+::::bootstrap:alert{variant="success"}
+:::bootstrap:alert-heading
+Well done!
 :::
+
+You successfully read this important alert message.
+::::
 ```
 
 **Result:**
 
-:::bootstrap:alert{variant="success"}
-## Success!
-
-Your file was saved successfully.
-
-**Next steps:**
-1. Review the changes
-2. Share with your team
+::::bootstrap:alert{variant="success"}
+:::bootstrap:alert-heading
+Well done!
 :::
+
+You successfully read this important alert message.
+::::
 
 ---
 
 ## Badges
 
-Small count and labeling component.
-
-### Basic Badges
-
 ```markdown
 :::bootstrap:badge{variant="primary"}
 Primary
-:::
-
-:::bootstrap:badge{variant="secondary"}
-Secondary
 :::
 
 :::bootstrap:badge{variant="success"}
@@ -273,12 +339,8 @@ Success
 Danger
 :::
 
-:::bootstrap:badge{variant="warning"}
-Warning
-:::
-
-:::bootstrap:badge{variant="info"}
-Info
+:::bootstrap:badge{variant="pill primary"}
+Pill Badge
 :::
 ```
 
@@ -288,10 +350,6 @@ Info
 Primary
 :::
 
-:::bootstrap:badge{variant="secondary"}
-Secondary
-:::
-
 :::bootstrap:badge{variant="success"}
 Success
 :::
@@ -300,25 +358,19 @@ Success
 Danger
 :::
 
-:::bootstrap:badge{variant="warning"}
-Warning
-:::
-
-:::bootstrap:badge{variant="info"}
-Info
+:::bootstrap:badge{variant="pill primary"}
+Pill Badge
 :::
 
 ---
 
 ## Buttons
 
-Interactive button elements.
-
-### Basic Buttons
+### Button Variants
 
 ```markdown
 :::bootstrap:button{variant="primary"}
-Primary Button
+Primary
 :::
 
 :::bootstrap:button{variant="secondary"}
@@ -333,19 +385,15 @@ Success
 Danger
 :::
 
-:::bootstrap:button{variant="warning"}
-Warning
-:::
-
-:::bootstrap:button{variant="info"}
-Info
+:::bootstrap:button{variant="outline-primary"}
+Outline Primary
 :::
 ```
 
 **Result:**
 
 :::bootstrap:button{variant="primary"}
-Primary Button
+Primary
 :::
 
 :::bootstrap:button{variant="secondary"}
@@ -360,158 +408,174 @@ Success
 Danger
 :::
 
-:::bootstrap:button{variant="warning"}
-Warning
-:::
-
-:::bootstrap:button{variant="info"}
-Info
-:::
-
-### Outline Buttons
-
-```markdown
 :::bootstrap:button{variant="outline-primary"}
 Outline Primary
 :::
 
-:::bootstrap:button{variant="outline-secondary"}
-Outline Secondary
+### Button Sizes
+
+```markdown
+:::bootstrap:button{variant="primary lg"}
+Large Button
+:::
+
+:::bootstrap:button{variant="primary sm"}
+Small Button
 :::
 ```
 
 **Result:**
 
-:::bootstrap:button{variant="outline-primary"}
-Outline Primary
+:::bootstrap:button{variant="primary lg"}
+Large Button
 :::
 
-:::bootstrap:button{variant="outline-secondary"}
-Outline Secondary
+:::bootstrap:button{variant="primary sm"}
+Small Button
 :::
+
+### Button Group
+
+```markdown
+::::bootstrap:btn-group
+:::bootstrap:button{variant="primary"}
+Left
+:::
+
+:::bootstrap:button{variant="primary"}
+Middle
+:::
+
+:::bootstrap:button{variant="primary"}
+Right
+:::
+::::
+```
+
+**Result:**
+
+::::bootstrap:btn-group
+:::bootstrap:button{variant="primary"}
+Left
+:::
+
+:::bootstrap:button{variant="primary"}
+Middle
+:::
+
+:::bootstrap:button{variant="primary"}
+Right
+:::
+::::
 
 ---
 
 ## Spinners
 
-Loading indicators.
-
-### Border Spinner
-
 ```markdown
 ::bootstrap:spinner{variant="primary"}
-```
 
-**Result:**
-
-::bootstrap:spinner{variant="primary"}
-
-### Grow Spinner
-
-```markdown
-::bootstrap:spinner{variant="grow"}
-```
-
-**Result:**
-
-::bootstrap:spinner{variant="grow"}
-
-### Color Variants
-
-```markdown
-::bootstrap:spinner{variant="primary"}
-::bootstrap:spinner{variant="secondary"}
 ::bootstrap:spinner{variant="success"}
-::bootstrap:spinner{variant="danger"}
+
+::bootstrap:spinner{variant="grow danger"}
 ```
 
 **Result:**
 
 ::bootstrap:spinner{variant="primary"}
-::bootstrap:spinner{variant="secondary"}
+
 ::bootstrap:spinner{variant="success"}
-::bootstrap:spinner{variant="danger"}
+
+::bootstrap:spinner{variant="grow danger"}
 
 ---
 
 ## Progress Bars
 
-Display progress indicators.
-
-### Progress Container
-
 ```markdown
-:::bootstrap:progress
-Progress container
-:::
-```
-
-**Result:**
-
-:::bootstrap:progress
-Progress container
+:::bootstrap:progress-bar{style="width: 25%"}
+25%
 :::
 
-### Progress Bar
-
-```markdown
-:::bootstrap:progress-bar{style="width: 50%"}
-50%
-:::
-```
-
-**Result:**
-
-:::bootstrap:progress-bar{style="width: 50%"}
+:::bootstrap:progress-bar{variant="success" style="width: 50%"}
 50%
 :::
 
-### Colored Progress
-
-```markdown
-:::bootstrap:progress-bar{variant="success" style="width: 75%"}
+:::bootstrap:progress-bar{variant="striped" style="width: 75%"}
 75%
+:::
+
+:::bootstrap:progress-bar{variant="animated" style="width: 100%"}
+100%
 :::
 ```
 
 **Result:**
 
-:::bootstrap:progress-bar{variant="success" style="width: 75%"}
+:::bootstrap:progress-bar{style="width: 25%"}
+25%
+:::
+
+:::bootstrap:progress-bar{variant="success" style="width: 50%"}
+50%
+:::
+
+:::bootstrap:progress-bar{variant="striped" style="width: 75%"}
 75%
 :::
 
-### Striped and Animated
+:::bootstrap:progress-bar{variant="animated" style="width: 100%"}
+100%
+:::
+
+---
+
+## Placeholders (Skeleton Loaders)
 
 ```markdown
-:::bootstrap:progress-bar{variant="striped" style="width: 60%"}
-60%
+::::bootstrap:placeholder-glow
+:::bootstrap:placeholder{class="col-6"}
 :::
 
-:::bootstrap:progress-bar{variant="animated" style="width: 80%"}
-80%
+:::bootstrap:placeholder{class="col-8"}
 :::
+
+:::bootstrap:placeholder{class="col-4"}
+:::
+::::
+
+::::bootstrap:placeholder-wave
+:::bootstrap:placeholder{variant="primary" class="col-12"}
+:::
+::::
 ```
 
 **Result:**
 
-:::bootstrap:progress-bar{variant="striped" style="width: 60%"}
-60%
+::::bootstrap:placeholder-glow
+:::bootstrap:placeholder{class="col-6"}
 :::
 
-:::bootstrap:progress-bar{variant="animated" style="width: 80%"}
-80%
+:::bootstrap:placeholder{class="col-8"}
 :::
+
+:::bootstrap:placeholder{class="col-4"}
+:::
+::::
+
+::::bootstrap:placeholder-wave
+:::bootstrap:placeholder{variant="primary" class="col-12"}
+:::
+::::
 
 ---
 
 ## Tables
 
-Styled data tables.
-
-### Basic Table
+### Table with Multiple Variants
 
 ```markdown
-:::bootstrap:table
+:::bootstrap:table{variant="striped hover"}
 | Name | Email | Role |
 |------|-------|------|
 | John | john@example.com | Admin |
@@ -521,17 +585,17 @@ Styled data tables.
 
 **Result:**
 
-:::bootstrap:table
+:::bootstrap:table{variant="striped hover"}
 | Name | Email | Role |
 |------|-------|------|
 | John | john@example.com | Admin |
 | Jane | jane@example.com | User |
 :::
 
-### Table Variants
+### Dark Table
 
 ```markdown
-:::bootstrap:table{variant="striped"}
+:::bootstrap:table{variant="dark striped"}
 | Name | Email | Role |
 |------|-------|------|
 | John | john@example.com | Admin |
@@ -541,61 +605,7 @@ Styled data tables.
 
 **Result:**
 
-:::bootstrap:table{variant="striped"}
-| Name | Email | Role |
-|------|-------|------|
-| John | john@example.com | Admin |
-| Jane | jane@example.com | User |
-:::
-
-```markdown
-:::bootstrap:table{variant="bordered"}
-| Name | Email | Role |
-|------|-------|------|
-| John | john@example.com | Admin |
-| Jane | jane@example.com | User |
-:::
-```
-
-**Result:**
-
-:::bootstrap:table{variant="bordered"}
-| Name | Email | Role |
-|------|-------|------|
-| John | john@example.com | Admin |
-| Jane | jane@example.com | User |
-:::
-
-```markdown
-:::bootstrap:table{variant="hover"}
-| Name | Email | Role |
-|------|-------|------|
-| John | john@example.com | Admin |
-| Jane | jane@example.com | User |
-:::
-```
-
-**Result:**
-
-:::bootstrap:table{variant="hover"}
-| Name | Email | Role |
-|------|-------|------|
-| John | john@example.com | Admin |
-| Jane | jane@example.com | User |
-:::
-
-```markdown
-:::bootstrap:table{variant="dark"}
-| Name | Email | Role |
-|------|-------|------|
-| John | john@example.com | Admin |
-| Jane | jane@example.com | User |
-:::
-```
-
-**Result:**
-
-:::bootstrap:table{variant="dark"}
+:::bootstrap:table{variant="dark striped"}
 | Name | Email | Role |
 |------|-------|------|
 | John | john@example.com | Admin |
@@ -606,307 +616,312 @@ Styled data tables.
 
 ## List Groups
 
-Flexible component for displaying lists.
-
-### List Group Container
+### Basic List Group
 
 ```markdown
-:::bootstrap:list-group
-List group container
-:::
-```
-
-**Result:**
-
-:::bootstrap:list-group
-List group container
-:::
-
-### List Group Item
-
-```markdown
+::::bootstrap:list-group
 :::bootstrap:list-group-item
 First item
 :::
 
-:::bootstrap:list-group-item
-Second item
+:::bootstrap:list-group-item{variant="active"}
+Active item
 :::
 
 :::bootstrap:list-group-item
 Third item
 :::
+::::
 ```
 
 **Result:**
 
+::::bootstrap:list-group
 :::bootstrap:list-group-item
 First item
 :::
 
-:::bootstrap:list-group-item
-Second item
+:::bootstrap:list-group-item{variant="active"}
+Active item
 :::
 
 :::bootstrap:list-group-item
 Third item
 :::
+::::
+
+### Colored List Group Items
+
+```markdown
+::::bootstrap:list-group
+:::bootstrap:list-group-item{variant="primary"}
+Primary item
+:::
+
+:::bootstrap:list-group-item{variant="success"}
+Success item
+:::
+
+:::bootstrap:list-group-item{variant="danger"}
+Danger item
+:::
+::::
+```
+
+**Result:**
+
+::::bootstrap:list-group
+:::bootstrap:list-group-item{variant="primary"}
+Primary item
+:::
+
+:::bootstrap:list-group-item{variant="success"}
+Success item
+:::
+
+:::bootstrap:list-group-item{variant="danger"}
+Danger item
+:::
+::::
 
 ---
 
 ## Accordion
 
-Collapsible content panels.
-
-### Accordion Container
-
 ```markdown
-:::bootstrap:accordion
-Accordion container
+::::::bootstrap:accordion{id="accordionExample"}
+:::::bootstrap:accordion-item
+::::bootstrap:accordion-header
+:::bootstrap:accordion-button
+Accordion Item #1
 :::
+::::
+
+::::bootstrap:accordion-collapse{variant="show" id="collapseOne"}
+:::bootstrap:accordion-body
+This is the first item's accordion body.
+:::
+::::
+:::::
+
+:::::bootstrap:accordion-item
+::::bootstrap:accordion-header
+:::bootstrap:accordion-button{variant="collapsed"}
+Accordion Item #2
+:::
+::::
+
+::::bootstrap:accordion-collapse{id="collapseTwo"}
+:::bootstrap:accordion-body
+This is the second item's accordion body.
+:::
+::::
+:::::
+::::::
 ```
 
 **Result:**
 
-:::bootstrap:accordion
-Accordion container
+::::::bootstrap:accordion{id="accordionExample"}
+:::::bootstrap:accordion-item
+::::bootstrap:accordion-header
+:::bootstrap:accordion-button
+Accordion Item #1
 :::
+::::
 
-### Accordion Item
-
-```markdown
-:::bootstrap:accordion-item
-### Section 1
-Content for the first section.
+::::bootstrap:accordion-collapse{variant="show" id="collapseOne"}
+:::bootstrap:accordion-body
+This is the first item's accordion body.
 :::
+::::
+:::::
 
-:::bootstrap:accordion-item
-### Section 2
-Content for the second section.
+:::::bootstrap:accordion-item
+::::bootstrap:accordion-header
+:::bootstrap:accordion-button{variant="collapsed"}
+Accordion Item #2
 :::
-```
+::::
 
-**Result:**
-
-:::bootstrap:accordion-item
-### Section 1
-Content for the first section.
+::::bootstrap:accordion-collapse{id="collapseTwo"}
+:::bootstrap:accordion-body
+This is the second item's accordion body.
 :::
-
-:::bootstrap:accordion-item
-### Section 2
-Content for the second section.
-:::
+::::
+:::::
+::::::
 
 ---
 
-## Modal Components
+## Tabs
 
-Dialog box components (use together for full modal).
-
-### Modal Container
-
-```markdown
-:::bootstrap:modal{id="exampleModal"}
-Modal container
-:::
-```
-
-**Result:**
-
-:::bootstrap:modal{id="exampleModal"}
-Modal container
-:::
-
-### Modal Header
+Bootstrap tabs require `data-bs-target` on each tab-link to reference the corresponding pane.
+The `data-bs-toggle="tab"` attribute is set automatically by default.
 
 ```markdown
-:::bootstrap:modal-header
-## Modal Title
-:::
-```
-
-**Result:**
-
-:::bootstrap:modal-header
-## Modal Title
-:::
-
-### Modal Body
-
-```markdown
-:::bootstrap:modal-body
-This is the modal body content.
-:::
-```
-
-**Result:**
-
-:::bootstrap:modal-body
-This is the modal body content.
-:::
-
-### Modal Footer
-
-```markdown
-:::bootstrap:modal-footer
-Modal footer content
-:::
-```
-
-**Result:**
-
-:::bootstrap:modal-footer
-Modal footer content
-:::
-
----
-
-## Toast Components
-
-Push notification components.
-
-### Toast Container
-
-```markdown
-:::bootstrap:toast
-Toast notification
-:::
-```
-
-**Result:**
-
-:::bootstrap:toast
-Toast notification
-:::
-
-### Toast Header
-
-```markdown
-:::bootstrap:toast-header
-**Notification** - just now
-:::
-```
-
-**Result:**
-
-:::bootstrap:toast-header
-**Notification** - just now
-:::
-
-### Toast Body
-
-```markdown
-:::bootstrap:toast-body
-Hello! This is a toast message.
-:::
-```
-
-**Result:**
-
-:::bootstrap:toast-body
-Hello! This is a toast message.
-:::
-
----
-
-## Navigation Components
-
-### Navbar
-
-```markdown
-:::bootstrap:navbar{variant="dark"}
-Navigation bar
-:::
-```
-
-**Result:**
-
-:::bootstrap:navbar{variant="dark"}
-Navigation bar
-:::
-
-### Navbar Brand
-
-```markdown
-:::bootstrap:navbar-brand
-My App
-:::
-```
-
-**Result:**
-
-:::bootstrap:navbar-brand
-My App
-:::
-
-### Nav Item
-
-```markdown
-:::bootstrap:nav-item
+:::::bootstrap:tabs{id="myTabs"}
+::::bootstrap:tab-item
+:::bootstrap:tab-link{variant="active" data-bs-target="#home"}
 Home
 :::
+::::
 
-:::bootstrap:nav-item
-About
+::::bootstrap:tab-item
+:::bootstrap:tab-link{data-bs-target="#profile"}
+Profile
 :::
+::::
+:::::
 
-:::bootstrap:nav-item
-Contact
-:::
-```
-
-**Result:**
-
-:::bootstrap:nav-item
-Home
-:::
-
-:::bootstrap:nav-item
-About
-:::
-
-:::bootstrap:nav-item
-Contact
-:::
-
----
-
-## Tab Components
-
-### Tab Pane
-
-```markdown
+::::bootstrap:tab-content
 :::bootstrap:tab-pane{variant="active" id="home"}
-### Home
-Content for the home tab.
+Home tab content
 :::
 
 :::bootstrap:tab-pane{id="profile"}
-### Profile
-Content for the profile tab.
+Profile tab content
 :::
+::::
 ```
 
 **Result:**
 
+:::::bootstrap:tabs{id="myTabs"}
+::::bootstrap:tab-item
+:::bootstrap:tab-link{variant="active" data-bs-target="#home"}
+Home
+:::
+::::
+
+::::bootstrap:tab-item
+:::bootstrap:tab-link{data-bs-target="#profile"}
+Profile
+:::
+::::
+:::::
+
+::::bootstrap:tab-content
 :::bootstrap:tab-pane{variant="active" id="home"}
-### Home
-Content for the home tab.
+Home tab content
 :::
 
 :::bootstrap:tab-pane{id="profile"}
-### Profile
-Content for the profile tab.
+Profile tab content
 :::
+::::
 
 ---
 
-## Breadcrumb Components
+## Navigation
 
-### Breadcrumb Item
+### Nav Pills
 
 ```markdown
+::::bootstrap:nav{variant="pills"}
+:::bootstrap:nav-item
+:::bootstrap:nav-link{variant="active"}
+Active
+:::
+:::
+
+:::bootstrap:nav-item
+:::bootstrap:nav-link
+Link
+:::
+:::
+
+:::bootstrap:nav-item
+:::bootstrap:nav-link{variant="disabled"}
+Disabled
+:::
+:::
+::::
+```
+
+---
+
+## Pagination
+
+```markdown
+:::::bootstrap:pagination
+::::bootstrap:pagination-list
+:::bootstrap:page-item{variant="disabled"}
+:::bootstrap:page-link
+Previous
+:::
+:::
+
+:::bootstrap:page-item
+:::bootstrap:page-link
+1
+:::
+:::
+
+:::bootstrap:page-item{variant="active"}
+:::bootstrap:page-link
+2
+:::
+:::
+
+:::bootstrap:page-item
+:::bootstrap:page-link
+3
+:::
+:::
+
+:::bootstrap:page-item
+:::bootstrap:page-link
+Next
+:::
+:::
+::::
+:::::
+```
+
+**Result:**
+
+:::::bootstrap:pagination
+::::bootstrap:pagination-list
+:::bootstrap:page-item{variant="disabled"}
+:::bootstrap:page-link
+Previous
+:::
+:::
+
+:::bootstrap:page-item
+:::bootstrap:page-link
+1
+:::
+:::
+
+:::bootstrap:page-item{variant="active"}
+:::bootstrap:page-link
+2
+:::
+:::
+
+:::bootstrap:page-item
+:::bootstrap:page-link
+3
+:::
+:::
+
+:::bootstrap:page-item
+:::bootstrap:page-link
+Next
+:::
+:::
+::::
+:::::
+
+---
+
+## Breadcrumb
+
+```markdown
+::::bootstrap:breadcrumb
+:::bootstrap:breadcrumb-list
 :::bootstrap:breadcrumb-item
 Home
 :::
@@ -918,10 +933,14 @@ Library
 :::bootstrap:breadcrumb-item{variant="active"}
 Data
 :::
+:::
+::::
 ```
 
 **Result:**
 
+::::bootstrap:breadcrumb
+:::bootstrap:breadcrumb-list
 :::bootstrap:breadcrumb-item
 Home
 :::
@@ -933,279 +952,318 @@ Library
 :::bootstrap:breadcrumb-item{variant="active"}
 Data
 :::
+:::
+::::
 
 ---
 
-## Offcanvas Components
-
-Sidebar overlay panels.
-
-### Offcanvas Container
+## Dropdown
 
 ```markdown
-:::bootstrap:offcanvas{variant="start" id="sidebar"}
-Offcanvas sidebar
+::::bootstrap:dropdown
+:::bootstrap:dropdown-toggle{variant="primary" data-bs-toggle="dropdown"}
+Dropdown button
 :::
+
+:::::bootstrap:dropdown-menu
+::::bootstrap:dropdown-item
+:::bootstrap:dropdown-item-link
+Action
+:::
+::::
+
+::::bootstrap:dropdown-item
+:::bootstrap:dropdown-item-link
+Another action
+:::
+::::
+
+:::bootstrap:dropdown-divider
+:::
+
+::::bootstrap:dropdown-item
+:::bootstrap:dropdown-item-link
+Separated link
+:::
+::::
+:::::
+::::
 ```
 
 **Result:**
 
-:::bootstrap:offcanvas{variant="start" id="sidebar"}
-Offcanvas sidebar
+::::bootstrap:dropdown
+:::bootstrap:dropdown-toggle{variant="primary" data-bs-toggle="dropdown"}
+Dropdown button
 :::
 
-### Offcanvas Header
-
-```markdown
-:::bootstrap:offcanvas-header
-## Menu
+:::::bootstrap:dropdown-menu
+::::bootstrap:dropdown-item
+:::bootstrap:dropdown-item-link
+Action
 :::
-```
+::::
 
-**Result:**
+::::bootstrap:dropdown-item
+:::bootstrap:dropdown-item-link
+Another action
+:::
+::::
 
-:::bootstrap:offcanvas-header
-## Menu
+:::bootstrap:dropdown-divider
 :::
 
-### Offcanvas Body
-
-```markdown
-:::bootstrap:offcanvas-body
-Sidebar content here.
+::::bootstrap:dropdown-item
+:::bootstrap:dropdown-item-link
+Separated link
 :::
-```
-
-**Result:**
-
-:::bootstrap:offcanvas-body
-Sidebar content here.
-:::
+::::
+:::::
+::::
 
 ---
 
-## Form Components
-
-### Form Group
+## Toast
 
 ```markdown
-:::bootstrap:form-group
-Form group container
+::::bootstrap:toast{variant="show"}
+:::bootstrap:toast-header
+**Bootstrap** - just now
+::bootstrap:btn-close{data-bs-dismiss="toast"}
 :::
+
+:::bootstrap:toast-body
+Hello! This is a toast message.
+:::
+::::
 ```
 
 **Result:**
 
-:::bootstrap:form-group
-Form group container
+::::bootstrap:toast{variant="show"}
+:::bootstrap:toast-header
+**Bootstrap** - just now
 :::
 
-### Form Label
+:::bootstrap:toast-body
+Hello! This is a toast message.
+:::
+::::
+
+---
+
+## Forms
+
+### Basic Form
 
 ```markdown
+::::bootstrap:form-group
 :::bootstrap:form-label
 Email address
 :::
+
+:::bootstrap:form-control{type="email" placeholder="Enter email"}
+:::
+
+:::bootstrap:form-text
+We'll never share your email.
+:::
+::::
+
+::::bootstrap:form-group
+:::bootstrap:form-label
+Password
+:::
+
+:::bootstrap:form-control{type="password" placeholder="Password"}
+:::
+::::
 ```
 
 **Result:**
 
+::::bootstrap:form-group
 :::bootstrap:form-label
 Email address
 :::
 
-### Form Control
-
-```markdown
 :::bootstrap:form-control{type="email" placeholder="Enter email"}
 :::
 
-:::bootstrap:form-control{variant="lg"}
-Large input
+:::bootstrap:form-text
+We'll never share your email.
+:::
+::::
+
+::::bootstrap:form-group
+:::bootstrap:form-label
+Password
 :::
 
-:::bootstrap:form-control{variant="sm"}
-Small input
+:::bootstrap:form-control{type="password" placeholder="Password"}
 :::
+::::
+
+### Input Group
+
+```markdown
+::::bootstrap:input-group
+:::bootstrap:input-group-text
+@
+:::
+
+:::bootstrap:form-control{placeholder="Username"}
+:::
+::::
 ```
 
 **Result:**
 
-:::bootstrap:form-control{type="email" placeholder="Enter email"}
+::::bootstrap:input-group
+:::bootstrap:input-group-text
+@
 :::
 
-:::bootstrap:form-control{variant="lg"}
-Large input
+:::bootstrap:form-control{placeholder="Username"}
 :::
-
-:::bootstrap:form-control{variant="sm"}
-Small input
-:::
+::::
 
 ---
 
-## Grid Components
+## Typography
 
-### Row
+### Display Headings
 
 ```markdown
-:::bootstrap:row
-Grid row container
+:::bootstrap:display{variant="1"}
+Display 1
+:::
+
+:::bootstrap:display{variant="4"}
+Display 4
 :::
 ```
 
 **Result:**
 
-:::bootstrap:row
-Grid row container
+:::bootstrap:display{variant="1"}
+Display 1
 :::
 
-### Column
+:::bootstrap:display{variant="4"}
+Display 4
+:::
+
+### Lead Paragraph
 
 ```markdown
-:::bootstrap:col{variant="6"}
-Half width (6 of 12 columns)
-:::
-
-:::bootstrap:col{variant="4"}
-One third
-:::
-
-:::bootstrap:col{variant="8"}
-Two thirds
+:::bootstrap:lead
+This is a lead paragraph. It stands out from regular paragraphs.
 :::
 ```
 
 **Result:**
 
-:::bootstrap:col{variant="6"}
-Half width (6 of 12 columns)
+:::bootstrap:lead
+This is a lead paragraph. It stands out from regular paragraphs.
 :::
 
-:::bootstrap:col{variant="4"}
-One third
-:::
+### Blockquote
 
-:::bootstrap:col{variant="8"}
-Two thirds
+```markdown
+::::bootstrap:blockquote
+A well-known quote, contained in a blockquote element.
+
+:::bootstrap:blockquote-footer
+Someone famous in *Source Title*
 :::
+::::
+```
+
+**Result:**
+
+::::bootstrap:blockquote
+A well-known quote, contained in a blockquote element.
+
+:::bootstrap:blockquote-footer
+Someone famous in *Source Title*
+:::
+::::
 
 ---
 
-## Dropdown Components
+## Utilities
 
-### Dropdown Container
+### Aspect Ratio
 
 ```markdown
-:::bootstrap:dropdown
-Dropdown container
+:::bootstrap:ratio{variant="16x9"}
+<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe>
 :::
 ```
 
-**Result:**
-
-:::bootstrap:dropdown
-Dropdown container
-:::
-
-### Dropdown Toggle
+### Visually Hidden (Screen Reader Only)
 
 ```markdown
-:::bootstrap:dropdown-toggle{variant="primary"}
-Dropdown
+:::bootstrap:visually-hidden
+This text is only visible to screen readers
 :::
 ```
-
-**Result:**
-
-:::bootstrap:dropdown-toggle{variant="primary"}
-Dropdown
-:::
-
-### Dropdown Item
-
-```markdown
-:::bootstrap:dropdown-item
-Action 1
-:::
-
-:::bootstrap:dropdown-item
-Action 2
-:::
-
-:::bootstrap:dropdown-item
-Action 3
-:::
-```
-
-**Result:**
-
-:::bootstrap:dropdown-item
-Action 1
-:::
-
-:::bootstrap:dropdown-item
-Action 2
-:::
-
-:::bootstrap:dropdown-item
-Action 3
-:::
 
 ---
 
-## Carousel Components
+## Component Reference
 
-### Carousel Container
+### Cards
+- `card`, `card-header`, `card-body`, `card-footer`, `card-title`, `card-subtitle`, `card-text`, `card-link`, `card-img-top`, `card-img-bottom`, `card-img-overlay`, `card-group`
 
-```markdown
-:::bootstrap:carousel{id="myCarousel"}
-Carousel container
-:::
-```
+### Alerts
+- `alert` (variants: primary, secondary, success, danger, warning, info, light, dark)
+- `alert-heading`, `alert-link`
 
-**Result:**
+### Buttons
+- `button` (variants: primary, secondary, success, danger, warning, info, light, dark, link, outline-*, lg, sm)
+- `btn-group`, `btn-toolbar`, `btn-close`
 
-:::bootstrap:carousel{id="myCarousel"}
-Carousel container
-:::
+### Navigation
+- `navbar`, `navbar-brand`, `navbar-toggler`, `navbar-collapse`, `navbar-nav`, `navbar-text`
+- `nav`, `nav-item`, `nav-link`
+- `tabs`, `tab-item`, `tab-link`, `tab-content`, `tab-pane`
+- `breadcrumb`, `breadcrumb-list`, `breadcrumb-item`
+- `pagination`, `pagination-list`, `page-item`, `page-link`
 
-### Carousel Item
+### Layout
+- `container` (variants: fluid, sm, md, lg, xl, xxl)
+- `row` (variants: g-0 to g-5)
+- `col` (variants: 1-12, auto, sm-*, md-*, lg-*, xl-*, xxl-*)
 
-```markdown
-:::bootstrap:carousel-item{variant="active"}
-Slide 1 Content
-:::
+### Forms
+- `form-group`, `form-floating`, `form-control`, `form-select`, `form-label`, `form-text`
+- `form-check`, `form-check-input`, `form-check-label`
+- `input-group`, `input-group-text`
 
-:::bootstrap:carousel-item
-Slide 2 Content
-:::
+### Components
+- `accordion`, `accordion-item`, `accordion-header`, `accordion-button`, `accordion-collapse`, `accordion-body`
+- `list-group`, `list-group-item`
+- `dropdown`, `dropdown-toggle`, `dropdown-menu`, `dropdown-item`, `dropdown-item-link`, `dropdown-header`, `dropdown-divider`
+- `modal`, `modal-dialog`, `modal-content`, `modal-header`, `modal-title`, `modal-body`, `modal-footer`
+- `toast`, `toast-container`, `toast-header`, `toast-body`
+- `offcanvas`, `offcanvas-header`, `offcanvas-title`, `offcanvas-body`
+- `carousel`, `carousel-indicators`, `carousel-inner`, `carousel-item`, `carousel-caption`
 
-:::bootstrap:carousel-item
-Slide 3 Content
-:::
-```
+### Indicators
+- `spinner` (variants: primary, secondary, success, danger, warning, info, light, dark, grow, sm)
+- `progress`, `progress-bar`
+- `placeholder`, `placeholder-glow`, `placeholder-wave`
+- `badge` (variants: primary, secondary, success, danger, warning, info, light, dark, pill)
 
-**Result:**
+### Typography
+- `display` (variants: 1-6)
+- `lead`, `blockquote`, `blockquote-footer`
 
-:::bootstrap:carousel-item{variant="active"}
-Slide 1 Content
-:::
-
-:::bootstrap:carousel-item
-Slide 2 Content
-:::
-
-:::bootstrap:carousel-item
-Slide 3 Content
-:::
-
----
-
-## Best Practices
-
-1. **Use single components** - Each component works independently
-2. **Semantic variants** - Use colors meaningfully (success for positive, danger for errors)
-3. **Combine with HTML** - For complex layouts, use HTML alongside directives
-4. **Mobile first** - Test at different screen sizes
-5. **Accessibility** - Use proper heading hierarchy inside components
+### Utilities
+- `ratio` (variants: 1x1, 4x3, 16x9, 21x9)
+- `visually-hidden`, `clearfix`
+- `figure`, `figure-img`, `figure-caption`
+- `img-fluid`, `img-thumbnail`
+- `collapse`, `table-responsive`

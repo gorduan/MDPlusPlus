@@ -1192,9 +1192,15 @@ export class MDPlusPlus {
     const componentClasses: string[] = componentDef?.classes ? [...componentDef.classes] : [];
 
     // Handle variant if specified (support both 'variant' and 'type' attributes)
+    // Multiple variants can be space-separated: variant="striped hover"
     const variantValue = safeAttributes.variant || safeAttributes.type;
-    if (variantValue && componentDef?.variants?.[variantValue]) {
-      componentClasses.push(...componentDef.variants[variantValue]);
+    if (variantValue && componentDef?.variants) {
+      const variants = String(variantValue).split(/\s+/).filter(Boolean);
+      for (const v of variants) {
+        if (componentDef.variants[v]) {
+          componentClasses.push(...componentDef.variants[v]);
+        }
+      }
     }
 
     // Handle dynamic class based on type attribute (e.g., for admonitions)
@@ -1212,7 +1218,14 @@ export class MDPlusPlus {
     // - boolean attributes
     const hastAttrs: Record<string, any> = {};
 
-    // Process all attributes
+    // Apply default attributes from component definition first
+    if (componentDef?.defaultAttributes) {
+      for (const [key, value] of Object.entries(componentDef.defaultAttributes)) {
+        hastAttrs[key] = value;
+      }
+    }
+
+    // Process all attributes (user attributes override defaults)
     for (const [key, value] of Object.entries(safeAttributes)) {
       // Skip variant/type as we already processed them for classes
       if (key === 'variant') continue;

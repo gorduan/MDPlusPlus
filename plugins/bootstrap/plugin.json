@@ -2,9 +2,9 @@
   "id": "bootstrap",
   "framework": "bootstrap",
   "name": "Bootstrap 5 Components",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "author": "MD++ Team",
-  "description": "Bootstrap 5 UI components for MD++. Includes cards, alerts, badges, buttons, modals, tabs, and more.",
+  "description": "Complete Bootstrap 5.3 UI components for MD++. Includes all layout, content, and interactive components with full nesting support.",
   "license": "MIT",
 
   "type": "components",
@@ -41,6 +41,49 @@
       "classes": ["card-footer"],
       "description": "Bootstrap card footer"
     },
+    "card-title": {
+      "tag": "h5",
+      "classes": ["card-title"],
+      "description": "Bootstrap card title"
+    },
+    "card-subtitle": {
+      "tag": "h6",
+      "classes": ["card-subtitle", "mb-2", "text-muted"],
+      "description": "Bootstrap card subtitle"
+    },
+    "card-text": {
+      "tag": "p",
+      "classes": ["card-text"],
+      "description": "Bootstrap card text"
+    },
+    "card-link": {
+      "tag": "a",
+      "classes": ["card-link"],
+      "description": "Bootstrap card link"
+    },
+    "card-img-top": {
+      "tag": "img",
+      "classes": ["card-img-top"],
+      "description": "Bootstrap card top image"
+    },
+    "card-img-bottom": {
+      "tag": "img",
+      "classes": ["card-img-bottom"],
+      "description": "Bootstrap card bottom image"
+    },
+    "card-img-overlay": {
+      "tag": "div",
+      "classes": ["card-img-overlay"],
+      "allowNesting": true,
+      "description": "Bootstrap card image overlay"
+    },
+    "card-group": {
+      "tag": "div",
+      "classes": ["card-group"],
+      "allowNesting": true,
+      "description": "Bootstrap card group"
+    },
+
     "alert": {
       "tag": "div",
       "classes": ["alert"],
@@ -56,21 +99,34 @@
         "dark": ["alert-dark"]
       }
     },
+    "alert-heading": {
+      "tag": "h4",
+      "classes": ["alert-heading"],
+      "description": "Bootstrap alert heading"
+    },
+    "alert-link": {
+      "tag": "a",
+      "classes": ["alert-link"],
+      "description": "Bootstrap alert link"
+    },
+
     "badge": {
       "tag": "span",
       "classes": ["badge"],
       "description": "Bootstrap badge/label",
       "variants": {
-        "primary": ["bg-primary"],
-        "secondary": ["bg-secondary"],
-        "success": ["bg-success"],
-        "danger": ["bg-danger"],
-        "warning": ["bg-warning", "text-dark"],
-        "info": ["bg-info", "text-dark"],
-        "light": ["bg-light", "text-dark"],
-        "dark": ["bg-dark"]
+        "primary": ["text-bg-primary"],
+        "secondary": ["text-bg-secondary"],
+        "success": ["text-bg-success"],
+        "danger": ["text-bg-danger"],
+        "warning": ["text-bg-warning"],
+        "info": ["text-bg-info"],
+        "light": ["text-bg-light"],
+        "dark": ["text-bg-dark"],
+        "pill": ["rounded-pill"]
       }
     },
+
     "button": {
       "tag": "button",
       "classes": ["btn"],
@@ -82,10 +138,47 @@
         "danger": ["btn-danger"],
         "warning": ["btn-warning"],
         "info": ["btn-info"],
+        "light": ["btn-light"],
+        "dark": ["btn-dark"],
+        "link": ["btn-link"],
         "outline-primary": ["btn-outline-primary"],
-        "outline-secondary": ["btn-outline-secondary"]
+        "outline-secondary": ["btn-outline-secondary"],
+        "outline-success": ["btn-outline-success"],
+        "outline-danger": ["btn-outline-danger"],
+        "outline-warning": ["btn-outline-warning"],
+        "outline-info": ["btn-outline-info"],
+        "outline-light": ["btn-outline-light"],
+        "outline-dark": ["btn-outline-dark"],
+        "lg": ["btn-lg"],
+        "sm": ["btn-sm"]
       }
     },
+    "btn-group": {
+      "tag": "div",
+      "classes": ["btn-group"],
+      "allowNesting": true,
+      "description": "Bootstrap button group",
+      "variants": {
+        "vertical": ["btn-group-vertical"],
+        "lg": ["btn-group-lg"],
+        "sm": ["btn-group-sm"]
+      }
+    },
+    "btn-toolbar": {
+      "tag": "div",
+      "classes": ["btn-toolbar"],
+      "allowNesting": true,
+      "description": "Bootstrap button toolbar"
+    },
+    "btn-close": {
+      "tag": "button",
+      "classes": ["btn-close"],
+      "description": "Bootstrap close button",
+      "variants": {
+        "white": ["btn-close-white"]
+      }
+    },
+
     "container": {
       "tag": "div",
       "classes": ["container"],
@@ -96,48 +189,127 @@
         "sm": ["container-sm"],
         "md": ["container-md"],
         "lg": ["container-lg"],
-        "xl": ["container-xl"]
+        "xl": ["container-xl"],
+        "xxl": ["container-xxl"]
       }
     },
     "row": {
       "tag": "div",
       "classes": ["row"],
       "allowNesting": true,
-      "description": "Bootstrap grid row"
+      "description": "Bootstrap grid row",
+      "variants": {
+        "g-0": ["g-0"],
+        "g-1": ["g-1"],
+        "g-2": ["g-2"],
+        "g-3": ["g-3"],
+        "g-4": ["g-4"],
+        "g-5": ["g-5"]
+      }
     },
     "col": {
       "tag": "div",
       "classes": ["col"],
+      "allowNesting": true,
       "description": "Bootstrap grid column",
       "variants": {
         "1": ["col-1"], "2": ["col-2"], "3": ["col-3"], "4": ["col-4"],
         "5": ["col-5"], "6": ["col-6"], "7": ["col-7"], "8": ["col-8"],
         "9": ["col-9"], "10": ["col-10"], "11": ["col-11"], "12": ["col-12"],
-        "auto": ["col-auto"]
+        "auto": ["col-auto"],
+        "sm-1": ["col-sm-1"], "sm-2": ["col-sm-2"], "sm-3": ["col-sm-3"], "sm-4": ["col-sm-4"],
+        "sm-5": ["col-sm-5"], "sm-6": ["col-sm-6"], "sm-7": ["col-sm-7"], "sm-8": ["col-sm-8"],
+        "sm-9": ["col-sm-9"], "sm-10": ["col-sm-10"], "sm-11": ["col-sm-11"], "sm-12": ["col-sm-12"],
+        "md-1": ["col-md-1"], "md-2": ["col-md-2"], "md-3": ["col-md-3"], "md-4": ["col-md-4"],
+        "md-5": ["col-md-5"], "md-6": ["col-md-6"], "md-7": ["col-md-7"], "md-8": ["col-md-8"],
+        "md-9": ["col-md-9"], "md-10": ["col-md-10"], "md-11": ["col-md-11"], "md-12": ["col-md-12"],
+        "lg-1": ["col-lg-1"], "lg-2": ["col-lg-2"], "lg-3": ["col-lg-3"], "lg-4": ["col-lg-4"],
+        "lg-5": ["col-lg-5"], "lg-6": ["col-lg-6"], "lg-7": ["col-lg-7"], "lg-8": ["col-lg-8"],
+        "lg-9": ["col-lg-9"], "lg-10": ["col-lg-10"], "lg-11": ["col-lg-11"], "lg-12": ["col-lg-12"],
+        "xl-1": ["col-xl-1"], "xl-2": ["col-xl-2"], "xl-3": ["col-xl-3"], "xl-4": ["col-xl-4"],
+        "xl-5": ["col-xl-5"], "xl-6": ["col-xl-6"], "xl-7": ["col-xl-7"], "xl-8": ["col-xl-8"],
+        "xl-9": ["col-xl-9"], "xl-10": ["col-xl-10"], "xl-11": ["col-xl-11"], "xl-12": ["col-xl-12"],
+        "xxl-1": ["col-xxl-1"], "xxl-2": ["col-xxl-2"], "xxl-3": ["col-xxl-3"], "xxl-4": ["col-xxl-4"],
+        "xxl-5": ["col-xxl-5"], "xxl-6": ["col-xxl-6"], "xxl-7": ["col-xxl-7"], "xxl-8": ["col-xxl-8"],
+        "xxl-9": ["col-xxl-9"], "xxl-10": ["col-xxl-10"], "xxl-11": ["col-xxl-11"], "xxl-12": ["col-xxl-12"]
       }
     },
+
     "accordion": {
       "tag": "div",
       "classes": ["accordion"],
       "allowNesting": true,
-      "description": "Bootstrap accordion container"
+      "description": "Bootstrap accordion container",
+      "variants": {
+        "flush": ["accordion-flush"]
+      }
     },
     "accordion-item": {
       "tag": "div",
       "classes": ["accordion-item"],
+      "allowNesting": true,
       "description": "Bootstrap accordion item"
     },
+    "accordion-header": {
+      "tag": "h2",
+      "classes": ["accordion-header"],
+      "description": "Bootstrap accordion header"
+    },
+    "accordion-button": {
+      "tag": "button",
+      "classes": ["accordion-button"],
+      "description": "Bootstrap accordion button",
+      "variants": {
+        "collapsed": ["collapsed"]
+      }
+    },
+    "accordion-collapse": {
+      "tag": "div",
+      "classes": ["accordion-collapse", "collapse"],
+      "allowNesting": true,
+      "description": "Bootstrap accordion collapse",
+      "variants": {
+        "show": ["show"]
+      }
+    },
+    "accordion-body": {
+      "tag": "div",
+      "classes": ["accordion-body"],
+      "allowNesting": true,
+      "description": "Bootstrap accordion body"
+    },
+
     "list-group": {
       "tag": "ul",
       "classes": ["list-group"],
       "allowNesting": true,
-      "description": "Bootstrap list group"
+      "description": "Bootstrap list group",
+      "variants": {
+        "flush": ["list-group-flush"],
+        "numbered": ["list-group-numbered"],
+        "horizontal": ["list-group-horizontal"]
+      }
     },
     "list-group-item": {
       "tag": "li",
       "classes": ["list-group-item"],
-      "description": "Bootstrap list group item"
+      "allowNesting": true,
+      "description": "Bootstrap list group item",
+      "variants": {
+        "primary": ["list-group-item-primary"],
+        "secondary": ["list-group-item-secondary"],
+        "success": ["list-group-item-success"],
+        "danger": ["list-group-item-danger"],
+        "warning": ["list-group-item-warning"],
+        "info": ["list-group-item-info"],
+        "light": ["list-group-item-light"],
+        "dark": ["list-group-item-dark"],
+        "action": ["list-group-item-action"],
+        "active": ["active"],
+        "disabled": ["disabled"]
+      }
     },
+
     "spinner": {
       "tag": "div",
       "classes": ["spinner-border"],
@@ -147,14 +319,23 @@
         "secondary": ["text-secondary"],
         "success": ["text-success"],
         "danger": ["text-danger"],
-        "grow": ["spinner-grow"]
+        "warning": ["text-warning"],
+        "info": ["text-info"],
+        "light": ["text-light"],
+        "dark": ["text-dark"],
+        "grow": ["spinner-grow"],
+        "sm": ["spinner-border-sm"]
       }
     },
+
     "progress": {
       "tag": "div",
       "classes": ["progress"],
       "allowNesting": true,
-      "description": "Bootstrap progress bar container"
+      "description": "Bootstrap progress bar container",
+      "variants": {
+        "stacked": ["progress-stacked"]
+      }
     },
     "progress-bar": {
       "tag": "div",
@@ -171,113 +352,346 @@
         "animated": ["progress-bar-striped", "progress-bar-animated"]
       }
     },
+
+    "placeholder": {
+      "tag": "span",
+      "classes": ["placeholder"],
+      "description": "Bootstrap placeholder/skeleton loader",
+      "variants": {
+        "glow": ["placeholder-glow"],
+        "wave": ["placeholder-wave"],
+        "lg": ["placeholder-lg"],
+        "sm": ["placeholder-sm"],
+        "xs": ["placeholder-xs"],
+        "primary": ["bg-primary"],
+        "secondary": ["bg-secondary"],
+        "success": ["bg-success"],
+        "danger": ["bg-danger"],
+        "warning": ["bg-warning"],
+        "info": ["bg-info"],
+        "light": ["bg-light"],
+        "dark": ["bg-dark"]
+      }
+    },
+    "placeholder-glow": {
+      "tag": "p",
+      "classes": ["placeholder-glow"],
+      "allowNesting": true,
+      "description": "Bootstrap placeholder with glow animation"
+    },
+    "placeholder-wave": {
+      "tag": "p",
+      "classes": ["placeholder-wave"],
+      "allowNesting": true,
+      "description": "Bootstrap placeholder with wave animation"
+    },
+
     "modal": {
       "tag": "div",
       "classes": ["modal", "fade"],
       "allowNesting": true,
       "description": "Bootstrap modal dialog",
       "variants": {
-        "lg": ["modal-lg"],
-        "sm": ["modal-sm"],
-        "xl": ["modal-xl"],
-        "centered": ["modal-dialog-centered"],
-        "scrollable": ["modal-dialog-scrollable"]
+        "static": ["modal-static"]
       }
     },
     "modal-dialog": {
       "tag": "div",
       "classes": ["modal-dialog"],
-      "allowNesting": true
+      "allowNesting": true,
+      "description": "Bootstrap modal dialog wrapper",
+      "variants": {
+        "lg": ["modal-lg"],
+        "sm": ["modal-sm"],
+        "xl": ["modal-xl"],
+        "fullscreen": ["modal-fullscreen"],
+        "centered": ["modal-dialog-centered"],
+        "scrollable": ["modal-dialog-scrollable"]
+      }
     },
     "modal-content": {
       "tag": "div",
       "classes": ["modal-content"],
-      "allowNesting": true
+      "allowNesting": true,
+      "description": "Bootstrap modal content"
     },
     "modal-header": {
       "tag": "div",
-      "classes": ["modal-header"]
+      "classes": ["modal-header"],
+      "allowNesting": true,
+      "description": "Bootstrap modal header"
+    },
+    "modal-title": {
+      "tag": "h5",
+      "classes": ["modal-title"],
+      "description": "Bootstrap modal title"
     },
     "modal-body": {
       "tag": "div",
-      "classes": ["modal-body"]
+      "classes": ["modal-body"],
+      "allowNesting": true,
+      "description": "Bootstrap modal body"
     },
     "modal-footer": {
       "tag": "div",
-      "classes": ["modal-footer"]
+      "classes": ["modal-footer"],
+      "allowNesting": true,
+      "description": "Bootstrap modal footer"
     },
+
     "tabs": {
       "tag": "ul",
       "classes": ["nav", "nav-tabs"],
       "allowNesting": true,
       "description": "Bootstrap tab navigation",
-      "specialParser": "tabs"
+      "defaultAttributes": {
+        "role": "tablist"
+      },
+      "variants": {
+        "pills": ["nav-pills"],
+        "underline": ["nav-underline"],
+        "fill": ["nav-fill"],
+        "justified": ["nav-justified"]
+      }
+    },
+    "tab-item": {
+      "tag": "li",
+      "classes": ["nav-item"],
+      "allowNesting": true,
+      "description": "Bootstrap tab item",
+      "defaultAttributes": {
+        "role": "presentation"
+      }
+    },
+    "tab-link": {
+      "tag": "button",
+      "classes": ["nav-link"],
+      "description": "Bootstrap tab link. Use data-bs-toggle='tab' and data-bs-target='#paneid' for JavaScript tabs",
+      "defaultAttributes": {
+        "type": "button",
+        "role": "tab",
+        "data-bs-toggle": "tab"
+      },
+      "variants": {
+        "active": ["active"],
+        "disabled": ["disabled"]
+      }
     },
     "tab-content": {
       "tag": "div",
       "classes": ["tab-content"],
-      "allowNesting": true
+      "allowNesting": true,
+      "description": "Bootstrap tab content container"
     },
     "tab-pane": {
       "tag": "div",
       "classes": ["tab-pane", "fade"],
+      "allowNesting": true,
+      "description": "Bootstrap tab pane",
+      "defaultAttributes": {
+        "role": "tabpanel",
+        "tabindex": "0"
+      },
       "variants": {
         "active": ["show", "active"]
       }
     },
+
     "table": {
       "tag": "table",
       "classes": ["table"],
       "description": "Bootstrap styled table",
       "variants": {
         "striped": ["table-striped"],
+        "striped-columns": ["table-striped-columns"],
         "bordered": ["table-bordered"],
+        "borderless": ["table-borderless"],
         "hover": ["table-hover"],
         "dark": ["table-dark"],
-        "sm": ["table-sm"]
+        "light": ["table-light"],
+        "sm": ["table-sm"],
+        "responsive": ["table-responsive"],
+        "primary": ["table-primary"],
+        "secondary": ["table-secondary"],
+        "success": ["table-success"],
+        "danger": ["table-danger"],
+        "warning": ["table-warning"],
+        "info": ["table-info"]
       }
     },
+    "table-responsive": {
+      "tag": "div",
+      "classes": ["table-responsive"],
+      "allowNesting": true,
+      "description": "Bootstrap responsive table wrapper"
+    },
+    "thead": {
+      "tag": "thead",
+      "classes": [],
+      "allowNesting": true,
+      "description": "Table header",
+      "variants": {
+        "dark": ["table-dark"],
+        "light": ["table-light"]
+      }
+    },
+    "tbody": {
+      "tag": "tbody",
+      "classes": [],
+      "allowNesting": true,
+      "description": "Table body"
+    },
+    "tr": {
+      "tag": "tr",
+      "classes": [],
+      "allowNesting": true,
+      "description": "Table row",
+      "variants": {
+        "primary": ["table-primary"],
+        "secondary": ["table-secondary"],
+        "success": ["table-success"],
+        "danger": ["table-danger"],
+        "warning": ["table-warning"],
+        "info": ["table-info"],
+        "light": ["table-light"],
+        "dark": ["table-dark"],
+        "active": ["table-active"]
+      }
+    },
+    "th": {
+      "tag": "th",
+      "classes": [],
+      "description": "Table header cell"
+    },
+    "td": {
+      "tag": "td",
+      "classes": [],
+      "description": "Table data cell"
+    },
+
     "dropdown": {
       "tag": "div",
       "classes": ["dropdown"],
       "allowNesting": true,
-      "description": "Bootstrap dropdown container"
+      "description": "Bootstrap dropdown container",
+      "variants": {
+        "dropup": ["dropup"],
+        "dropend": ["dropend"],
+        "dropstart": ["dropstart"],
+        "center": ["dropdown-center"]
+      }
+    },
+    "dropdown-toggle": {
+      "tag": "button",
+      "classes": ["btn", "dropdown-toggle"],
+      "description": "Bootstrap dropdown toggle button",
+      "variants": {
+        "split": ["dropdown-toggle-split"],
+        "primary": ["btn-primary"],
+        "secondary": ["btn-secondary"],
+        "success": ["btn-success"],
+        "danger": ["btn-danger"],
+        "warning": ["btn-warning"],
+        "info": ["btn-info"]
+      }
     },
     "dropdown-menu": {
       "tag": "ul",
       "classes": ["dropdown-menu"],
-      "allowNesting": true
+      "allowNesting": true,
+      "description": "Bootstrap dropdown menu",
+      "variants": {
+        "dark": ["dropdown-menu-dark"],
+        "end": ["dropdown-menu-end"]
+      }
     },
     "dropdown-item": {
       "tag": "li",
-      "classes": []
+      "classes": [],
+      "description": "Bootstrap dropdown item wrapper"
     },
+    "dropdown-item-link": {
+      "tag": "a",
+      "classes": ["dropdown-item"],
+      "description": "Bootstrap dropdown item link",
+      "variants": {
+        "active": ["active"],
+        "disabled": ["disabled"]
+      }
+    },
+    "dropdown-header": {
+      "tag": "h6",
+      "classes": ["dropdown-header"],
+      "description": "Bootstrap dropdown header"
+    },
+    "dropdown-divider": {
+      "tag": "hr",
+      "classes": ["dropdown-divider"],
+      "description": "Bootstrap dropdown divider"
+    },
+    "dropdown-text": {
+      "tag": "span",
+      "classes": ["dropdown-item-text"],
+      "description": "Bootstrap dropdown text"
+    },
+
     "toast": {
       "tag": "div",
       "classes": ["toast"],
       "allowNesting": true,
-      "description": "Bootstrap toast notification"
+      "description": "Bootstrap toast notification",
+      "variants": {
+        "showing": ["showing"],
+        "show": ["show"],
+        "hide": ["hide"]
+      }
+    },
+    "toast-container": {
+      "tag": "div",
+      "classes": ["toast-container"],
+      "allowNesting": true,
+      "description": "Bootstrap toast container",
+      "variants": {
+        "top-start": ["position-fixed", "top-0", "start-0"],
+        "top-center": ["position-fixed", "top-0", "start-50", "translate-middle-x"],
+        "top-end": ["position-fixed", "top-0", "end-0"],
+        "middle-start": ["position-fixed", "top-50", "start-0", "translate-middle-y"],
+        "middle-center": ["position-fixed", "top-50", "start-50", "translate-middle"],
+        "middle-end": ["position-fixed", "top-50", "end-0", "translate-middle-y"],
+        "bottom-start": ["position-fixed", "bottom-0", "start-0"],
+        "bottom-center": ["position-fixed", "bottom-0", "start-50", "translate-middle-x"],
+        "bottom-end": ["position-fixed", "bottom-0", "end-0"]
+      }
     },
     "toast-header": {
       "tag": "div",
-      "classes": ["toast-header"]
+      "classes": ["toast-header"],
+      "allowNesting": true,
+      "description": "Bootstrap toast header"
     },
     "toast-body": {
       "tag": "div",
-      "classes": ["toast-body"]
+      "classes": ["toast-body"],
+      "allowNesting": true,
+      "description": "Bootstrap toast body"
     },
+
     "navbar": {
       "tag": "nav",
       "classes": ["navbar"],
       "allowNesting": true,
       "description": "Bootstrap navigation bar",
       "variants": {
-        "light": ["navbar-light", "bg-light"],
-        "dark": ["navbar-dark", "bg-dark"],
-        "expand-lg": ["navbar-expand-lg"],
+        "light": ["navbar-light"],
+        "dark": ["navbar-dark"],
+        "expand-sm": ["navbar-expand-sm"],
         "expand-md": ["navbar-expand-md"],
+        "expand-lg": ["navbar-expand-lg"],
+        "expand-xl": ["navbar-expand-xl"],
+        "expand-xxl": ["navbar-expand-xxl"],
         "fixed-top": ["fixed-top"],
-        "fixed-bottom": ["fixed-bottom"]
+        "fixed-bottom": ["fixed-bottom"],
+        "sticky-top": ["sticky-top"]
       }
     },
     "navbar-brand": {
@@ -285,43 +699,114 @@
       "classes": ["navbar-brand"],
       "description": "Bootstrap navbar brand/logo"
     },
-    "nav": {
+    "navbar-toggler": {
+      "tag": "button",
+      "classes": ["navbar-toggler"],
+      "description": "Bootstrap navbar toggle button"
+    },
+    "navbar-toggler-icon": {
+      "tag": "span",
+      "classes": ["navbar-toggler-icon"],
+      "description": "Bootstrap navbar toggle icon"
+    },
+    "navbar-collapse": {
+      "tag": "div",
+      "classes": ["collapse", "navbar-collapse"],
+      "allowNesting": true,
+      "description": "Bootstrap navbar collapse container"
+    },
+    "navbar-nav": {
       "tag": "ul",
       "classes": ["navbar-nav"],
       "allowNesting": true,
-      "description": "Bootstrap nav list"
+      "description": "Bootstrap navbar nav list"
+    },
+    "navbar-text": {
+      "tag": "span",
+      "classes": ["navbar-text"],
+      "description": "Bootstrap navbar text"
+    },
+    "nav": {
+      "tag": "ul",
+      "classes": ["nav"],
+      "allowNesting": true,
+      "description": "Bootstrap nav list",
+      "variants": {
+        "pills": ["nav-pills"],
+        "tabs": ["nav-tabs"],
+        "underline": ["nav-underline"],
+        "fill": ["nav-fill"],
+        "justified": ["nav-justified"],
+        "vertical": ["flex-column"]
+      }
     },
     "nav-item": {
       "tag": "li",
       "classes": ["nav-item"],
-      "description": "Bootstrap nav item"
+      "allowNesting": true,
+      "description": "Bootstrap nav item",
+      "variants": {
+        "dropdown": ["dropdown"]
+      }
     },
     "nav-link": {
       "tag": "a",
       "classes": ["nav-link"],
-      "description": "Bootstrap nav link"
+      "description": "Bootstrap nav link",
+      "variants": {
+        "active": ["active"],
+        "disabled": ["disabled"]
+      }
     },
+
     "carousel": {
       "tag": "div",
       "classes": ["carousel", "slide"],
       "allowNesting": true,
       "description": "Bootstrap carousel/slider",
       "variants": {
-        "fade": ["carousel-fade"]
+        "fade": ["carousel-fade"],
+        "dark": ["carousel-dark"]
       }
+    },
+    "carousel-indicators": {
+      "tag": "div",
+      "classes": ["carousel-indicators"],
+      "allowNesting": true,
+      "description": "Bootstrap carousel indicators"
     },
     "carousel-inner": {
       "tag": "div",
       "classes": ["carousel-inner"],
-      "allowNesting": true
+      "allowNesting": true,
+      "description": "Bootstrap carousel inner container"
     },
     "carousel-item": {
       "tag": "div",
       "classes": ["carousel-item"],
+      "allowNesting": true,
+      "description": "Bootstrap carousel item",
       "variants": {
         "active": ["active"]
       }
     },
+    "carousel-caption": {
+      "tag": "div",
+      "classes": ["carousel-caption", "d-none", "d-md-block"],
+      "allowNesting": true,
+      "description": "Bootstrap carousel caption"
+    },
+    "carousel-control-prev": {
+      "tag": "button",
+      "classes": ["carousel-control-prev"],
+      "description": "Bootstrap carousel previous control"
+    },
+    "carousel-control-next": {
+      "tag": "button",
+      "classes": ["carousel-control-next"],
+      "description": "Bootstrap carousel next control"
+    },
+
     "breadcrumb": {
       "tag": "nav",
       "classes": [],
@@ -330,24 +815,61 @@
     },
     "breadcrumb-list": {
       "tag": "ol",
-      "classes": ["breadcrumb"]
+      "classes": ["breadcrumb"],
+      "allowNesting": true,
+      "description": "Bootstrap breadcrumb list"
     },
     "breadcrumb-item": {
       "tag": "li",
       "classes": ["breadcrumb-item"],
+      "description": "Bootstrap breadcrumb item",
       "variants": {
         "active": ["active"]
       }
     },
-    "dropdown-toggle": {
-      "tag": "button",
-      "classes": ["btn", "dropdown-toggle"],
-      "description": "Bootstrap dropdown toggle button"
+
+    "pagination": {
+      "tag": "nav",
+      "classes": [],
+      "allowNesting": true,
+      "description": "Bootstrap pagination navigation"
     },
+    "pagination-list": {
+      "tag": "ul",
+      "classes": ["pagination"],
+      "allowNesting": true,
+      "description": "Bootstrap pagination list",
+      "variants": {
+        "lg": ["pagination-lg"],
+        "sm": ["pagination-sm"]
+      }
+    },
+    "page-item": {
+      "tag": "li",
+      "classes": ["page-item"],
+      "description": "Bootstrap page item",
+      "variants": {
+        "active": ["active"],
+        "disabled": ["disabled"]
+      }
+    },
+    "page-link": {
+      "tag": "a",
+      "classes": ["page-link"],
+      "description": "Bootstrap page link"
+    },
+
     "form-group": {
       "tag": "div",
       "classes": ["mb-3"],
+      "allowNesting": true,
       "description": "Bootstrap form group"
+    },
+    "form-floating": {
+      "tag": "div",
+      "classes": ["form-floating"],
+      "allowNesting": true,
+      "description": "Bootstrap floating label form group"
     },
     "form-control": {
       "tag": "input",
@@ -355,17 +877,70 @@
       "description": "Bootstrap form input",
       "variants": {
         "lg": ["form-control-lg"],
-        "sm": ["form-control-sm"]
+        "sm": ["form-control-sm"],
+        "plaintext": ["form-control-plaintext"]
       }
+    },
+    "form-select": {
+      "tag": "select",
+      "classes": ["form-select"],
+      "description": "Bootstrap form select",
+      "variants": {
+        "lg": ["form-select-lg"],
+        "sm": ["form-select-sm"]
+      }
+    },
+    "form-check": {
+      "tag": "div",
+      "classes": ["form-check"],
+      "allowNesting": true,
+      "description": "Bootstrap form check container",
+      "variants": {
+        "inline": ["form-check-inline"],
+        "switch": ["form-switch"],
+        "reverse": ["form-check-reverse"]
+      }
+    },
+    "form-check-input": {
+      "tag": "input",
+      "classes": ["form-check-input"],
+      "description": "Bootstrap form check input"
+    },
+    "form-check-label": {
+      "tag": "label",
+      "classes": ["form-check-label"],
+      "description": "Bootstrap form check label"
     },
     "form-label": {
       "tag": "label",
       "classes": ["form-label"],
       "description": "Bootstrap form label"
     },
+    "form-text": {
+      "tag": "div",
+      "classes": ["form-text"],
+      "description": "Bootstrap form help text"
+    },
+    "input-group": {
+      "tag": "div",
+      "classes": ["input-group"],
+      "allowNesting": true,
+      "description": "Bootstrap input group",
+      "variants": {
+        "lg": ["input-group-lg"],
+        "sm": ["input-group-sm"]
+      }
+    },
+    "input-group-text": {
+      "tag": "span",
+      "classes": ["input-group-text"],
+      "description": "Bootstrap input group text"
+    },
+
     "offcanvas": {
       "tag": "div",
       "classes": ["offcanvas"],
+      "allowNesting": true,
       "description": "Bootstrap offcanvas sidebar",
       "variants": {
         "start": ["offcanvas-start"],
@@ -376,16 +951,121 @@
     },
     "offcanvas-header": {
       "tag": "div",
-      "classes": ["offcanvas-header"]
+      "classes": ["offcanvas-header"],
+      "allowNesting": true,
+      "description": "Bootstrap offcanvas header"
+    },
+    "offcanvas-title": {
+      "tag": "h5",
+      "classes": ["offcanvas-title"],
+      "description": "Bootstrap offcanvas title"
     },
     "offcanvas-body": {
       "tag": "div",
-      "classes": ["offcanvas-body"]
+      "classes": ["offcanvas-body"],
+      "allowNesting": true,
+      "description": "Bootstrap offcanvas body"
+    },
+
+    "collapse": {
+      "tag": "div",
+      "classes": ["collapse"],
+      "allowNesting": true,
+      "description": "Bootstrap collapse container",
+      "variants": {
+        "show": ["show"],
+        "horizontal": ["collapse-horizontal"]
+      }
+    },
+
+    "figure": {
+      "tag": "figure",
+      "classes": ["figure"],
+      "allowNesting": true,
+      "description": "Bootstrap figure"
+    },
+    "figure-img": {
+      "tag": "img",
+      "classes": ["figure-img", "img-fluid", "rounded"],
+      "description": "Bootstrap figure image"
+    },
+    "figure-caption": {
+      "tag": "figcaption",
+      "classes": ["figure-caption"],
+      "description": "Bootstrap figure caption"
+    },
+
+    "img-fluid": {
+      "tag": "img",
+      "classes": ["img-fluid"],
+      "description": "Bootstrap responsive image"
+    },
+    "img-thumbnail": {
+      "tag": "img",
+      "classes": ["img-thumbnail"],
+      "description": "Bootstrap thumbnail image"
+    },
+
+    "ratio": {
+      "tag": "div",
+      "classes": ["ratio"],
+      "allowNesting": true,
+      "description": "Bootstrap aspect ratio container",
+      "variants": {
+        "1x1": ["ratio-1x1"],
+        "4x3": ["ratio-4x3"],
+        "16x9": ["ratio-16x9"],
+        "21x9": ["ratio-21x9"]
+      }
+    },
+
+    "visually-hidden": {
+      "tag": "span",
+      "classes": ["visually-hidden"],
+      "description": "Bootstrap visually hidden (screen reader only)"
+    },
+
+    "clearfix": {
+      "tag": "div",
+      "classes": ["clearfix"],
+      "description": "Bootstrap clearfix"
+    },
+
+    "lead": {
+      "tag": "p",
+      "classes": ["lead"],
+      "description": "Bootstrap lead paragraph"
+    },
+
+    "blockquote": {
+      "tag": "blockquote",
+      "classes": ["blockquote"],
+      "allowNesting": true,
+      "description": "Bootstrap blockquote"
+    },
+    "blockquote-footer": {
+      "tag": "footer",
+      "classes": ["blockquote-footer"],
+      "description": "Bootstrap blockquote footer"
+    },
+
+    "display": {
+      "tag": "h1",
+      "classes": [],
+      "description": "Bootstrap display heading",
+      "variants": {
+        "1": ["display-1"],
+        "2": ["display-2"],
+        "3": ["display-3"],
+        "4": ["display-4"],
+        "5": ["display-5"],
+        "6": ["display-6"]
+      }
     }
   },
 
   "categories": ["ui", "css-framework"],
-  "keywords": ["bootstrap", "ui", "components", "css", "responsive"],
+  "keywords": ["bootstrap", "bootstrap5", "ui", "components", "css", "responsive", "grid", "flexbox"],
 
   "minAppVersion": "1.0.0"
 }

@@ -776,14 +776,26 @@ export class MDPlusPlusWithPlugins {
     const tagName = componentDef?.tag || 'div';
     const componentClasses: string[] = componentDef?.classes ? [...componentDef.classes] : [];
 
-    // Handle variant
+    // Handle variant - support multiple space-separated variants: variant="striped hover"
     const variantValue = attributes.variant || attributes.type;
-    if (variantValue && componentDef?.variants?.[variantValue]) {
-      componentClasses.push(...componentDef.variants[variantValue]);
+    if (variantValue && componentDef?.variants) {
+      const variants = String(variantValue).split(/\s+/).filter(Boolean);
+      for (const v of variants) {
+        if (componentDef.variants[v]) {
+          componentClasses.push(...componentDef.variants[v]);
+        }
+      }
     }
 
     // Build properties
     const properties: Record<string, any> = {};
+
+    // Apply default attributes from component definition first
+    if (componentDef?.defaultAttributes) {
+      for (const [key, value] of Object.entries(componentDef.defaultAttributes)) {
+        properties[key] = value;
+      }
+    }
 
     for (const [key, value] of Object.entries(attributes)) {
       if (key === 'variant') continue;
