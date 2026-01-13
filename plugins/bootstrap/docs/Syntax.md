@@ -688,16 +688,20 @@ Danger item
 
 ## Accordion
 
+Bootstrap accordions require `data-bs-target` on each accordion-button to reference the corresponding collapse.
+The `data-bs-toggle="collapse"` attribute is set automatically by default.
+Use `data-bs-parent` on accordion-collapse elements to close other items when opening a new one.
+
 ```markdown
 ::::::bootstrap:accordion{id="accordionExample"}
 :::::bootstrap:accordion-item
 ::::bootstrap:accordion-header
-:::bootstrap:accordion-button
+:::bootstrap:accordion-button{data-bs-target="#collapseOne"}
 Accordion Item #1
 :::
 ::::
 
-::::bootstrap:accordion-collapse{variant="show" id="collapseOne"}
+::::bootstrap:accordion-collapse{variant="show" id="collapseOne" data-bs-parent="#accordionExample"}
 :::bootstrap:accordion-body
 This is the first item's accordion body.
 :::
@@ -706,12 +710,12 @@ This is the first item's accordion body.
 
 :::::bootstrap:accordion-item
 ::::bootstrap:accordion-header
-:::bootstrap:accordion-button{variant="collapsed"}
+:::bootstrap:accordion-button{variant="collapsed" data-bs-target="#collapseTwo"}
 Accordion Item #2
 :::
 ::::
 
-::::bootstrap:accordion-collapse{id="collapseTwo"}
+::::bootstrap:accordion-collapse{id="collapseTwo" data-bs-parent="#accordionExample"}
 :::bootstrap:accordion-body
 This is the second item's accordion body.
 :::
@@ -725,12 +729,12 @@ This is the second item's accordion body.
 ::::::bootstrap:accordion{id="accordionExample"}
 :::::bootstrap:accordion-item
 ::::bootstrap:accordion-header
-:::bootstrap:accordion-button
+:::bootstrap:accordion-button{data-bs-target="#collapseOne"}
 Accordion Item #1
 :::
 ::::
 
-::::bootstrap:accordion-collapse{variant="show" id="collapseOne"}
+::::bootstrap:accordion-collapse{variant="show" id="collapseOne" data-bs-parent="#accordionExample"}
 :::bootstrap:accordion-body
 This is the first item's accordion body.
 :::
@@ -739,12 +743,12 @@ This is the first item's accordion body.
 
 :::::bootstrap:accordion-item
 ::::bootstrap:accordion-header
-:::bootstrap:accordion-button{variant="collapsed"}
+:::bootstrap:accordion-button{variant="collapsed" data-bs-target="#collapseTwo"}
 Accordion Item #2
 :::
 ::::
 
-::::bootstrap:accordion-collapse{id="collapseTwo"}
+::::bootstrap:accordion-collapse{id="collapseTwo" data-bs-parent="#accordionExample"}
 :::bootstrap:accordion-body
 This is the second item's accordion body.
 :::
@@ -815,113 +819,173 @@ Profile tab content
 
 ## Navigation
 
-### Nav Pills
+### Nav Pills with Content
+
+Nav Pills work like tabs - use `data-bs-toggle="pill"` and `data-bs-target` to link to content panes.
+The `nav-link` component is now a `<button>` which works better with Bootstrap's JavaScript.
 
 ```markdown
-::::bootstrap:nav{variant="pills"}
-:::bootstrap:nav-item
-:::bootstrap:nav-link{variant="active"}
-Active
-:::
-:::
-
-:::bootstrap:nav-item
-:::bootstrap:nav-link
-Link
-:::
-:::
-
-:::bootstrap:nav-item
-:::bootstrap:nav-link{variant="disabled"}
-Disabled
-:::
+:::::bootstrap:nav{variant="pills" id="pills-nav"}
+::::bootstrap:nav-item
+:::bootstrap:nav-link{variant="active" data-bs-toggle="pill" data-bs-target="#pills-home"}
+Home
 :::
 ::::
-```
 
----
+::::bootstrap:nav-item
+:::bootstrap:nav-link{data-bs-toggle="pill" data-bs-target="#pills-profile"}
+Profile
+:::
+::::
 
-## Pagination
-
-```markdown
-:::::bootstrap:pagination
-::::bootstrap:pagination-list
-:::bootstrap:page-item{variant="disabled"}
-:::bootstrap:page-link
-Previous
-:::
-:::
-
-:::bootstrap:page-item
-:::bootstrap:page-link
-1
-:::
-:::
-
-:::bootstrap:page-item{variant="active"}
-:::bootstrap:page-link
-2
-:::
-:::
-
-:::bootstrap:page-item
-:::bootstrap:page-link
-3
-:::
-:::
-
-:::bootstrap:page-item
-:::bootstrap:page-link
-Next
-:::
+::::bootstrap:nav-item
+:::bootstrap:nav-link{data-bs-toggle="pill" data-bs-target="#pills-contact"}
+Contact
 :::
 ::::
 :::::
+
+::::bootstrap:tab-content
+:::bootstrap:tab-pane{variant="active" id="pills-home"}
+Home content goes here.
+:::
+
+:::bootstrap:tab-pane{id="pills-profile"}
+Profile content goes here.
+:::
+
+:::bootstrap:tab-pane{id="pills-contact"}
+Contact content goes here.
+:::
+::::
 ```
 
 **Result:**
 
-:::::bootstrap:pagination
-::::bootstrap:pagination-list
-:::bootstrap:page-item{variant="disabled"}
-:::bootstrap:page-link
-Previous
+:::::bootstrap:nav{variant="pills" id="pills-nav"}
+::::bootstrap:nav-item
+:::bootstrap:nav-link{variant="active" data-bs-toggle="pill" data-bs-target="#pills-home"}
+Home
 :::
-:::
+::::
 
-:::bootstrap:page-item
-:::bootstrap:page-link
-1
+::::bootstrap:nav-item
+:::bootstrap:nav-link{data-bs-toggle="pill" data-bs-target="#pills-profile"}
+Profile
 :::
-:::
+::::
 
-:::bootstrap:page-item{variant="active"}
-:::bootstrap:page-link
-2
-:::
-:::
-
-:::bootstrap:page-item
-:::bootstrap:page-link
-3
-:::
-:::
-
-:::bootstrap:page-item
-:::bootstrap:page-link
-Next
-:::
+::::bootstrap:nav-item
+:::bootstrap:nav-link{data-bs-toggle="pill" data-bs-target="#pills-contact"}
+Contact
 :::
 ::::
 :::::
+
+::::bootstrap:tab-content
+:::bootstrap:tab-pane{variant="active" id="pills-home"}
+Home content goes here.
+:::
+
+:::bootstrap:tab-pane{id="pills-profile"}
+Profile content goes here.
+:::
+
+:::bootstrap:tab-pane{id="pills-contact"}
+Contact content goes here.
+:::
+::::
+
+---
+
+## Pagination with Content
+
+Pagination can switch content like Tabs using `data-bs-toggle="tab"` and `data-bs-target`.
+The `page-link` component is now a `<button>` which works better with Bootstrap's JavaScript.
+
+```markdown
+::::::bootstrap:pagination
+:::::bootstrap:pagination-list
+::::bootstrap:page-item
+:::bootstrap:page-link{data-bs-toggle="tab" data-bs-target="#page-1"}
+1
+:::
+::::
+
+::::bootstrap:page-item{variant="active"}
+:::bootstrap:page-link{variant="active" data-bs-toggle="tab" data-bs-target="#page-2"}
+2
+:::
+::::
+
+::::bootstrap:page-item
+:::bootstrap:page-link{data-bs-toggle="tab" data-bs-target="#page-3"}
+3
+:::
+::::
+:::::
+::::::
+
+::::bootstrap:tab-content
+:::bootstrap:tab-pane{id="page-1"}
+Content for page 1.
+:::
+
+:::bootstrap:tab-pane{variant="active" id="page-2"}
+Content for page 2.
+:::
+
+:::bootstrap:tab-pane{id="page-3"}
+Content for page 3.
+:::
+::::
+```
+
+**Result:**
+
+::::::bootstrap:pagination
+:::::bootstrap:pagination-list
+::::bootstrap:page-item
+:::bootstrap:page-link{data-bs-toggle="tab" data-bs-target="#page-1"}
+1
+:::
+::::
+
+::::bootstrap:page-item{variant="active"}
+:::bootstrap:page-link{variant="active" data-bs-toggle="tab" data-bs-target="#page-2"}
+2
+:::
+::::
+
+::::bootstrap:page-item
+:::bootstrap:page-link{data-bs-toggle="tab" data-bs-target="#page-3"}
+3
+:::
+::::
+:::::
+::::::
+
+::::bootstrap:tab-content
+:::bootstrap:tab-pane{id="page-1"}
+Content for page 1.
+:::
+
+:::bootstrap:tab-pane{variant="active" id="page-2"}
+Content for page 2.
+:::
+
+:::bootstrap:tab-pane{id="page-3"}
+Content for page 3.
+:::
+::::
 
 ---
 
 ## Breadcrumb
 
 ```markdown
-::::bootstrap:breadcrumb
-:::bootstrap:breadcrumb-list
+:::::bootstrap:breadcrumb
+::::bootstrap:breadcrumb-list
 :::bootstrap:breadcrumb-item
 Home
 :::
@@ -933,14 +997,14 @@ Library
 :::bootstrap:breadcrumb-item{variant="active"}
 Data
 :::
-:::
 ::::
+:::::
 ```
 
 **Result:**
 
-::::bootstrap:breadcrumb
-:::bootstrap:breadcrumb-list
+:::::bootstrap:breadcrumb
+::::bootstrap:breadcrumb-list
 :::bootstrap:breadcrumb-item
 Home
 :::
@@ -952,16 +1016,18 @@ Library
 :::bootstrap:breadcrumb-item{variant="active"}
 Data
 :::
-:::
 ::::
+:::::
 
 ---
 
 ## Dropdown
 
+The `dropdown-toggle` component automatically includes `data-bs-toggle="dropdown"`.
+
 ```markdown
 ::::bootstrap:dropdown
-:::bootstrap:dropdown-toggle{variant="primary" data-bs-toggle="dropdown"}
+:::bootstrap:dropdown-toggle{variant="primary"}
 Dropdown button
 :::
 
@@ -993,7 +1059,7 @@ Separated link
 **Result:**
 
 ::::bootstrap:dropdown
-:::bootstrap:dropdown-toggle{variant="primary" data-bs-toggle="dropdown"}
+:::bootstrap:dropdown-toggle{variant="primary"}
 Dropdown button
 :::
 

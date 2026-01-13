@@ -428,11 +428,58 @@ export default function Preview({ content, showAIContext = false, settings, them
     }
     renderHighlight();
 
+    // Bootstrap 5's Data API automatically handles click events via event delegation
+    // on the document. We don't need to manually initialize components.
+    // The Data API uses [data-bs-toggle] attributes to detect interactions.
+    // No manual initialization needed - Bootstrap registers document-level event listeners.
+
+    // Sync pagination active state with Bootstrap tab events
+    // Bootstrap updates aria-selected but not the visual "active" class on page-item parents
+    const syncPaginationActiveState = () => {
+      if (!previewRef.current) return;
+
+      // Listen for Bootstrap tab show events
+      const handleTabShown = (event: Event) => {
+        const target = event.target as HTMLElement;
+        if (!target || !target.closest('.pagination')) return;
+
+        // Find the pagination list containing this tab
+        const paginationList = target.closest('.pagination');
+        if (!paginationList) return;
+
+        // Remove active class from all page-items in this pagination
+        paginationList.querySelectorAll('.page-item').forEach((item) => {
+          item.classList.remove('active');
+        });
+
+        // Add active class to the parent page-item of the clicked tab
+        const pageItem = target.closest('.page-item');
+        if (pageItem) {
+          pageItem.classList.add('active');
+        }
+      };
+
+      // Bootstrap fires 'shown.bs.tab' event after tab is shown
+      previewRef.current.addEventListener('shown.bs.tab', handleTabShown);
+
+      // Return cleanup function
+      return () => {
+        previewRef.current?.removeEventListener('shown.bs.tab', handleTabShown);
+      };
+    };
+
+    const cleanupPagination = syncPaginationActiveState();
+
     // Extract scripts from DOM for .mdsc files
     if (isMdscFile) {
       const extractedScripts = extractScriptsFromDOM(previewRef.current!);
       setScripts(extractedScripts);
     }
+
+    // Cleanup event listeners on unmount or re-render
+    return () => {
+      cleanupPagination?.();
+    };
   }, [html, theme, isMdscFile, settings?.enabledPlugins]);
 
   // Inject script results into the DOM

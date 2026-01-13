@@ -582,46 +582,85 @@ export default function App() {
     });
 
     // Inject JS for newly enabled plugins
-    // Note: We need to temporarily hide AMD/define to prevent conflicts with Monaco's loader
-    // UMD bundles (Bootstrap, KaTeX, Mermaid) detect define() and try to use AMD, causing conflicts
+    // Bootstrap, KaTeX, Mermaid are UMD bundles that detect AMD's define() and try to use it
+    // This conflicts with Monaco's AMD loader ("Can only have one anonymous define call")
+    // Solution: Temporarily hide AMD, load script via src, restore AMD after load
+    const scriptsToLoad: Array<{ jsPath: string; scriptId: string; pluginId: string }> = [];
+
     enabledPlugins.forEach((plugin) => {
       if (!plugin.js || plugin.js.length === 0) return;
 
       plugin.js.forEach((jsPath, index) => {
         const scriptId = `${plugin.id}-${index}`;
-        if (document.querySelector(`script[data-plugin-js="${scriptId}"]`)) return;
-
-        // Create inline script that temporarily hides AMD define before loading the plugin
-        const script = document.createElement('script');
-        script.setAttribute('data-plugin-js', scriptId);
-        script.setAttribute('data-plugin-id', plugin.id);
-
-        // Use fetch to load script content and execute without AMD detection
-        script.textContent = `
-          (function() {
-            var _define = window.define;
-            var _require = window.require;
-            window.define = undefined;
-            window.require = undefined;
-
-            var script = document.createElement('script');
-            script.src = '${jsPath}';
-            script.onload = function() {
-              window.define = _define;
-              window.require = _require;
-              console.log('[Plugins] Loaded JS (AMD-safe): ${jsPath} for plugin ${plugin.id}');
-            };
-            script.onerror = function() {
-              window.define = _define;
-              window.require = _require;
-              console.error('[Plugins] Failed to load JS: ${jsPath}');
-            };
-            document.head.appendChild(script);
-          })();
-        `;
-        document.body.appendChild(script);
+        if (document.querySelector(`[data-plugin-js="${scriptId}"]`)) return;
+        scriptsToLoad.push({ jsPath, scriptId, pluginId: plugin.id });
       });
     });
+
+    // Load scripts after Monaco is ready, hiding AMD during execution
+    if (scriptsToLoad.length > 0) {
+      const loadScriptsSequentially = async () => {
+        const savedDefine = (window as any).define;
+        const savedRequire = (window as any).require;
+
+        for (const { jsPath, scriptId, pluginId } of scriptsToLoad) {
+          try {
+            // Hide AMD before loading script
+            (window as any).define = undefined;
+            (window as any).require = undefined;
+
+            // Load script via external src attribute (proper global context)
+            // Using the original file:// URL ensures proper execution context
+            await new Promise<void>((resolve, reject) => {
+              const script = document.createElement('script');
+              script.setAttribute('data-plugin-js', scriptId);
+              script.setAttribute('data-plugin-id', pluginId);
+              script.src = jsPath;
+
+              script.onload = () => {
+                console.log(`[Plugins] Loaded JS: ${jsPath} for plugin ${pluginId}`);
+                resolve();
+              };
+
+              script.onerror = () => {
+                console.error(`[Plugins] Failed to load JS: ${jsPath}`);
+                reject(new Error(`Failed to load ${jsPath}`));
+              };
+
+              document.head.appendChild(script);
+            });
+
+          } catch (error) {
+            console.error(`[Plugins] Failed to load JS: ${jsPath}`, error);
+          }
+        }
+
+        // Restore AMD after all scripts are loaded
+        (window as any).define = savedDefine;
+        (window as any).require = savedRequire;
+        console.log('[Plugins] All plugin JS loaded, AMD restored');
+      };
+
+      // Wait for Monaco to be ready before loading plugin scripts
+      if ((window as any).monaco) {
+        loadScriptsSequentially();
+      } else {
+        let attempts = 0;
+        const maxAttempts = 100;
+        const checkMonaco = setInterval(() => {
+          attempts++;
+          if ((window as any).monaco) {
+            clearInterval(checkMonaco);
+            console.log('[Plugins] Monaco ready, loading plugin JS...');
+            loadScriptsSequentially();
+          } else if (attempts >= maxAttempts) {
+            clearInterval(checkMonaco);
+            console.warn('[Plugins] Monaco not loaded after 10s, loading plugin JS anyway...');
+            loadScriptsSequentially();
+          }
+        }, 100);
+      }
+    }
 
     // Remove JS for disabled plugins
     existingScripts.forEach((el) => {

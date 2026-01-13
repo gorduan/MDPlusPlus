@@ -14,7 +14,7 @@
       "./vendor/css/bootstrap.min.css"
     ],
     "js": [
-      "./vendor/js/bootstrap.bundle.min.js"
+      "./vendor/js/bootstrap.bundle.js"
     ]
   },
 
@@ -258,7 +258,11 @@
     "accordion-button": {
       "tag": "button",
       "classes": ["accordion-button"],
-      "description": "Bootstrap accordion button",
+      "description": "Bootstrap accordion button. Use data-bs-target='#collapseId' to link to collapse",
+      "defaultAttributes": {
+        "type": "button",
+        "data-bs-toggle": "collapse"
+      },
       "variants": {
         "collapsed": ["collapsed"]
       }
@@ -267,7 +271,7 @@
       "tag": "div",
       "classes": ["accordion-collapse", "collapse"],
       "allowNesting": true,
-      "description": "Bootstrap accordion collapse",
+      "description": "Bootstrap accordion collapse. Use data-bs-parent='#accordionId' to close others",
       "variants": {
         "show": ["show"]
       }
@@ -585,6 +589,10 @@
       "tag": "button",
       "classes": ["btn", "dropdown-toggle"],
       "description": "Bootstrap dropdown toggle button",
+      "defaultAttributes": {
+        "type": "button",
+        "data-bs-toggle": "dropdown"
+      },
       "variants": {
         "split": ["dropdown-toggle-split"],
         "primary": ["btn-primary"],
@@ -750,9 +758,12 @@
       }
     },
     "nav-link": {
-      "tag": "a",
+      "tag": "button",
       "classes": ["nav-link"],
-      "description": "Bootstrap nav link",
+      "description": "Bootstrap nav link. Use data-bs-toggle='pill' and data-bs-target='#paneId' for interactive pills",
+      "defaultAttributes": {
+        "type": "button"
+      },
       "variants": {
         "active": ["active"],
         "disabled": ["disabled"]
@@ -838,7 +849,10 @@
       "tag": "ul",
       "classes": ["pagination"],
       "allowNesting": true,
-      "description": "Bootstrap pagination list",
+      "description": "Bootstrap pagination list with tab support",
+      "defaultAttributes": {
+        "role": "tablist"
+      },
       "variants": {
         "lg": ["pagination-lg"],
         "sm": ["pagination-sm"]
@@ -848,15 +862,26 @@
       "tag": "li",
       "classes": ["page-item"],
       "description": "Bootstrap page item",
+      "defaultAttributes": {
+        "role": "presentation"
+      },
       "variants": {
         "active": ["active"],
         "disabled": ["disabled"]
       }
     },
     "page-link": {
-      "tag": "a",
+      "tag": "button",
       "classes": ["page-link"],
-      "description": "Bootstrap page link"
+      "description": "Bootstrap page link. Use data-bs-toggle='tab' and data-bs-target='#paneId' for interactive pagination",
+      "defaultAttributes": {
+        "type": "button",
+        "role": "tab"
+      },
+      "variants": {
+        "active": ["active"],
+        "disabled": ["disabled"]
+      }
     },
 
     "form-group": {
